@@ -16,7 +16,8 @@ diff --git a/configure.ac b/configure.ac
 index 4c964ae..f335c48 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -5642,8 +5642,21 @@ do
+@@ -5541,8 +5541,21 @@
+ do
    THREADHEADERS="$THREADHEADERS \$(srcdir)/$h"
  done
  
@@ -31,7 +32,7 @@ index 4c964ae..f335c48 100644
 +esac
 +
  AC_SUBST(SRCDIRS)
- SRCDIRS="Parser Parser/pegen Objects Python Modules Modules/_io Programs"
+ SRCDIRS="Parser Objects Python Modules Modules/_io Programs"
 +case $host in
 +  *-*-mingw*) SRCDIRS="$SRCDIRS PC";;
 +esac

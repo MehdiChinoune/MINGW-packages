@@ -4,7 +4,7 @@
 # Contributor: Frode Solheim <frode@fs-uae.net>
 
 _primary_python="yes"
-_pybasever=3.9
+_pybasever=3.10
 _realname=python
 
 if [[ "${_primary_python}" == "yes" ]]; then
@@ -21,8 +21,8 @@ else
   pkgbase="mingw-w64-${_realname}${_pybasever}"
   pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}${_pybasever}")
 fi
-pkgver=${_pybasever}.6
-pkgrel=2
+pkgver=${_pybasever}.0b4
+pkgrel=1
 pkgdesc="A high-level scripting language (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
@@ -41,12 +41,11 @@ depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
          "${MINGW_PACKAGE_PREFIX}-zlib"
          "${MINGW_PACKAGE_PREFIX}-xz")
 makedepends=(
-  "${MINGW_PACKAGE_PREFIX}-gcc"
   "${MINGW_PACKAGE_PREFIX}-pkg-config"
   "autoconf-archive"
 )
 options=('makeflags') # 'debug' '!strip')
-source=("https://www.python.org/ftp/python/${pkgver%rc?}/Python-${pkgver}.tar.xz"
+source=("https://www.python.org/ftp/python/${pkgver%b?}/Python-${pkgver}.tar.xz"
         "smoketests.py"
         0001-make-_sysconfigdata.py-relocatable.patch
         0002-restore-setup-config.patch
@@ -432,7 +431,7 @@ package() {
   cp venvwlauncher.exe "${pkgdir}${MINGW_PREFIX}"/lib/python${_pybasever}/venv/scripts/nt/pythonw.exe
 }
 
-sha256sums=('397920af33efc5b97f2e0b57e91923512ef89fc5b3c1d21dbfc8c4828ce0108a'
+sha256sums=(SKIP
             '7188e017a1efba4a87cb64a38b63ed2d8a469e2e74c3fd35b6538d5bc6e370e5'
             '621cbe4120c2f83c39eff9c03aba62b4240c657aaacff6c6063968e597a94f88'
             '382f4d6b59da0e3c0ccea985864bd0e1389d97bd6517f068f175a624615f192d'
@@ -441,7 +440,7 @@ sha256sums=('397920af33efc5b97f2e0b57e91923512ef89fc5b3c1d21dbfc8c4828ce0108a'
             '852be8186f71c46b7f7907a8cef3fd1936f3a288ffeeedba843d73cd2e65caaf'
             'db5a158f9545d554dfad95290aae15fc71f03550c3594e1dabdbc0cfbb0ced29'
             'a8a6eb37672dbe4cfcd6df4ccd755217ee5e433b36b67591a407edcbb262c0eb'
-            '380a25c2b7cfafb1b9ddff91a94ba8eb7db00fb6a37c5f6bdb1e12ffbdcf2076'
+            'c9d823ede705dc7f473a249a0031c1d085fac92e0c503ebc2bf7c998d30374af'
             '354b523f924dd066520f6df3f61fb752a7bdfe63b6422d32cb3b860445040878'
             'ac85eca34438d4e38f195da6614663a10e7f3f659e5c9879670a1e9a46a8a1c1'
             'fa0010a847b7156b07aadc7fe976b675d8913df0fa4efdfe5a148a529ff41ec1'
