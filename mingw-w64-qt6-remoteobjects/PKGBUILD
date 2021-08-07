@@ -1,25 +1,24 @@
 # Contributor: Mehdi Chinoune <mehdi.chinoune@hotmail.com>
 
-_realname=qt6-quickcontrols2
+_realname=qt6-remoteobjects
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
          "${MINGW_PACKAGE_PREFIX}-${_realname}-debug")
-_qtver=6.1.3
+_qtver=6.2.0-rc
 pkgver=${_qtver/-/}
 pkgrel=1
 arch=(any)
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
 url='https://www.qt.io'
 license=(GPL3 LGPL3 FDL custom)
-pkgdesc='User interface controls based on Qt Quick (mingw-w64)'
+pkgdesc='Inter-process communication (IPC) module developed for Qt (mingw-w64)'
 makedepends=("${MINGW_PACKAGE_PREFIX}-cmake"
              "${MINGW_PACKAGE_PREFIX}-ninja"
              "${MINGW_PACKAGE_PREFIX}-qt6-declarative"
-             "${MINGW_PACKAGE_PREFIX}-qt6-imageformats"
              "rsync")
 _pkgfn="${_realname/6-/}-everywhere-src-${_qtver}"
-source=("https://download.qt.io/official_releases/qt/${pkgver%.*}/$_qtver/submodules/$_pkgfn.tar.xz")
-sha256sums=('799e408eb9dac724695b0f0d6afd40a28af3f3d5dc606a59b6570a126f2a6b06')
+source=("https://download.qt.io/development_releases/qt/${pkgver%.*}/$_qtver/submodules/$_pkgfn.tar.xz")
+sha256sums=(SKIP)
 
 build() {
   cd ${srcdir}
@@ -36,9 +35,9 @@ build() {
   cmake --build .
 }
 
-package_qt6-quickcontrols2() {
-  depends=("${MINGW_PACKAGE_PREFIX}-qt6-declarative")
-  optdepends=("${MINGW_PACKAGE_PREFIX}-qt6-imageformats")
+package_qt6-remoteobjects() {
+  depends=("${MINGW_PACKAGE_PREFIX}-qt6-base")
+  optdepends=("${MINGW_PACKAGE_PREFIX}-qt6-declarative")
   groups=("${MINGW_PACKAGE_PREFIX}-qt6")
 
   DESTDIR=${pkgdir} cmake --install build-${MSYSTEM}
@@ -50,8 +49,8 @@ package_qt6-quickcontrols2() {
   install -Dm644 $_pkgfn/LICENSE* -t "$pkgdir${MINGW_PREFIX}"/share/licenses/${_realname}
 }
 
-package_qt6-quickcontrols2-debug() {
-  depends=("${MINGW_PACKAGE_PREFIX}-qt6-declarative-debug"
+package_qt6-remoteobjects-debug() {
+  depends=("${MINGW_PACKAGE_PREFIX}-qt6-base-debug"
            "${MINGW_PACKAGE_PREFIX}-${_realname}")
   groups=("${MINGW_PACKAGE_PREFIX}-qt6-debug")
 

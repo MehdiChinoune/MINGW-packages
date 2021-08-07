@@ -1,6 +1,6 @@
 # Contributor: Mehdi Chinoune <mehdi.chinoune@hotmail.com>
 
-_realname=qt6-scxml
+_realname=qt6-webview
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
          "${MINGW_PACKAGE_PREFIX}-${_realname}-debug")
@@ -11,7 +11,7 @@ arch=(any)
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
 url='https://www.qt.io'
 license=(GPL3 LGPL3 FDL custom)
-pkgdesc='Static and runtime integration of SCXML models into Qt6 code (mingw-w64)'
+pkgdesc='Provides a way to display web content in a QML application (mingw-w64)'
 makedepends=("${MINGW_PACKAGE_PREFIX}-cmake"
              "${MINGW_PACKAGE_PREFIX}-ninja"
              "${MINGW_PACKAGE_PREFIX}-qt6-declarative"
@@ -35,7 +35,7 @@ build() {
   cmake --build .
 }
 
-package_qt6-scxml() {
+package_qt6-webview() {
   depends=("${MINGW_PACKAGE_PREFIX}-qt6-declarative")
   groups=("${MINGW_PACKAGE_PREFIX}-qt6")
 
@@ -48,7 +48,7 @@ package_qt6-scxml() {
   install -Dm644 $_pkgfn/LICENSE* -t "$pkgdir${MINGW_PREFIX}"/share/licenses/${_realname}
 }
 
-package_qt6-scxml-debug() {
+package_qt6-webview-debug() {
   depends=("${MINGW_PACKAGE_PREFIX}-qt6-declarative-debug"
            "${MINGW_PACKAGE_PREFIX}-${_realname}")
   groups=("${MINGW_PACKAGE_PREFIX}-qt6-debug")

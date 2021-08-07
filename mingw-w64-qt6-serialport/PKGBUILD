@@ -1,6 +1,6 @@
 # Contributor: Mehdi Chinoune <mehdi.chinoune@hotmail.com>
 
-_realname=qt6-scxml
+_realname=qt6-serialport
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
          "${MINGW_PACKAGE_PREFIX}-${_realname}-debug")
@@ -11,10 +11,10 @@ arch=(any)
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
 url='https://www.qt.io'
 license=(GPL3 LGPL3 FDL custom)
-pkgdesc='Static and runtime integration of SCXML models into Qt6 code (mingw-w64)'
+pkgdesc='Provides access to hardware and virtual serial ports (mingw-w64)'
 makedepends=("${MINGW_PACKAGE_PREFIX}-cmake"
              "${MINGW_PACKAGE_PREFIX}-ninja"
-             "${MINGW_PACKAGE_PREFIX}-qt6-declarative"
+             "${MINGW_PACKAGE_PREFIX}-qt6-base"
              "rsync")
 _pkgfn="${_realname/6-/}-everywhere-src-${_qtver}"
 source=("https://download.qt.io/development_releases/qt/${pkgver%.*}/$_qtver/submodules/$_pkgfn.tar.xz")
@@ -35,8 +35,8 @@ build() {
   cmake --build .
 }
 
-package_qt6-scxml() {
-  depends=("${MINGW_PACKAGE_PREFIX}-qt6-declarative")
+package_qt6-serialport() {
+  depends=("${MINGW_PACKAGE_PREFIX}-qt6-base")
   groups=("${MINGW_PACKAGE_PREFIX}-qt6")
 
   DESTDIR=${pkgdir} cmake --install build-${MSYSTEM}
@@ -48,8 +48,8 @@ package_qt6-scxml() {
   install -Dm644 $_pkgfn/LICENSE* -t "$pkgdir${MINGW_PREFIX}"/share/licenses/${_realname}
 }
 
-package_qt6-scxml-debug() {
-  depends=("${MINGW_PACKAGE_PREFIX}-qt6-declarative-debug"
+package_qt6-serialport-debug() {
+  depends=("${MINGW_PACKAGE_PREFIX}-qt6-base-debug"
            "${MINGW_PACKAGE_PREFIX}-${_realname}")
   groups=("${MINGW_PACKAGE_PREFIX}-qt6-debug")
 
