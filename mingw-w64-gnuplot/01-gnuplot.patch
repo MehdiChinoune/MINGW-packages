@@ -1,7 +1,6 @@
-diff --unified '--color=auto' -r gnuplot-5.4.0.orig/config/mingw/Makefile gnuplot-5.4.0/config/mingw/Makefile
---- gnuplot-5.4.0.orig/config/mingw/Makefile	2020-04-10 09:15:40.000000000 +0530
-+++ gnuplot-5.4.0/config/mingw/Makefile	2020-09-06 20:38:04.140186600 +0530
-@@ -784,19 +784,19 @@
+--- a/config/mingw/Makefile
++++ b/config/mingw/Makefile
+@@ -784,19 +784,7 @@
  $(HELPFILE): $(BUILDHELPFILE)
  	$(CP) $^ $@
  
@@ -11,12 +10,6 @@ diff --unified '--color=auto' -r gnuplot-5.4.0.orig/config/mingw/Makefile gnuplo
 -else
 -	gendef - $^ > $@
 -endif
-+#htmlhelp.def: /c/Windows/System32/hhctrl.ocx
-+#ifndef MINGW64
-+#	pexports $^ > $@
-+#else
-+#	gendef - $^ > $@
-+#endif
  
 -prntvpt.def: /c/Windows/System32/prntvpt.dll
 -ifndef MINGW64
@@ -24,18 +17,11 @@ diff --unified '--color=auto' -r gnuplot-5.4.0.orig/config/mingw/Makefile gnuplo
 -else
 -	gendef - $^ > $@
 -endif
-+#prntvpt.def: /c/Windows/System32/prntvpt.dll
-+#ifndef MINGW64
-+#	pexports $^ > $@
-+#else
-+#	gendef - $^ > $@
-+#endif
  
  # Working directory for patched Japanese sources 
  JA = ja/
-diff --unified '--color=auto' -r gnuplot-5.4.0.orig/configure.ac gnuplot-5.4.0/configure.ac
---- gnuplot-5.4.0.orig/configure.ac	2020-07-12 05:59:47.000000000 +0530
-+++ gnuplot-5.4.0/configure.ac	2020-09-06 20:04:48.475405900 +0530
+--- a/configure.ac
++++ b/configure.ac
 @@ -37,6 +37,8 @@
  AC_C_STRINGIZE
  AC_PROG_LN_S
@@ -75,9 +61,8 @@ diff --unified '--color=auto' -r gnuplot-5.4.0.orig/configure.ac gnuplot-5.4.0/c
  dnl Enable subsystem to generate statistical summary of file contents
  AC_ARG_ENABLE(stats,dnl
  [  --disable-stats         Omit calculation of statistical summary of data],
-diff --unified '--color=auto' -r gnuplot-5.4.0.orig/demo/plugin/Makefile.am gnuplot-5.4.0/demo/plugin/Makefile.am
---- gnuplot-5.4.0.orig/demo/plugin/Makefile.am	2017-12-22 23:02:30.000000000 +0530
-+++ gnuplot-5.4.0/demo/plugin/Makefile.am	2020-09-06 20:05:12.659453700 +0530
+--- a/demo/plugin/Makefile.am
++++ b/demo/plugin/Makefile.am
 @@ -4,7 +4,7 @@
  noinst_PROGRAMS = demo_plugin.so
  
@@ -87,9 +72,8 @@ diff --unified '--color=auto' -r gnuplot-5.4.0.orig/demo/plugin/Makefile.am gnup
  demo_plugin_so_LDFLAGS = -shared
  
  # Note: Solaris SunPro C compiler needs these flags instead
-diff --unified '--color=auto' -r gnuplot-5.4.0.orig/docs/Makefile.am gnuplot-5.4.0/docs/Makefile.am
---- gnuplot-5.4.0.orig/docs/Makefile.am	2020-04-10 22:24:28.000000000 +0530
-+++ gnuplot-5.4.0/docs/Makefile.am	2020-09-06 20:03:02.506859700 +0530
+--- a/docs/Makefile.am
++++ b/docs/Makefile.am
 @@ -50,6 +50,11 @@
  
  AM_CPPFLAGS = -I$(top_srcdir)/src -I$(top_srcdir)/term
@@ -102,9 +86,8 @@ diff --unified '--color=auto' -r gnuplot-5.4.0.orig/docs/Makefile.am gnuplot-5.4
  # Documentation will be prepared for all terminals in CORETERM
  # even if the terminal itself is not included in the build.
  
-diff --unified '--color=auto' -r gnuplot-5.4.0.orig/Makefile.am gnuplot-5.4.0/Makefile.am
---- gnuplot-5.4.0.orig/Makefile.am	2020-03-31 22:58:16.000000000 +0530
-+++ gnuplot-5.4.0/Makefile.am	2020-09-06 20:01:49.907467200 +0530
+--- a/Makefile.am
++++ b/Makefile.am
 @@ -7,6 +7,8 @@
  PATCHLEVEL PGPKEYS README RELEASE_NOTES \
  configure.vms win
@@ -114,9 +97,8 @@ diff --unified '--color=auto' -r gnuplot-5.4.0.orig/Makefile.am gnuplot-5.4.0/Ma
  DISTCLEANFILES = stamp-h
  
  ACLOCAL_AMFLAGS = -I m4
-diff --unified '--color=auto' -r gnuplot-5.4.0.orig/src/command.c gnuplot-5.4.0/src/command.c
---- gnuplot-5.4.0.orig/src/command.c	2020-06-11 03:03:34.000000000 +0530
-+++ gnuplot-5.4.0/src/command.c	2020-09-06 19:57:28.950915200 +0530
+--- a/src/command.c
++++ b/src/command.c
 @@ -112,7 +112,7 @@
  int thread_rl_RetCode = -1; /* return code from readline in a thread */
  #endif /* OS2_IPC */
@@ -135,9 +117,8 @@ diff --unified '--color=auto' -r gnuplot-5.4.0.orig/src/command.c gnuplot-5.4.0/
  void
  help_command()
  {
-diff --unified '--color=auto' -r gnuplot-5.4.0.orig/src/Makefile.am gnuplot-5.4.0/src/Makefile.am
---- gnuplot-5.4.0.orig/src/Makefile.am	2020-03-31 22:58:16.000000000 +0530
-+++ gnuplot-5.4.0/src/Makefile.am	2020-09-06 20:06:11.275225300 +0530
+--- a/src/Makefile.am
++++ b/src/Makefile.am
 @@ -93,6 +93,27 @@
  # Hercules and original pc graphics driver code
  # corgraph.asm header.mac hrcgraph.asm pcgraph.asm lineproc.mac
@@ -181,7 +162,7 @@ diff --unified '--color=auto' -r gnuplot-5.4.0.orig/src/Makefile.am gnuplot-5.4.
 +wgnuplot_SOURCES += win/wtext.c win/screenbuf.c win/wmenu.c win/wredirect.cpp
 +wgnuplot_CPPFLAGS = $(AM_CPPFLAGS) -DPIPES
 +wgnuplot_LDADD = $(gnuplot_LDADD) wgplt_res.$(O)
-+wgnuplot_LDFLAGS = $(AM_LDFLAGS) -mwindows --enable-auto-import
++wgnuplot_LDFLAGS = $(AM_LDFLAGS) -mwindows
 +
 +#wgnuplot_pipes section
 +bin_PROGRAMS += wgnuplot_pipes
@@ -190,7 +171,7 @@ diff --unified '--color=auto' -r gnuplot-5.4.0.orig/src/Makefile.am gnuplot-5.4.
 +wgnuplot_pipes_SOURCES += win/wtext.c win/screenbuf.c win/wmenu.c win/wredirect.cpp
 +wgnuplot_pipes_CPPFLAGS = $(AM_CPPFLAGS) -DPIPES
 +wgnuplot_pipes_LDADD = $(gnuplot_LDADD) wgplt_res.$(O)
-+wgnuplot_pipes_LDFLAGS = $(AM_LDFLAGS) -mconsole
++wgnuplot_pipes_LDFLAGS = $(AM_LDFLAGS) -mwindows
 +
 +RCFLAGS = --include-dir=$(srcdir)/win \
 +	--define __WIN32__ --define __WIN95__ \
@@ -208,15 +189,13 @@ diff --unified '--color=auto' -r gnuplot-5.4.0.orig/src/Makefile.am gnuplot-5.4.
  endif
  
  if DEVELOPMENT_VERSION
-diff --unified '--color=auto' -r gnuplot-5.4.0.orig/src/win/winmain.c gnuplot-5.4.0/src/win/winmain.c
---- gnuplot-5.4.0.orig/src/win/winmain.c	2020-04-10 22:24:28.000000000 +0530
-+++ gnuplot-5.4.0/src/win/winmain.c	2020-09-06 19:58:17.437576400 +0530
-@@ -368,7 +368,8 @@
+--- a/src/win/winmain.c
++++ b/src/win/winmain.c
+@@ -368,7 +368,7 @@
      else
  	lang = GetLanguageCode();
  
 -    filename = (LPTSTR) malloc((_tcslen(szModuleName) + _tcslen(name) + _tcslen(lang) + _tcslen(ext) + 1) * sizeof(TCHAR));
-+    //filename = (LPTSTR) malloc((_tcslen(szModuleName) + _tcslen(name) + _tcslen(lang) + _tcslen(ext) + 1) * sizeof(TCHAR));
 +    filename = (LPTSTR) malloc(1024 * sizeof(TCHAR));
      if (filename) {
  	_tcscpy(filename, szModuleName);

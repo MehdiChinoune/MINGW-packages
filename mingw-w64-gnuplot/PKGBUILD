@@ -7,8 +7,8 @@ _realname=gnuplot
 _wx_basever=3.0
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=5.4.1
-pkgrel=3
+pkgver=5.4.2
+pkgrel=1
 pkgdesc="Plotting package which outputs to X11, PostScript, PNG, GIF, and others (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
@@ -27,9 +27,8 @@ depends=("${MINGW_PACKAGE_PREFIX}-cairo"
 options=('strip' 'staticlibs')
 source=("https://downloads.sourceforge.net/sourceforge/${_realname}/${_realname}-${pkgver}.tar.gz"
         "01-gnuplot.patch" )
-sha256sums=('6b690485567eaeb938c26936e5e0681cf70c856d273cc2c45fabf64d8bc6590e'
-            'b07b4220743b47c88d67f41a542562329205d8a2cfa60b9e225ca5b71b4fab5d')
-
+sha256sums=('e57c75e1318133951d32a83bcdc4aff17fed28722c4e71f2305cfc2ae1cae7ba'
+            'ce26d8f3169e407373c9f5aa2db17e8f3d95396f0e49b29de90e1b7ee4751362')
 
 prepare() {
   cd "${srcdir}"/${_realname}-${pkgver}
@@ -38,8 +37,8 @@ prepare() {
 }
 
 build() {
-  [[ -d "${srcdir}"/build-${CARCH} ]] && rm -rf "${srcdir}"/build-${CARCH}
-  mkdir -p "${srcdir}"/build-${CARCH} && cd "${srcdir}"/build-${CARCH}
+  [[ -d "${srcdir}"/build-${MSYSTEM} ]] && rm -rf "${srcdir}"/build-${MSYSTEM}
+  mkdir -p "${srcdir}"/build-${MSYSTEM} && cd "${srcdir}"/build-${MSYSTEM}
 
   ../${_realname}-${pkgver}/configure \
       --prefix=${MINGW_PREFIX} \
@@ -55,6 +54,6 @@ build() {
 }
 
 package() {
-  cd "${srcdir}"/build-${CARCH}
+  cd "${srcdir}"/build-${MSYSTEM}
   make install DESTDIR="${pkgdir}"
 }
