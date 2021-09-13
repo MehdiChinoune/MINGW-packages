@@ -15,32 +15,17 @@ diff --git a/gdb/auto-load.c b/gdb/auto-load.c
 index c967261925..72c37f0590 100644
 --- a/gdb/auto-load.c
 +++ b/gdb/auto-load.c
-@@ -499,6 +499,10 @@ file_is_auto_load_safe (const char *filename, const char *debug_fmt, ...)
-   if (!advice_printed)
-     {
-       const char *homedir = getenv ("HOME");
+@@ -477,6 +477,10 @@ file_is_auto_load_safe (const char *filename, const char *debug_fmt, ...)
+ 	  else
+ 	    {
+ 	      const char *homedir = getenv ("HOME");
 +#ifdef _WIN32
-+      if (homedir == NULL)
-+        homedir = getenv ("USERPROFILE");
++       if (homedir == nullptr)
++         homedir = getenv ("USERPROFILE");
 +#endif
- 
-       if (homedir == NULL)
- 	homedir = "$HOME";
-diff --git a/gdb/main.c b/gdb/main.c
-index 19bbb92388..6976c30763 100644
---- a/gdb/main.c
-+++ b/gdb/main.c
-@@ -302,6 +302,10 @@ get_init_files (std::vector<std::string> *system_gdbinit,
- 	}
- 
-       const char *homedir = getenv ("HOME");
-+#ifdef _WIN32
-+      if (homedir == NULL)
-+        homedir = getenv ("USERPROFILE");
-+#endif
- 
-       /* If the .gdbinit file in the current directory is the same as
- 	 the $HOME/.gdbinit file, it should not be sourced.  homebuf
+ 	      if (homedir == nullptr)
+ 		homedir = "$HOME";
+ 	      home_config = (std::string (homedir) + SLASH_STRING
 diff --git a/gdb/windows-nat.c b/gdb/windows-nat.c
 index f9172c3a7f..ce2f00fd0c 100644
 --- a/gdb/windows-nat.c
@@ -68,7 +53,7 @@ index 1f60fd0c98..eb7b3d4e95 100644
 +  if (home == NULL)
 +    home = getenv ("USERPROFILE");
 +#endif
-   if (home != NULL)
+   if (home != NULL && home[0] != '\0')
      {
        /* Make sure the path is absolute and tilde-expanded.  */
 diff --git a/gnulib/import/glob.c b/gnulib/import/glob.c

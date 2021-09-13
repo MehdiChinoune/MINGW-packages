@@ -5,8 +5,8 @@ _realname=gdb
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
          "${MINGW_PACKAGE_PREFIX}-${_realname}-multiarch")
-pkgver=10.2
-pkgrel=2
+pkgver=11.1
+pkgrel=1
 pkgdesc="GNU Debugger (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
@@ -20,7 +20,8 @@ depends=("${MINGW_PACKAGE_PREFIX}-expat"
          "${MINGW_PACKAGE_PREFIX}-python"
          "${MINGW_PACKAGE_PREFIX}-readline"
          "${MINGW_PACKAGE_PREFIX}-xxhash"
-         "${MINGW_PACKAGE_PREFIX}-zlib")
+         "${MINGW_PACKAGE_PREFIX}-zlib"
+         "${MINGW_PACKAGE_PREFIX}-gmp")
 checkdepends=('dejagnu' 'bc')
 makedepends=("${MINGW_PACKAGE_PREFIX}-iconv"
              "${MINGW_PACKAGE_PREFIX}-xz")
@@ -34,39 +35,49 @@ source=(https://ftp.gnu.org/gnu/gdb/${_realname}-${pkgver}.tar.xz{,.sig}
         'gdb-lib-order.patch'
         'gdb-home-is-userprofile.patch')
 validpgpkeys=('F40ADB902B24264AA42E50BF92EDB04BFF325CF3')
-sha256sums=('aaa1223d534c9b700a8bec952d9748ee1977513f178727e1bee520ee000b4f29'
+sha256sums=('cccfcc407b20d343fb320d4a9a2110776dd3165118ffd41f4b1b162340333f94'
             'SKIP'
             'a0a2d974e80b656646c87cc669fda798182a35b001aab933567c41b880530aa0'
             '59856cfcf0beed270d8b444e2fa7fabb413ee0fb9f3a763f63ad82d65515f838'
             '9de9c30bbb8cd2c6f60414b5a34cdf1fae27238293fb6007c628a8b821f88e0b'
             '6378e1a96e3bedc2a160f0f6780cb973ce6139017f2786e7ab97f8bcd9824d27'
             '6d9b91ca2823207c77b587d6e16a56ca3db1a08bda3d7d09292a25ffe03fafe0'
-            'ac38fca803d1626c858a0ebc046f9670547c36543eace767c73bc7b59313ea51'
-            '4c8f889202a1fa3ef684c96063ce7c0e949274a11998c7f95b45bb7032f15b4a')
+            '958d18533e63f88601680e21a2a1481c25c4d5a12c2887a669de75369b8de0ff'
+            '916cd78a1c033681b6c8cd6cf9a2d57c3cc78c7da870d89ff268b3002a725fcd')
+
+# Helper macros to help make tasks easier #
+apply_patch_with_msg() {
+  for _patch in "$@"
+  do
+    msg2 "Applying ${_patch}"
+    patch -Nbp1 -i "${srcdir}/${_patch}"
+  done
+}
 
 prepare() {
   cd ${srcdir}/${_realname}-${pkgver}
 
   # https://sourceware.org/bugzilla/show_bug.cgi?id=15412
-  patch -p1 -i ${srcdir}/gdb-perfomance.patch
-
-  patch -p1 -i ${srcdir}/gdb-fix-using-gnu-print.patch
+  apply_patch_with_msg \
+    gdb-perfomance.patch
 
   # https://sourceware.org/bugzilla/show_bug.cgi?id=21078
-  patch -p1 -i ${srcdir}/gdb-7.12-dynamic-libs.patch
+  apply_patch_with_msg \
+    gdb-7.12-dynamic-libs.patch
 
-  patch -p1 -i ${srcdir}/python-configure-path-fixes.patch
-
-  patch -p1 -i ${srcdir}/gdb-fix-tui-with-pdcurses.patch
-  patch -p1 -i ${srcdir}/gdb-lib-order.patch
-  patch -p1 -i ${srcdir}/gdb-home-is-userprofile.patch
+  apply_patch_with_msg \
+    gdb-fix-using-gnu-print.patch \
+    python-configure-path-fixes.patch \
+    gdb-fix-tui-with-pdcurses.patch \
+    gdb-lib-order.patch \
+    gdb-home-is-userprofile.patch
 
   # hack! - libiberty configure tests for header files using "$CPP $CPPFLAGS"
   sed -i "/ac_cpp=/s/\$CPPFLAGS/\$CPPFLAGS -O2/" libiberty/configure
 }
 
 do_build() {
-  builddir=${srcdir}/build-${MINGW_CHOST}$1
+  builddir=${srcdir}/build-${MSYSTEM}$1
   [[ -d ${builddir} ]] && rm -rf ${builddir}
   mkdir ${builddir} && cd ${builddir}
 
@@ -115,7 +126,7 @@ build() {
 }
 
 package_gdb() {
-  cd ${srcdir}/build-${MINGW_CHOST}
+  cd ${srcdir}/build-${MSYSTEM}
   make DESTDIR=${pkgdir} install
 
   # Remove unwanted files
@@ -131,8 +142,8 @@ package_gdb-multiarch() {
 
   destdir=${pkgdir}${MINGW_PREFIX}/bin
   mkdir -p $destdir
-  strip -o ${destdir}/gdb-multiarch.exe ${srcdir}/build-${MINGW_CHOST}-multiarch/gdb/gdb.exe
-  strip -o ${destdir}/gdbserver-multiarch.exe ${srcdir}/build-${MINGW_CHOST}-multiarch/gdbserver/gdbserver.exe
+  strip -o ${destdir}/gdb-multiarch.exe ${srcdir}/build-${MSYSTEM}-multiarch/gdb/gdb.exe
+  strip -o ${destdir}/gdbserver-multiarch.exe ${srcdir}/build-${MSYSTEM}-multiarch/gdbserver/gdbserver.exe
 }
 
 # template start; name=mingw-w64-splitpkg-wrappers; version=1.0;
