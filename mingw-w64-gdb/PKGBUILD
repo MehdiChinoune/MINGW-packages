@@ -90,7 +90,6 @@ do_build() {
     CXXFLAGS+=" -O0"
   fi
 
-
   CPPFLAGS+=" -I${MINGW_PREFIX}/include/ncurses"
   CFLAGS+=" -I${MINGW_PREFIX}/include/ncurses"
   CXXFLAGS+=" -I${MINGW_PREFIX}/include/ncurses"
@@ -117,7 +116,7 @@ do_build() {
     --enable-tui \
     --enable-source-highlight=no
 
-  make
+  make || make
 }
 
 build() {
