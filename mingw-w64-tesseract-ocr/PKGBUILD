@@ -5,10 +5,10 @@ _realname=tesseract-ocr
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
 pkgver=4.1.1
-pkgrel=8
+pkgrel=9
 pkgdesc="Tesseract OCR (mingw-w64)"
 arch=('any')
-mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
 url="https://github.com/tesseract-ocr/tesseract"
 license=("Apache License 2.0")
 makedepends=("${MINGW_PACKAGE_PREFIX}-gcc" "${MINGW_PACKAGE_PREFIX}-pkg-config")
@@ -19,10 +19,13 @@ depends=(${MINGW_PACKAGE_PREFIX}-cairo
          ${MINGW_PACKAGE_PREFIX}-leptonica
          ${MINGW_PACKAGE_PREFIX}-libarchive
          ${MINGW_PACKAGE_PREFIX}-pango
-         ${MINGW_PACKAGE_PREFIX}-zlib)
+         ${MINGW_PACKAGE_PREFIX}-zlib
+         $([[ ${MSYSTEM} == CLANG* ]] && \
+           [[ ${MSYSTEM} != CLANGARM64 ]] && echo \
+           ${MINGW_PACKAGE_PREFIX}-openmp) )
 options=('!libtool' 'strip')
 source=(${_realname}-${pkgver}.tar.gz::https://github.com/tesseract-ocr/tesseract/archive/${pkgver}.tar.gz
-        https://github.com/tesseract-ocr/tessdata_fast/raw/master/osd.traineddata
+        https://github.com/tesseract-ocr/tessdata_fast/raw/main/osd.traineddata
         tesseract-no-as-needed.patch)
 sha256sums=('2a66ff0d8595bff8f04032165e6c936389b1e5727c3ce5a27b3e059d218db1cb'
             '9cf5d576fcc47564f11265841e5ca839001e7e6f38ff7f7aacf46d15a96b00ff'
@@ -36,12 +39,16 @@ prepare() {
 }
 
 build() {
-  [[ -d "${srcdir}/build-${MINGW_CHOST}" ]] && rm -rf "${srcdir}/build-${MINGW_CHOST}"
-  mkdir "${srcdir}/build-${MINGW_CHOST}"
-  cd "${srcdir}/build-${MINGW_CHOST}"
+  [[ -d "${srcdir}/build-${MSYSTEM}" ]] && rm -rf "${srcdir}/build-${MSYSTEM}"
+  mkdir "${srcdir}/build-${MSYSTEM}" && cd "${srcdir}/build-${MSYSTEM}"
+
   local -a extra_config
   if check_option "debug" "y"; then
     extra_config+=( --enable-debug )
+  fi
+
+  if [[ ${MSYSTEM} == CLANG* ]] && [[ ${MSYSTEM} != CLANGARM64 ]]; then
+    export LDFLAGS="-fopenmp=libomp"
   fi
 
   # tesseract 4.1.1: skip creating the documentation by
@@ -61,17 +68,19 @@ build() {
 }
 
 check() {
-  cd "${srcdir}/build-${MINGW_CHOST}"
+  cd "${srcdir}/build-${MSYSTEM}"
   make -j1 check || true
 }
 
 package() {
-  cd "${srcdir}/build-${MINGW_CHOST}"
+  cd "${srcdir}/build-${MSYSTEM}"
+
   make DESTDIR="${pkgdir}" install
   make DESTDIR="${pkgdir}" training-install
-  mkdir -p ${pkgdir}${MINGW_PREFIX}/share/tessdata
-  install -Dm0644 ${srcdir}/osd.traineddata ${pkgdir}${MINGW_PREFIX}/share/tessdata/osd.traineddata
+
+  mkdir -p "${pkgdir}${MINGW_PREFIX}/share/tessdata"
+  install -Dm0644 "${srcdir}/osd.traineddata" "${pkgdir}${MINGW_PREFIX}/share/tessdata/osd.traineddata"
 
   # Fix .pc file
-  sed -s "/^Libs:/ { s|$(cygpath -m ${MINGW_PREFIX})|${MINGW_PREFIX}|g }" -i "${pkgdir}${MINGW_PREFIX}"/lib/pkgconfig/tesseract.pc
+  sed -s "/^Libs:/ { s|$(cygpath -m ${MINGW_PREFIX})|${MINGW_PREFIX}|g }" -i "${pkgdir}${MINGW_PREFIX}/lib/pkgconfig/tesseract.pc"
 }
