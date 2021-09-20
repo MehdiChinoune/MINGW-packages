@@ -1,0 +1,5 @@
+mingw-w64-tools-git
+mingw-w64-headers-git
+mingw-w64-crt-git
+mingw-w64-libmangle-git
+mingw-w64-winpthreads-git
