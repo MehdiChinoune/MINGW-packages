@@ -169,6 +169,9 @@ build() {
       local _conf=""
     ;;
   esac
+  if [[ $MSYSTEM == *-v3 ]]; then
+    _arch=x86-64-v3
+  fi
 
   local _languages="c,lto,c++,fortran"
   if [ "$_enable_ada" == "yes" ]; then

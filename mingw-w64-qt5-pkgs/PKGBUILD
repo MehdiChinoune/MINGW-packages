@@ -182,6 +182,9 @@ prepare() {
       _HARD_FLAGS="-Wl,--dynamicbase,--high-entropy-va,--nxcompat,--default-image-base-high"
     ;;
   esac
+  if [[ $MSYSTEM == *-x86_64-v3 ]]; then
+    _ARCH_TUNE="-march=x86-64-v3"
+  fi
 
   BIGOBJ_FLAGS="-Wa,-mbig-obj"
 
