@@ -11,17 +11,7 @@ fi
 _realname=qt5
 pkgbase="mingw-w64-${_realname}-pkgs"
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}-base"
-         "${MINGW_PACKAGE_PREFIX}-${_realname}-base-debug"
-         "${MINGW_PACKAGE_PREFIX}-${_realname}-charts"
-         "${MINGW_PACKAGE_PREFIX}-${_realname}-charts-debug"
-         "${MINGW_PACKAGE_PREFIX}-${_realname}-declarative"
-         "${MINGW_PACKAGE_PREFIX}-${_realname}-declarative-debug"
-         "${MINGW_PACKAGE_PREFIX}-${_realname}-location"
-         "${MINGW_PACKAGE_PREFIX}-${_realname}-location-debug"
-         "${MINGW_PACKAGE_PREFIX}-${_realname}-quick3d"
-         "${MINGW_PACKAGE_PREFIX}-${_realname}-quick3d-debug"
-         "${MINGW_PACKAGE_PREFIX}-${_realname}-script"
-         "${MINGW_PACKAGE_PREFIX}-${_realname}-script-debug")
+         "${MINGW_PACKAGE_PREFIX}-${_realname}-base-debug")
 pkgver=5.15.2+kde+r96
 pkgrel=1
 _commit=21ea9c12803130961aa59b17f0095236e38da013
@@ -107,7 +97,7 @@ prepare() {
 
   rm -r */
   sed -i "s|url = ..|url = https://invent.kde.org/qt/qt|g" .gitmodules
-  local _components=("qtbase" "qtdeclarative" "qtcharts" "qtlocation" "qtquick3d" "qtscript")
+  local _components=("qtbase")
   for _component in ${_components[@]}; do
     mkdir -p ${_component}
   done
@@ -146,28 +136,6 @@ prepare() {
     0023-schannel-fix-incomplete-downloads.patch \
     0024-fix-synqt-with-git-build.patch
   git revert -n 6344955d17e17e2398720fe60c34cfc2a4a95208 # Revert version bump
-
-  cd ../qtdeclarative
-  apply_patch_with_msg \
-    0101-qt-5.3.0-fix-examples-building.patch \
-    0102-qtdeclarative-disable-dx12.patch
-  git revert -n 568763928a78b52373932b01be17e040f7c3fa50 # Revert version bump
-
-  cd ../qtlocation
-  apply_patch_with_msg \
-    0201-qt-5.9.1-disable-qtlocation-mapboxgl-plugin.patch
-  git revert -n 3e366ddf164acd9764f5d66658426d05460d3403 # Revert version bump
-
-  cd ../qtquick3d
-  apply_patch_with_msg \
-    0301-fix-static-build-big-resources.patch
-  git revert -n 80196af36528e66826549a8b54d6cc5988db1622 # Revert version bump
-
-  cd ../qtcharts
-  git revert -n 73c1a5618e6af310b0146398b8ed27b716926d09 # Revert version bump
-
-  cd ../qtscript
-  git revert -n f5b1ab0afd5e7ca61e8ea6fbb6f1f273599dd608 # Revert version bump
 
   cd ..
   local _ARCH_TUNE=
@@ -233,6 +201,7 @@ build() {
     -confirm-license \
     -platform ${_platform} \
     -shared \
+    -avx2 \
     -make-tool make \
     -I${MINGW_PREFIX}/include/mariadb \
     -opengl desktop \
