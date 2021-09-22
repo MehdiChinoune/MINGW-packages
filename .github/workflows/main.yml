@@ -25,6 +25,10 @@ jobs:
       mingw_repo_gh: https://github.com/MehdiChinoune/MinGW-packages/releases/download/${{ matrix.prefix }}
       msys_repo: https://github.com/MehdiChinoune/MSYS2-packages/releases/download/msys-x86_64-v3
     steps:
+      - name: Get Processor Info
+        run : |
+          Get-CIMInstance -Class Win32_Processor | Select-Object -Property Name
+          echo $Env:NUMBER_OF_PROCESSORS
       - uses: actions/checkout@v2
         with:
           path: temp
