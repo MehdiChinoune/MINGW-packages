@@ -1,10 +1,7 @@
-mingw-w64-libtiff
-mingw-w64-qt5-pkgs
-mingw-w64-qt5-winextras
-mingw-w64-cmake
-mingw-w64-pyqt5-sip
-mingw-w64-pyqt6-sip
-mingw-w64-xmlstarlet
-mingw-w64-qt6-base
-mingw-w64-qt6-svg
-mingw-w64-qt5-svg
+mingw-w64-z3
+mingw-w64-lua
+mingw-w64-swig
+mingw-w64-uasm
+mingw-w64-clang
+mingw-w64-rust
+mingw-w64-vala

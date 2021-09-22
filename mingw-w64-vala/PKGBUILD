@@ -12,12 +12,12 @@ url="https://wiki.gnome.org/Projects/Vala"
 license=("LGPL")
 makedepends=("help2man"
              "${MINGW_PACKAGE_PREFIX}-libxslt"
-             "${MINGW_PACKAGE_PREFIX}-pkg-config"
-              $([[ ${MINGW_PACKAGE_PREFIX} == *-clang-aarch64* ]] || \
-              echo "${MINGW_PACKAGE_PREFIX}-vala")) # Remove this workaround after vala available
-depends=("${MINGW_PACKAGE_PREFIX}-glib2"
-          $([[ ${MINGW_PACKAGE_PREFIX} == *-clang-aarch64* ]] || \
-            echo "${MINGW_PACKAGE_PREFIX}-graphviz")) # Remove this workaround afer graphviz available
+             "${MINGW_PACKAGE_PREFIX}-pkg-config")
+              # $([[ ${MINGW_PACKAGE_PREFIX} == *-clang-aarch64* ]] || \
+              # echo "${MINGW_PACKAGE_PREFIX}-vala")) # Remove this workaround after vala available
+depends=("${MINGW_PACKAGE_PREFIX}-glib2")
+          # $([[ ${MINGW_PACKAGE_PREFIX} == *-clang-aarch64* ]] || \
+          #   echo "${MINGW_PACKAGE_PREFIX}-graphviz")) # Remove this workaround afer graphviz available
 source=(https://download.gnome.org/sources/${_realname}/${pkgver%.*}/${_realname}-${pkgver}.tar.xz
         001-change-pkg-config-invocations.mingw.patch
         002-use_time_s_functions_on_windows.mingw.patch)
