@@ -1,6 +1,6 @@
 # Maintainer: Alexey Pavlov <alexpux@gmail.com>
 
-_with_rust="yes"
+_with_rust="no"
 if [[ $MINGW_PACKAGE_PREFIX == *-clang-* ]]; then
   # rust doesn't support aarch64-pc-windows-gnu (msys2/CLANG-packages#28)
   # and it apparently hardcodes libgcc (msys2/CLANG-packages#29), so disable
