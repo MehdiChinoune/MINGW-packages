@@ -18,10 +18,10 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-bzip2"
              "${MINGW_PACKAGE_PREFIX}-zstd"
              $([[ ${MSYSTEM} == "CLANGARM64" ]] || \
                echo "${MINGW_PACKAGE_PREFIX}-qt5-base" \
-               "${MINGW_PACKAGE_PREFIX}-qt5-winextras" )
-             $([[ ${MINGW_PACKAGE_PREFIX} == *-clang-* ]] || \
-               [[ ${MINGW_PACKAGE_PREFIX} == *-ucrt-* ]] || \
-               echo "${MINGW_PACKAGE_PREFIX}-emacs"))
+               "${MINGW_PACKAGE_PREFIX}-qt5-winextras" ))
+            #  $([[ ${MINGW_PACKAGE_PREFIX} == *-clang-* ]] || \
+            #    [[ ${MINGW_PACKAGE_PREFIX} == *-ucrt-* ]] || \
+            #    echo "${MINGW_PACKAGE_PREFIX}-emacs"))
 depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
          "${MINGW_PACKAGE_PREFIX}-pkgconf"
          "${MINGW_PACKAGE_PREFIX}-curl"
@@ -31,8 +31,8 @@ depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
          "${MINGW_PACKAGE_PREFIX}-libuv"
          "${MINGW_PACKAGE_PREFIX}-rhash"
          "${MINGW_PACKAGE_PREFIX}-zlib")
-optdepends=("${MINGW_PACKAGE_PREFIX}-qt5-winextras: CMake Qt GUI"
-            "${MINGW_PACKAGE_PREFIX}-emacs: for cmake emacs mode")
+optdepends=("${MINGW_PACKAGE_PREFIX}-qt5-winextras: CMake Qt GUI")
+            # "${MINGW_PACKAGE_PREFIX}-emacs: for cmake emacs mode")
 options=('staticlibs') # '!strip' 'debug'
 source=("https://github.com/Kitware/CMake/releases/download/v${pkgver}/${_realname}-${pkgver}.tar.gz"
         "0001-Disable-response-files-for-MSYS-Generator.patch"
@@ -122,9 +122,9 @@ package() {
      -DCMAKE_INSTALL_LOCAL_ONLY:BOOL=OFF -P cmake_install.cmake
   install -d "${pkgdir}${MINGW_PREFIX}"/share/emacs/site-lisp/
 
-  if [[ ${MINGW_PACKAGE_PREFIX} != *-clang-* ]] && \
-     [[ ${MINGW_PACKAGE_PREFIX} != *-ucrt-* ]]; then
-    ${MINGW_PREFIX}/bin/emacs -batch -f batch-byte-compile \
-      "${pkgdir}${MINGW_PREFIX}"/share/emacs/site-lisp/cmake-mode.el
-  fi
+  # if [[ ${MINGW_PACKAGE_PREFIX} != *-clang-* ]] && \
+  #    [[ ${MINGW_PACKAGE_PREFIX} != *-ucrt-* ]]; then
+  #   ${MINGW_PREFIX}/bin/emacs -batch -f batch-byte-compile \
+  #     "${pkgdir}${MINGW_PREFIX}"/share/emacs/site-lisp/cmake-mode.el
+  # fi
 }
