@@ -182,6 +182,9 @@ prepare() {
       _HARD_FLAGS="-Wl,--dynamicbase,--high-entropy-va,--nxcompat,--default-image-base-high"
     ;;
   esac
+  if [[ $MSYSTEM == *-x86_64-v3 ]]; then
+    _ARCH_TUNE="-march=x86-64-v3"
+  fi
 
   BIGOBJ_FLAGS="-Wa,-mbig-obj"
 
@@ -223,6 +226,11 @@ build() {
   export PATH="${srcdir}/${MSYSTEM}/qtbase/bin:${srcdir}/${MSYSTEM}/qtbase/lib:${PATH}"
   export VULKAN_SDK=${MINGW_PREFIX}
 
+  # Fails to build F16C code!
+  if [[ $MSYSTEM == *-x86_64-v3 ]]; then
+    local -a _no_f16c="-no-f16c"
+  fi
+
   ./configure.bat \
     -prefix ${MINGW_PREFIX} \
     -datadir ${MINGW_PREFIX}/share/qt5 \
@@ -250,7 +258,7 @@ build() {
     -system-zlib \
     -no-iconv \
     -release -force-debug-info -separate-debug-info \
-    "${_sql_config[@]}"
+    "${_sql_config[@]}" ${_no_f16c}
 
   make
 }
