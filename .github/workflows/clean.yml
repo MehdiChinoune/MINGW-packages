@@ -1,0 +1,47 @@
+name: clean
+
+concurrency:
+  group: ${{ github.ref }}-clean
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 8 * * 0'
+
+jobs:
+  clean:
+    name: Clean Sourceforge
+    runs-on: ubuntu-20.04
+    container: archlinux:base-devel
+    strategy:
+      fail-fast: false
+      matrix:
+        repo: [ucrt, clang]
+    steps:
+      - name: Install required tools
+        run: |
+          sudo pacman -Syuu --noconfirm
+          sudo pacman -Syuu --noconfirm
+          sudo pacman -S --noconfirm --needed openssh rsync pacman-contrib
+
+      - name: Restore ssh private key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
+
+      - name: Download Packages from SF
+        run: |
+          mkdir ${{ matrix.repo }} && cd ${{ matrix.repo }}
+          rsync -av mchinoune@frs.sourceforge.net:/home/frs/project/mingw-updates/${{ matrix.repo }}/ .
+      - name: Add Packages to DB
+        run: |
+          cd ${{ matrix.repo }}
+          sed -i '1s|^|[${{ matrix.repo }}]\nServer = file://'"$PWD"'/\nSigLevel = Never\n|' /etc/pacman.conf
+          pacman -Sy
+      - name: Reupload Packages to SF
+        run: |
+          cd ${{ matrix.repo }}
+          paccache -rk1 --cachedir .
+          rsync -rlptH --safe-links --delete-delay --delay-updates ./ mchinoune@frs.sourceforge.net:/home/frs/project/mingw-updates/${{ matrix.repo }}
