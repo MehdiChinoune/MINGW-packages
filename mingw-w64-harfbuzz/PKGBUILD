@@ -56,15 +56,6 @@ prepare() {
 }
 
 build() {
-  local -a _static_flags=(
-    -DGIO_STATIC_COMPILATION
-    -DGLIB_STATIC_COMPILATION
-    -DGMODULE_STATIC_COMPILATION
-    -DGOBJECT_STATIC_COMPILATION
-    -DGRAPHITE2_STATIC
-    -DCAIRO_WIN32_STATIC_BUILD
-  )
-
   declare -a _extra_config
   if [[ ${CARCH} != i686 ]]; then
     _extra_config+=(
@@ -83,29 +74,6 @@ build() {
       "-Dutilities=disabled"
     )
   fi
-
-  CFLAGS+=" ${_static_flags[@]}" \
-  CXXFLAGS+=" ${_static_flags[@]}" \
-  MSYS2_ARG_CONV_EXCL="--prefix=" \
-  ${MINGW_PREFIX}/bin/meson setup \
-    --prefix="${MINGW_PREFIX}" \
-    --buildtype plain \
-    --wrap-mode=nofallback \
-    --default-library=static \
-    -Dauto_features=enabled \
-    -Dintrospection=disabled \
-    -Dgobject=enabled \
-    -Dicu=enabled \
-    -Dgdi=enabled \
-    -Dgraphite=enabled \
-    -Ddirectwrite=enabled \
-    -Dtests=disabled \
-    -Ddocs=disabled \
-    "${_extra_config[@]}" \
-    "build-${MSYSTEM}-static" \
-    "${_realname}-${pkgver}"
-
-  ${MINGW_PREFIX}/bin/meson compile -C "build-${MSYSTEM}-static"
 
   MSYS2_ARG_CONV_EXCL="--prefix=" \
   ${MINGW_PREFIX}/bin/meson setup \
@@ -136,8 +104,6 @@ check(){
 
 package_harfbuzz() {
   pkgdesc+=" (mingw-w64)"
-
-  ${MINGW_PREFIX}/bin/meson install -C "build-${MSYSTEM}-static" --destdir "${pkgdir}"
 
   ${MINGW_PREFIX}/bin/meson install -C "build-${MSYSTEM}-shared" --destdir "${pkgdir}"
 
