@@ -36,39 +36,6 @@ source=("https://github.com/harfbuzz/harfbuzz/releases/download/${pkgver}/harfbu
 sha256sums=('77e4f7f98f3d86bf8788b53e6832fb96279956e1c3961988ea3d4b7ca41ddc27')
 
 build() {
-  local -a _static_flags=(
-    -DGIO_STATIC_COMPILATION
-    -DGLIB_STATIC_COMPILATION
-    -DGMODULE_STATIC_COMPILATION
-    -DGOBJECT_STATIC_COMPILATION
-    -DGRAPHITE2_STATIC
-    -DCAIRO_WIN32_STATIC_BUILD
-  )
-
-  CFLAGS+=" ${_static_flags[@]}" \
-  CXXFLAGS+=" ${_static_flags[@]}" \
-  MSYS2_ARG_CONV_EXCL="--prefix=" \
-  ${MINGW_PREFIX}/bin/meson setup \
-    --prefix="${MINGW_PREFIX}" \
-    --buildtype plain \
-    --wrap-mode=nofallback \
-    --default-library=static \
-    -Dauto_features=enabled \
-    -Dintrospection=disabled \
-    -Dgobject=enabled \
-    -Dicu=enabled \
-    -Dcpp_std=c++17 \
-    -Dgdi=enabled \
-    -Dgraphite=enabled \
-    -Dchafa=disabled \
-    -Ddirectwrite=enabled \
-    -Dtests=disabled \
-    -Ddocs=disabled \
-    "build-${MSYSTEM}-static" \
-    "${_realname}-${pkgver}"
-
-  ${MINGW_PREFIX}/bin/meson compile -C "build-${MSYSTEM}-static"
-
   MSYS2_ARG_CONV_EXCL="--prefix=" \
   ${MINGW_PREFIX}/bin/meson setup \
     --prefix="${MINGW_PREFIX}" \
@@ -99,8 +66,6 @@ check(){
 }
 
 package_harfbuzz() {
-  ${MINGW_PREFIX}/bin/meson install -C "build-${MSYSTEM}-static" --destdir "${pkgdir}"
-
   ${MINGW_PREFIX}/bin/meson install -C "build-${MSYSTEM}-shared" --destdir "${pkgdir}"
 
   mkdir -p dest${MINGW_PREFIX}/share
