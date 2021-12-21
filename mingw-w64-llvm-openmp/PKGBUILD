@@ -36,14 +36,12 @@ _url=https://github.com/llvm/llvm-project/releases/download/${_tag}
 _pkgfn=$_realname-$pkgver.src
 source=($_url/$_pkgfn.tar.xz{,.sig}
         ${_url}/cmake-${pkgver}.src.tar.xz{,.sig}
-        "001-cast-to-make-gcc-happy.patch"
-        "002-hacks-for-static-linking.patch")
+        "001-cast-to-make-gcc-happy.patch")
 sha256sums=('bd7e6901ab086fd268750363017935fd4a717c153dad3c2aab86cb0140d9e3fe'
             'SKIP'
             '11c5a28f90053b0c43d0dec3d0ad579347fc277199c005206b963c19aae514e3'
             'SKIP'
-            '11352ffbe7559a7170f2abd52b3552c877fbcf8fc82cff77b421e8b130a4dd66'
-            '08e39ea52a99204528740196a13cc29daf1b65a6e230fbd7bdd745dde5d11ef3')
+            '11352ffbe7559a7170f2abd52b3552c877fbcf8fc82cff77b421e8b130a4dd66')
 validpgpkeys=('B6C8F98282B944E3B0D5C2530FC3042E345AD05D'  # Hans Wennborg, Google.
               '474E22316ABF4785A88C6E8EA2C794A986419D8A'  # Tom Stellard
               'D574BD5D1D0E98895E3BF90044F2485E45D59042') # Tobias Hieta
@@ -65,11 +63,10 @@ prepare() {
     apply_patch_with_msg \
       "001-cast-to-make-gcc-happy.patch"
   fi
-  apply_patch_with_msg 002-hacks-for-static-linking.patch
 }
 
 build() {
-  mkdir -p build-${MSYSTEM}-{shared,static}
+  mkdir -p build-${MSYSTEM} && cd build-${MSYSTEM}
 
   declare -a _extra_config
   if check_option "debug" "n"; then
@@ -92,28 +89,24 @@ build() {
     LDFLAGS=${LDFLAGS/-pipe}
   fi
 
-  for shared_libs in shared static; do
-    MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
     ${MINGW_PREFIX}/bin/cmake \
       -GNinja \
       -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
       -DCMAKE_SYSTEM_IGNORE_PATH=/usr/lib \
       -DLIBOMP_FORTRAN_MODULES="$( [[ ${MSYSTEM} == MINGW64 ]] && echo OFF || echo ON )" \
-      -DLIBOMP_ENABLE_SHARED="$( [[ $shared_libs == static ]] && echo OFF || echo ON )" \
+      -DLIBOMP_ENABLE_SHARED=ON \
       -DLIBOMP_INSTALL_ALIASES=OFF \
       "${_extra_config[@]}" \
       -DPython3_EXECUTABLE=${MINGW_PREFIX}/bin/python.exe \
       -Wno-dev \
-      -S $_pkgfn \
-      -B "build-${MSYSTEM}-${shared_libs}"
-    ${MINGW_PREFIX}/bin/cmake --build "build-${MSYSTEM}-${shared_libs}"
-  done
-  unset shared_libs
+      ../$_pkgfn
+
+  ${MINGW_PREFIX}/bin/cmake --build .
 }
 
 package() {
-  DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake --install "${srcdir}/build-${MSYSTEM}-static"
-  DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake --install "${srcdir}/build-${MSYSTEM}-shared"
+  DESTDIR=${pkgdir} ${MINGW_PREFIX}/bin/cmake --install "${srcdir}/build-${MSYSTEM}"
 
   install -Dm644 $_pkgfn/LICENSE.TXT "${pkgdir}"${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE
 }
