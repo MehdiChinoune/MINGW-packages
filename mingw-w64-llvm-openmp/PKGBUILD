@@ -68,12 +68,11 @@ prepare() {
       "001-cast-to-make-gcc-happy.patch"
   fi
   apply_patch_with_msg \
-    002-hacks-for-static-linking.patch \
     003-export-symbols-with-name-mangling-for-flang.patch
 }
 
 build() {
-  mkdir -p build-${MSYSTEM}-{shared,static}
+  mkdir -p build-${MSYSTEM} && cd build-${MSYSTEM}
 
   declare -a _extra_config
   if check_option "debug" "n"; then
@@ -96,28 +95,24 @@ build() {
     LDFLAGS=${LDFLAGS/-pipe}
   fi
 
-  for shared_libs in shared static; do
-    MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
     ${MINGW_PREFIX}/bin/cmake \
       -GNinja \
       -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
       -DCMAKE_SYSTEM_IGNORE_PATH=/usr/lib \
       -DLIBOMP_FORTRAN_MODULES="$( [[ ${MSYSTEM} == MINGW64 ]] && echo OFF || echo ON )" \
-      -DLIBOMP_ENABLE_SHARED="$( [[ $shared_libs == static ]] && echo OFF || echo ON )" \
+      -DLIBOMP_ENABLE_SHARED=ON \
       -DLIBOMP_INSTALL_ALIASES=OFF \
       "${_extra_config[@]}" \
       -DPython3_EXECUTABLE=${MINGW_PREFIX}/bin/python.exe \
       -Wno-dev \
-      -S $_pkgfn \
-      -B "build-${MSYSTEM}-${shared_libs}"
-    ${MINGW_PREFIX}/bin/cmake --build "build-${MSYSTEM}-${shared_libs}"
-  done
-  unset shared_libs
+      ../$_pkgfn
+
+  ${MINGW_PREFIX}/bin/cmake --build .
 }
 
 package() {
-  DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake --install "${srcdir}/build-${MSYSTEM}-static"
-  DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake --install "${srcdir}/build-${MSYSTEM}-shared"
+  DESTDIR=${pkgdir} ${MINGW_PREFIX}/bin/cmake --install "${srcdir}/build-${MSYSTEM}"
 
   install -Dm644 $_pkgfn/LICENSE.TXT "${pkgdir}"${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE
 }

@@ -30,7 +30,7 @@ build() {
   ../${_realname}-${pkgver}/configure \
     --prefix=${MINGW_PREFIX} \
     --build=${MINGW_CHOST} \
-    --enable-static \
+    --disable-static \
     --enable-shared \
     --with-gmp-prefix=${MINGW_PREFIX}
 
