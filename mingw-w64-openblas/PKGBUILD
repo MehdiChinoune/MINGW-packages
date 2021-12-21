@@ -81,7 +81,7 @@ _build_openblas() {
     -G"Ninja" \
     -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
     -DBUILD_SHARED_LIBS=ON \
-    -DBUILD_STATIC_LIBS=ON \
+    -DBUILD_STATIC_LIBS=OFF \
     -DUSE_THREAD=ON \
     -DNUM_THREADS=64 \
     -DUSE_OPENMP=ON \
