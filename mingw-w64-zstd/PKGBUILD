@@ -43,6 +43,8 @@ build() {
       -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
       "${extra_config[@]}" \
       -DZSTD_BUILD_CONTRIB=ON \
+      -DZSTD_PROGRAMS_LINK_SHARED=ON \
+      -DZSTD_BUILD_STATIC=OFF \
       ../${_realname}-${pkgver}/build/cmake
 
   ${MINGW_PREFIX}/bin/cmake --build .

@@ -25,42 +25,14 @@ depends=("${MINGW_PACKAGE_PREFIX}-freetype"
          "${MINGW_PACKAGE_PREFIX}-graphite2")
 checkdepends=("${MINGW_PACKAGE_PREFIX}-python-fonttools" 
               "${MINGW_PACKAGE_PREFIX}-python-setuptools")
-options=('strip' 'staticlibs')
+options=('strip')
 optdepends=("${MINGW_PACKAGE_PREFIX}-icu: harfbuzz-icu support"
             "${MINGW_PACKAGE_PREFIX}-cairo: hb-view program")
 source=("https://github.com/harfbuzz/harfbuzz/releases/download/${pkgver}/harfbuzz-${pkgver}.tar.xz")
 sha256sums=('1d1010a1751d076d5291e433c138502a794d679a7498d1268ee21e2d4a140eb4')
 
 build() {
-  # Build static and shared libs separately due to necessity of defining DGRAPHITE2_STATIC
-  # manually when building static version
-  export _static_dir="${srcdir}/build-${MSYSTEM}-static"
   export _shared_dir="${srcdir}/build-${MSYSTEM}-shared"
-
- [[ -d "${_static_dir}" ]] && rm -rf "${_static_dir}"
-  mkdir -p "${_static_dir}" && cd "${_static_dir}"
-
-  # static build
-  CFLAGS="${CFLAGS} -DGRAPHITE2_STATIC" \
-  CXXFLAGS="${CXXFLAGS} -DGRAPHITE2_STATIC" \
-  MSYS2_ARG_CONV_EXCL="--prefix=" \
-  ${MINGW_PREFIX}/bin/meson \
-    --prefix="${MINGW_PREFIX}" \
-    --buildtype plain \
-    --wrap-mode=nofallback \
-    --default-library=static \
-    -Dauto_features=enabled \
-    -Dintrospection=disabled \
-    -Dgobject=enabled \
-    -Dicu=enabled \
-    -Dgdi=enabled \
-    -Dgraphite=enabled \
-    -Dchafa=disabled \
-    -Ddirectwrite=enabled \
-    ../${_realname}-${pkgver}
-
-  ${MINGW_PREFIX}/bin/meson compile
-
   # shared build
   [[ -d "${_shared_dir}" ]] && rm -rf "${_shared_dir}"
   mkdir -p "${_shared_dir}" && cd "${_shared_dir}"
@@ -90,9 +62,6 @@ check(){
 }
 
 package() {
-  cd "${srcdir}/build-${MSYSTEM}-static"
-  DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/meson install
-
   cd "${srcdir}/build-${MSYSTEM}-shared"
   DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/meson install
 

@@ -26,6 +26,9 @@ prepare() {
 }
 
 build() {
+  [[ -d "${srcdir}"/build-${MSYSTEM} ]] && rm -rf "${srcdir}"/build-${MSYSTEM}
+  mkdir -p "${srcdir}"/build-${MSYSTEM} && cd "${srcdir}"/build-${MSYSTEM}
+
   local -a extra_config
   case "$CARCH" in
     i?86|x86_64)
@@ -38,19 +41,6 @@ build() {
 
   CFLAGS+=" -Wno-attributes -Wno-ignored-attributes"
 
-  # Build static version
-  mkdir -p "${srcdir}/static-${MSYSTEM}" && cd "${srcdir}/static-${MSYSTEM}"
-  ../${_realname}-${pkgver}/configure \
-    --build=${MINGW_CHOST} \
-    --prefix=${MINGW_PREFIX} \
-    --enable-cxx \
-    "${extra_config[@]}" \
-    --enable-static \
-    --disable-shared
-  make
-
-  # Build shared version
-  mkdir -p "${srcdir}/shared-${MSYSTEM}" && cd "${srcdir}/shared-${MSYSTEM}"
   ../${_realname}-${pkgver}/configure \
     --build=${MINGW_CHOST} \
     --prefix=${MINGW_PREFIX} \
@@ -58,17 +48,16 @@ build() {
     "${extra_config[@]}" \
     --disable-static \
     --enable-shared
+
   make
 }
 
 check() {
-  cd "${srcdir}/static-${MSYSTEM}"
+  cd "${srcdir}/build-${MSYSTEM}"
   make check
 }
 
 package() {
-  cd "${srcdir}/static-${MSYSTEM}"
-  make DESTDIR="${pkgdir}" install
-  cd "${srcdir}/shared-${MSYSTEM}"
+  cd "${srcdir}/build-${MSYSTEM}"
   make DESTDIR="${pkgdir}" install
 }

@@ -33,19 +33,6 @@ build() {
     extra_config+=("-DCMAKE_BUILD_TYPE=Debug")
   fi
 
-  mkdir -p "${srcdir}/build-${MSYSTEM}-static" && cd "${srcdir}/build-${MSYSTEM}-static"
-
-  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX" \
-    ${MINGW_PREFIX}/bin/cmake.exe \
-      -GNinja \
-      -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
-      ${extra_config} \
-      -DBUILD_SHARED_LIBS=OFF \
-      -DPython_EXECUTABLE=${MINGW_PREFIX}/bin/python.exe \
-      ../googletest-${pkgver}
-
-  ${MINGW_PREFIX}/bin/cmake.exe --build ./
-
   mkdir -p "${srcdir}/build-${MSYSTEM}-shared" && cd "${srcdir}/build-${MSYSTEM}-shared"
 
   MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX" \
@@ -61,9 +48,6 @@ build() {
 }
 
 package() {
-  cd "${srcdir}/build-${MSYSTEM}-static"
-  DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake.exe --install ./
-
   cd "${srcdir}/build-${MSYSTEM}-shared"
   DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake.exe --install ./
 
