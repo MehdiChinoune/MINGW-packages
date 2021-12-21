@@ -26,7 +26,7 @@ prepare() {
 
 build() {
   # shared
-  mkdir -p "${srcdir}"/build-${MSYSTEM}-shared && cd "${srcdir}"/build-${MSYSTEM}-shared
+  mkdir -p "${srcdir}"/build-${MSYSTEM} && cd "${srcdir}"/build-${MSYSTEM}
 
   MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
     ${MINGW_PREFIX}/bin/cmake \
@@ -38,29 +38,10 @@ build() {
       ../${_realname}-${pkgver}
 
   cmake --build .
-
-  # static
-  mkdir -p "${srcdir}"/build-${MSYSTEM}-static && cd "${srcdir}"/build-${MSYSTEM}-static
-
-  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
-    ${MINGW_PREFIX}/bin/cmake \
-      -G'Ninja' \
-      -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_INSTALL_LIBDIR=lib \
-      -DBUILD_SHARED_LIBS=OFF \
-      ../${_realname}-${pkgver}
-
-  cmake --build .
 }
 
 package() {
-  # static
-  cd "${srcdir}"/build-${MSYSTEM}-static
-  DESTDIR="${pkgdir}" cmake --install .
-
-  # shared
-  cd "${srcdir}"/build-${MSYSTEM}-shared
+  cd "${srcdir}"/build-${MSYSTEM}
   DESTDIR="${pkgdir}" cmake --install .
 
   # License
