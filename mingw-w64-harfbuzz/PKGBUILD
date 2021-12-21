@@ -65,15 +65,6 @@ prepare() {
 }
 
 build() {
-  local -a _static_flags=(
-    -DGIO_STATIC_COMPILATION
-    -DGLIB_STATIC_COMPILATION
-    -DGMODULE_STATIC_COMPILATION
-    -DGOBJECT_STATIC_COMPILATION
-    -DGRAPHITE2_STATIC
-    -DCAIRO_WIN32_STATIC_BUILD
-  )
-
   declare -a _meson_opts=(
     --prefix="${MINGW_PREFIX}"
     --buildtype=plain
@@ -104,31 +95,19 @@ build() {
     )
   fi
 
-  CFLAGS+=" ${_static_flags[@]}" \
-  CXXFLAGS+=" ${_static_flags[@]}" \
-  MSYS2_ARG_CONV_EXCL="--prefix=" \
-  meson setup \
-    --default-library=static \
-    -Dintrospection=disabled \
-    "${_meson_opts[@]}" \
-    "build-${MSYSTEM}-static" \
-    "${_realname}-${pkgver}"
-
-  meson compile -C "build-${MSYSTEM}-static"
-
   MSYS2_ARG_CONV_EXCL="--prefix=" \
   meson setup \
     --default-library=shared \
     -Dintrospection=enabled \
     "${_meson_opts[@]}" \
-    "build-${MSYSTEM}-shared" \
+    "build-${MSYSTEM}" \
     "${_realname}-${pkgver}"
 
-  meson compile -C "build-${MSYSTEM}-shared"
+  meson compile -C "build-${MSYSTEM}"
 }
 
 check(){
-  cd "${srcdir}/build-${MSYSTEM}-shared"
+  cd "${srcdir}/build-${MSYSTEM}"
   meson setup -Dtests=enabled ../${_realname}-${pkgver}
   meson compile
   meson test
@@ -137,9 +116,7 @@ check(){
 package_harfbuzz() {
   pkgdesc+=" (mingw-w64)"
 
-  meson install -C "build-${MSYSTEM}-static" --destdir "${pkgdir}"
-
-  meson install -C "build-${MSYSTEM}-shared" --destdir "${pkgdir}"
+  meson install -C "build-${MSYSTEM}" --destdir "${pkgdir}"
 
   if [[ ${CARCH} != i686 ]]; then
 
