@@ -115,10 +115,6 @@ _build() {
 build() {
   export MSYS2_ARG_CONV_EXCL="-DLOCALEDIR=;-DLIBDIR=;-DLOCALE_ALIAS_PATH="
 
-  msg2 "Build static libraries"
-  mkdir -p "${srcdir}"/build-${MSYSTEM}-static && cd "${srcdir}"/build-${MSYSTEM}-static
-  _build "--enable-static --disable-shared"
-
   msg2 "Build shared libraries"
   mkdir -p "${srcdir}"/build-${MSYSTEM}-shared && cd "${srcdir}"/build-${MSYSTEM}-shared
   _build "--enable-shared --disable-static"
@@ -155,9 +151,6 @@ package_gettext-runtime() {
   )
   conflicts=("${MINGW_PACKAGE_PREFIX}-gettext<=0.22.4-3")
 
-  cd "${srcdir}"/build-${MSYSTEM}-static/gettext-runtime
-  make DESTDIR="${pkgdir}" install
-
   cd "${srcdir}"/build-${MSYSTEM}-shared/gettext-runtime
   make DESTDIR="${pkgdir}" install
 
@@ -176,9 +169,6 @@ package_gettext-libtextstyle() {
   pkgdesc="GNU LIBTEXTSTYLE - Text styling library (mingw-w64)"
   depends=("${MINGW_PACKAGE_PREFIX}-libiconv")
   license=("spdx:GPL-3.0-or-later")
-
-  cd "${srcdir}"/build-${MSYSTEM}-static/libtextstyle
-  make DESTDIR="${pkgdir}" install
 
   cd "${srcdir}"/build-${MSYSTEM}-shared/libtextstyle
   make DESTDIR="${pkgdir}" install
@@ -200,9 +190,6 @@ package_gettext-tools() {
   conflicts=("${MINGW_PACKAGE_PREFIX}-gettext<=0.22.4-3")
   replaces=("${MINGW_PACKAGE_PREFIX}-gettext")
   license=("spdx:GPL-3.0-or-later")
-
-  cd "${srcdir}"/build-${MSYSTEM}-static/gettext-tools
-  make DESTDIR="${pkgdir}" install
 
   cd "${srcdir}"/build-${MSYSTEM}-shared/gettext-tools
   make DESTDIR="${pkgdir}" install
