@@ -47,29 +47,15 @@ build() {
       -DCMAKE_INSTALL_PREFIX="${MINGW_PREFIX}" \
       "${_extra_config[@]}" \
       -DGOOGLETEST_VERSION="${pkgver}" \
-      -DBUILD_SHARED_LIBS=OFF \
-      -S "googletest-${pkgver}" \
-      -B "build-${MSYSTEM}-static"
-
-  cmake --build "build-${MSYSTEM}-static"
-
-  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX" \
-    cmake \
-      -GNinja \
-      -DCMAKE_INSTALL_PREFIX="${MINGW_PREFIX}" \
-      "${_extra_config[@]}" \
-      -DGOOGLETEST_VERSION="${pkgver}" \
       -DBUILD_SHARED_LIBS=ON \
       -S "googletest-${pkgver}" \
-      -B "build-${MSYSTEM}-shared"
+      -B "build-${MSYSTEM}"
 
-  cmake --build "build-${MSYSTEM}-shared"
+  cmake --build "build-${MSYSTEM}"
 }
 
 package() {
-  DESTDIR="${pkgdir}" cmake --install "build-${MSYSTEM}-static"
-
-  DESTDIR="${pkgdir}" cmake --install "build-${MSYSTEM}-shared"
+  DESTDIR="${pkgdir}" cmake --install "build-${MSYSTEM}"
 
   cd "googletest-${pkgver}"
 
