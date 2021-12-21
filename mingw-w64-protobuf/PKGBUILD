@@ -60,23 +60,6 @@ build() {
     _extra_config+=("-DCMAKE_BUILD_TYPE=Debug")
   fi
 
-  echo "Building static library"
-  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
-  ${MINGW_PREFIX}/bin/cmake.exe \
-      -Wno-dev \
-      -G"Ninja" \
-      -DCMAKE_INSTALL_PREFIX="${MINGW_PREFIX}" \
-      "${_extra_config[@]}" \
-      -DCMAKE_CXX_STANDARD=17 \
-      -Dprotobuf_BUILD_SHARED_LIBS="OFF" \
-      -Dprotobuf_BUILD_TESTS="OFF" \
-      -Dprotobuf_WITH_ZLIB="ON" \
-      -S ${_realname}-${pkgver} \
-      -B build-${MSYSTEM}-static
-
-  ${MINGW_PREFIX}/bin/cmake.exe --build build-${MSYSTEM}-static
-
-  echo "Building shared library"
   CXXFLAGS+=" -Wno-ignored-attributes" \
   MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
   ${MINGW_PREFIX}/bin/cmake.exe \
@@ -89,15 +72,13 @@ build() {
       -Dprotobuf_BUILD_TESTS="OFF" \
       -Dprotobuf_WITH_ZLIB="ON" \
       -S ${_realname}-${pkgver} \
-      -B build-${MSYSTEM}-shared
+      -B build-${MSYSTEM}
 
-  ${MINGW_PREFIX}/bin/cmake.exe --build build-${MSYSTEM}-shared
+  ${MINGW_PREFIX}/bin/cmake.exe --build build-${MSYSTEM}
 }
 
 package() {
-  DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake.exe --install build-${MSYSTEM}-static
-
-  DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake.exe --install build-${MSYSTEM}-shared
+  DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake.exe --install build-${MSYSTEM}
 
   install -Dm644 "${srcdir}"/${_realname}-${pkgver}/LICENSE \
     "${pkgdir}"/${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE
