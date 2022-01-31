@@ -1,0 +1,68 @@
+# Maintainer: Mehdi Chinoune <mehdi.chinoune@hotmail.com>
+
+_realname=makhber
+pkgbase=mingw-w64-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=0.9.6
+pkgrel=1
+pkgdesc="Visualization and Analysis of Scientific Data (mingw-w64)"
+arch=('any')
+url='https://github.com/Makhber/makhber/'
+license=("spdx:GPL-2.0-or-later")
+depends=("${MINGW_PACKAGE_PREFIX}-qt5-base"
+         "${MINGW_PACKAGE_PREFIX}-qt5-svg"
+         "${MINGW_PACKAGE_PREFIX}-python-pyqt5"
+         "${MINGW_PACKAGE_PREFIX}-gsl"
+         "${MINGW_PACKAGE_PREFIX}-muparser"
+         "${MINGW_PACKAGE_PREFIX}-gl2ps"
+         "${MINGW_PACKAGE_PREFIX}-zlib")
+makedepends=("${MINGW_PACKAGE_PREFIX}-cmake"
+             "${MINGW_PACKAGE_PREFIX}-ninja"
+             "${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-pkgconf"
+             "${MINGW_PACKAGE_PREFIX}-qt5-tools"
+             "${MINGW_PACKAGE_PREFIX}-pyqt-builder")
+checkdepends=("${MINGW_PACKAGE_PREFIX}-gtest")
+source=("${url}/releases/download/${pkgver}/Makhber-${pkgver}-src.tar.xz")
+sha256sums=('cf40233bf1720d5ba52a557e172fb3efebd8eb04c9e1bc99701dde798140e375')
+
+build() {
+  [[ -d "${srcdir}/build-${MSYSTEM}" ]] && rm -rf "${srcdir}/build-${MSYSTEM}"
+  mkdir -p "${srcdir}/build-${MSYSTEM}" && cd "${srcdir}/build-${MSYSTEM}"
+
+  declare -a extra_config
+  if check_option "debug" "n"; then
+    extra_config+=("-DCMAKE_BUILD_TYPE=Release")
+  else
+    extra_config+=("-DCMAKE_BUILD_TYPE=Debug")
+  fi
+
+  CXXFLAGS+=" -Wno-ignored-attributes"
+
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+    "${MINGW_PREFIX}"/bin/cmake.exe \
+      -GNinja \
+      -DCMAKE_INSTALL_PREFIX="${MINGW_PREFIX}" \
+      "${extra_config[@]}" \
+      -DBUILD_SHARED_LIBS=ON \
+      -DMAKHBER_SCRIPTING_PYTHON=ON \
+      ../${_realname}-${pkgver}-src
+
+  "${MINGW_PREFIX}"/bin/cmake.exe --build .
+}
+
+check() {
+  cd "${srcdir}/build-${MSYSTEM}"
+
+  "${MINGW_PREFIX}"/bin/cmake.exe ../${_realname}-${pkgver}-src -DMAKHBER_BUILD_TESTS=ON
+  "${MINGW_PREFIX}"/bin/cmake.exe --build .
+  "${MINGW_PREFIX}"/bin/cmake.exe --build . --target test
+}
+
+package() {
+  cd "${srcdir}/build-${MSYSTEM}"
+
+  DESTDIR="${pkgdir}" "${MINGW_PREFIX}"/bin/cmake.exe --install .
+
+  install -Dm644 "${srcdir}/${_realname}-${pkgver}-src/LICENSE" "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE"
+}
