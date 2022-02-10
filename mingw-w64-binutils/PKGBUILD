@@ -4,18 +4,21 @@
 
 _realname=binutils
 pkgbase=mingw-w64-${_realname}
-pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+# Name it binutils-gnu on CLANG* environments since llvm provides binutils.
+pkgname=($([[ ${MINGW_PACKAGE_PREFIX} != *-clang-* ]] && echo \
+           "${MINGW_PACKAGE_PREFIX}-${_realname}" || echo \
+           "${MINGW_PACKAGE_PREFIX}-${_realname}-gnu"))
 pkgver=2.45.1
-pkgrel=1
+pkgrel=2
 pkgdesc="A set of programs to assemble and manipulate binary and object files (mingw-w64)"
 arch=('any')
-mingw_arch=('mingw32' 'mingw64' 'ucrt64')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64')
 url="https://www.gnu.org/software/binutils/"
 msys2_references=(
   "cpe: cpe:/a:gnu:binutils"
 )
 license=('spdx:GPL-3.0-or-later AND GPL-2.0-or-later AND LGPL-3.0-or-later AND LGPL-2.0-or-later')
-groups=("${MINGW_PACKAGE_PREFIX}-toolchain")
+groups=($([[ ${MINGW_PACKAGE_PREFIX} != *-clang-* ]] && echo "${MINGW_PACKAGE_PREFIX}-toolchain"))
 depends=("${MINGW_PACKAGE_PREFIX}-gettext-runtime"
          "${MINGW_PACKAGE_PREFIX}-libwinpthread"
          "${MINGW_PACKAGE_PREFIX}-zlib"
@@ -112,6 +115,11 @@ build() {
     LDFLAGS+=" -Wl,--large-address-aware"
   fi
 
+  # To not conflict with llvm
+  if [[ ${MINGW_PACKAGE_PREFIX} == *-clang-* ]]; then
+    extra_config+=("--program-suffix=-gnu")
+  fi
+
   ../${_realname}-${pkgver}/configure \
     --prefix=${MINGW_PREFIX} \
     --build=${MINGW_CHOST} \
@@ -147,6 +155,10 @@ package() {
   make DESTDIR="${pkgdir}" install
 
   install -Dm644 "${srcdir}/${_realname}-${pkgver}/COPYING"* -t "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}"
+
+  if [[ ${MINGW_PACKAGE_PREFIX} == *-clang-* ]]; then
+    ln -s "${pkgdir}${MINGW_PREFIX}"/bin/windmc-gnu.exe "${pkgdir}${MINGW_PREFIX}"/bin/windmc.exe
+  fi
 
   # https://github.com/msys2/MINGW-packages/issues/7890
   rm -f "${pkgdir}${MINGW_PREFIX}/lib/bfd-plugins/libdep.a"
