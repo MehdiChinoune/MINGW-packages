@@ -114,9 +114,7 @@ build() {
 
   ../${_sourcedir}/configure \
     --prefix=${MINGW_PREFIX} \
-    --build=${MINGW_CHOST} \
-    --host=${MINGW_CHOST} \
-    --target=${MINGW_CHOST} \
+    --disable-nls \
     --disable-multilib \
     --disable-rpath \
     --disable-shared \
@@ -124,7 +122,6 @@ build() {
     --enable-deterministic-archives \
     --enable-install-libiberty \
     --enable-lto \
-    --enable-nls \
     --enable-plugins \
     --with-libiconv-prefix=${MINGW_PREFIX} \
     --with-sysroot=${MINGW_PREFIX} \
