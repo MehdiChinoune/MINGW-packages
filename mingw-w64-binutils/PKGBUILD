@@ -118,7 +118,7 @@ build() {
     --with-sysroot=${MINGW_PREFIX} \
     --with-libiconv-prefix=${MINGW_PREFIX} \
     ${extra_config[@]} \
-    --enable-nls \
+    --disable-nls \
     --disable-rpath \
     --disable-multilib \
     --enable-install-libiberty \
