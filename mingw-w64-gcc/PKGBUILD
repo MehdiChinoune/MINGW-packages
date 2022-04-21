@@ -5,10 +5,17 @@
 # Contributor: wirx6 <wirx654@gmail.com>
 # Contributor: Kirill Müller <krlmlr@mailbox.org>
 
-_enable_ada=yes
-_enable_objc=yes
-_enable_jit=yes
+if [[ $MINGW_PACKAGE_PREFIX != *-clang-* ]]; then
+  _enable_ada=yes
+  _enable_objc=yes
+  _enable_jit=yes
+else
+  _enable_ada=no
+  _enable_objc=no
+  _enable_jit=no
+fi
 _threads="posix"
+
 _realname=gcc
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
@@ -27,13 +34,15 @@ _sourcedir=${_realname}-${pkgver}
 pkgrel=10
 pkgdesc="GCC for the MinGW-w64"
 arch=('any')
-mingw_arch=('mingw32' 'mingw64' 'ucrt64')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64')
 url="https://gcc.gnu.org"
 license=('GPL' 'LGPL' 'FDL' 'custom')
 groups=("${MINGW_PACKAGE_PREFIX}-toolchain")
 makedepends=("${MINGW_PACKAGE_PREFIX}-${_realname}"
              $([[ "$_enable_ada" == "yes" ]] && echo "${MINGW_PACKAGE_PREFIX}-${_realname}-ada")
-             "${MINGW_PACKAGE_PREFIX}-binutils"
+             $([[ ${MINGW_PACKAGE_PREFIX} != *-clang-* ]] && echo \
+               "${MINGW_PACKAGE_PREFIX}-binutils" || echo \
+               "${MINGW_PACKAGE_PREFIX}-binutils-gnu")
              "${MINGW_PACKAGE_PREFIX}-crt"
              "${MINGW_PACKAGE_PREFIX}-headers"
              "${MINGW_PACKAGE_PREFIX}-gmp"
@@ -222,6 +231,11 @@ build() {
   # In addition adaint.c does `#include <accctrl.h>` which pulls in msxml.h, hacky hack:
   CPPFLAGS+=" -DCOM_NO_WINDOWS_H"
 
+  if [[ $MINGW_PACKAGE_PREFIX == *-clang-* ]]; then
+    CFLAGS+=" -Wno-array-bounds -Wno-mismatched-tags -Wno-unknown-warning-option"
+    CXXFLAGS+=" -Wno-array-bounds -Wno-mismatched-tags -Wno-unknown-warning-option"
+  fi
+
   ../${_sourcedir}/configure \
     --prefix=${MINGW_PREFIX} \
     --with-local-prefix=${MINGW_PREFIX}/local \
@@ -257,8 +271,7 @@ build() {
     --with-{gmp,mpfr,mpc,isl}=${MINGW_PREFIX} \
     --with-pkgversion="Rev${pkgrel}, Built by MSYS2 project" \
     --with-bugurl="https://github.com/msys2/MINGW-packages/issues" \
-    --with-gnu-as \
-    --with-gnu-ld \
+    --with-build-time-tools=${MINGW_PREFIX}/${MINGW_CHOST}/bin \
     "${extra_config[@]}"
 
   # While we're debugging -fopenmp problems at least.
