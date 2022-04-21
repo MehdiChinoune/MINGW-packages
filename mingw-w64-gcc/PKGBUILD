@@ -6,7 +6,7 @@
 # Contributor: Kirill Müller <krlmlr@mailbox.org>
 # Contributor: dragon-archer <dragon-archer@outlook.com>
 
-if [[ ${CARCH} != i686 ]]; then
+if [[ ${CARCH} != i686 && ${MINGW_PACKAGE_PREFIX} != *-clang-* ]]; then
   _enable_ada=yes
   _enable_fortran=yes
   _enable_jit=yes
@@ -68,7 +68,7 @@ _libdir=lib/gcc/${CHOST}/${pkgver}
 pkgrel=4
 pkgdesc="The GNU Compiler Collection (mingw-w64)"
 arch=('any')
-mingw_arch=('mingw32' 'mingw64' 'ucrt64')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64')
 url="https://gcc.gnu.org"
 msys2_repository_url='https://gcc.gnu.org/git/gitweb.cgi?p=gcc.git'
 msys2_references=(
@@ -80,7 +80,9 @@ makedepends=(
   $([[ "$_enable_ada" == "yes" ]] && echo "${MINGW_PACKAGE_PREFIX}-gcc-ada")
   $([[ "$_enable_rust" == "yes" ]] && echo "${MINGW_PACKAGE_PREFIX}-gcc-rust")
   "${MINGW_PACKAGE_PREFIX}-autotools"
-  "${MINGW_PACKAGE_PREFIX}-binutils"
+  $([[ ${MINGW_PACKAGE_PREFIX} != *-clang-* ]] && echo \
+    "${MINGW_PACKAGE_PREFIX}-binutils" || echo \
+    "${MINGW_PACKAGE_PREFIX}-binutils-gnu")
   "${MINGW_PACKAGE_PREFIX}-crt"
   "${MINGW_PACKAGE_PREFIX}-headers"
   "${MINGW_PACKAGE_PREFIX}-gmp"
@@ -271,9 +273,16 @@ build() {
   # In addition adaint.c does `#include <accctrl.h>` which pulls in msxml.h, hacky hack:
   CPPFLAGS+=" -DCOM_NO_WINDOWS_H"
 
+  if [[ $MINGW_PACKAGE_PREFIX == *-clang-* ]]; then
+    CFLAGS+=" -Wno-array-bounds -Wno-mismatched-tags -Wno-unknown-warning-option"
+    CXXFLAGS+=" -Wno-array-bounds -Wno-mismatched-tags -Wno-unknown-warning-option"
+    _extra_config+=("--disable-win32-utf8-manifest")
+  fi
+
   # local-prefix and native-system-header-dir will be prefixed with sysroot, so don't add ${MINGW_PREFIX} here.
   # --with-build-sysroot has to be an Windows path because it's used by gnatlink.exe, which launch xgcc.exe
   # with `System.OS_Lib.Spawn` which doesn't convert paths.
+
   ../${_sourcedir}/configure \
     --prefix=${MINGW_PREFIX} \
     --with-sysroot=${MINGW_PREFIX} \
@@ -311,8 +320,6 @@ build() {
     --with-{gmp,mpfr,mpc,isl}=${MINGW_PREFIX} \
     --with-pkgversion="Rev${pkgrel}, Built by MSYS2 project" \
     --with-bugurl="https://github.com/msys2/MINGW-packages/issues" \
-    --with-gnu-as \
-    --with-gnu-ld \
     --with-libstdcxx-zoneinfo="yes" \
     "${_extra_config[@]}"
 
