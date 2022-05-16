@@ -1,0 +1,52 @@
+name: remove packages
+
+concurrency:
+  group: ${{ github.ref }}-remove
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+    inputs:
+      packages:
+        description: 'packages to remove'
+        required: true
+
+jobs:
+  remove:
+    name: Remove packages from ${{ matrix.msystem }}
+    runs-on: ubuntu-20.04
+    container: archlinux:base-devel
+    strategy:
+      fail-fast: false
+      matrix:
+        include: [
+          { msystem: UCRT64, repo: ucrt },
+          { msystem: CLANG64, repo: clang }
+        ]
+    steps:
+      - name: Install required tools
+        run: |
+          sudo pacman -Syuu --noconfirm
+          sudo pacman -Syuu --noconfirm
+          sudo pacman -S --noconfirm --needed openssh rsync git
+
+      - name: Restore ssh private key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
+
+      - name: Download database files
+        run: |
+          rsync -zarv --include="*/" --include="${{ matrix.repo }}*" --exclude="*" mchinoune@frs.sourceforge.net:/home/frs/project/mingw-updates/${{ matrix.repo }}/ databases
+
+      - name: Remove packages from database
+        continue-on-error: true
+        run: |
+          for pkg in ${{ github.event.inputs.packages }}; do
+            repo-remove databases/${{ matrix.repo }}.db.tar.gz mingw-w64-${{ matrix.repo }}-x86_64-${pkg} || true
+          done
+
+      - name: Upload package to SF
+        run: |
+          rsync -t --copy-links databases/* mchinoune@frs.sourceforge.net:/home/frs/project/mingw-updates/${{ matrix.repo }}
