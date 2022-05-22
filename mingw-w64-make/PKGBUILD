@@ -134,6 +134,9 @@ package() {
   mkdir -pv "${pkgdir}${MINGW_PREFIX}"/{bin,lib,include}
   cd "${srcdir}/${_realname}-${pkgver}"
   cp -fv "${_exe_dir}/${_prog_name}.exe"                    "${pkgdir}${MINGW_PREFIX}/bin/"
+  if [[ ${_prog_name} != "make" ]]; then
+     cp -fv "${_exe_dir}/${_prog_name}.exe"                  "${pkgdir}${MINGW_PREFIX}/bin/make.exe"
+  fi
   cp -fv "${_exe_dir}/libgnumake-1.dll.a"                   "${pkgdir}${MINGW_PREFIX}/lib/"
   cp -fv "${srcdir}/${_realname}-${pkgver}/src/gnumake.h"   "${pkgdir}${MINGW_PREFIX}/include/"
 }
