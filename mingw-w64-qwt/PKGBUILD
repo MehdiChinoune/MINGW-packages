@@ -6,7 +6,8 @@ _realname=qwt
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}-qt5"
          "${MINGW_PACKAGE_PREFIX}-${_realname}-qt6")
-pkgver=6.3.0
+_qwt_ver=6.3.0
+pkgver=6.3.0+r0
 pkgrel=1
 pkgdesc="Qt Widgets for Technical Applications (mingw-w64)"
 arch=('any')
@@ -14,65 +15,47 @@ mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
 license=("custom:Qwt")
 url="https://qwt.sourceforge.io/"
 makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-cmake"
+             "${MINGW_PACKAGE_PREFIX}-ninja"
              "${MINGW_PACKAGE_PREFIX}-qt5-base"
              "${MINGW_PACKAGE_PREFIX}-qt5-svg"
              "${MINGW_PACKAGE_PREFIX}-qt5-tools"
              "${MINGW_PACKAGE_PREFIX}-qt6-base"
              "${MINGW_PACKAGE_PREFIX}-qt6-svg"
-             "${MINGW_PACKAGE_PREFIX}-qt6-tools")
-source=("https://downloads.sourceforge.net/${_realname}/${_realname}-${pkgver}.tar.bz2"
-        001-release-build.patch
-        002-link-to-release.patch
-        003-qwtconfig-msys2.patch
-        004-pkgconfig-file.patch
-        005-rename-qwt-to-remove-qt5-qt6-conflict.patch)
-sha256sums=('dcb085896c28aaec5518cbc08c0ee2b4e60ada7ac929d82639f6189851a6129a'
-            '582b8e203243676e92fbebf4e8d078f5adcbe077834976beff00cea53179c74d'
-            '6e0101d2c2897c94da6284ba0b929a7a39d82120313e6cd6353fd5e3aaf4b059'
-            '2344777e77a7a18eeaa1c2b3e848e9bd86966b76ec80ebbcbdeaed190bb4cf9e'
-            'ce0dc70355b247a7c8e1ae4154cb2e8d8a4b683542e0322d86528cfa8264b651'
-            '90e64b9903e02a53b3e88bf579cd6e952d53e36999260d93fe47b6d46a4d7d0b')
-
-# Helper macros to help make tasks easier #
-apply_patch_with_msg() {
-  for _patch in "$@"
-  do
-    msg2 "Applying ${_patch}"
-    patch -Nbp1 -i "${srcdir}/${_patch}"
-  done
-}
-
-prepare() {
-  cd ${_realname}-${pkgver}
-
-  apply_patch_with_msg \
-    001-release-build.patch \
-    002-link-to-release.patch \
-    003-qwtconfig-msys2.patch \
-    004-pkgconfig-file.patch \
-    005-rename-qwt-to-remove-qt5-qt6-conflict.patch
-}
+             "${MINGW_PACKAGE_PREFIX}-qt6-tools"
+             "git")
+options=(!buildflags)
+source=("${_realname}::git+https://github.com/MehdiChinoune/qwt#branch=cmake")
+sha256sums=('SKIP')
 
 build() {
   # qwt-qt5
-  cp -rf "${srcdir}"/${_realname}-${pkgver} "${srcdir}"/build-${MSYSTEM}-qt5
-  cd "${srcdir}"/build-${MSYSTEM}-qt5
+  mkdir -p ${srcdir}/build-${MSYSTEM}-qt5 && cd ${srcdir}/build-${MSYSTEM}-qt5
 
-  local PREFIX_WIN_QT5=$(cygpath -am ${pkgdirbase}/${MINGW_PACKAGE_PREFIX}-qwt-qt5${MINGW_PREFIX})
-  sed -s "s|%VALUE_QWT_INSTALL_PREFIX%|${PREFIX_WIN_QT5}|g" -i qwtconfig.pri
-  ${MINGW_PREFIX}/bin/qmake-qt5 CONFIG-=debug_and_release CONFIG+=release qwt.pro
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+  ${MINGW_PREFIX}/bin/cmake \
+    -G"Ninja" \
+    -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DQWT_QT_VERSION_MAJOR=5 \
+    -DQWT_NAME_SUFFIX="-qt5" \
+    ../${_realname}
 
-  make
+  ${MINGW_PREFIX}/bin/cmake --build .
 
   # qwt-qt6
-  cp -rf "${srcdir}"/${_realname}-${pkgver} "${srcdir}"/build-${MSYSTEM}-qt6
-  cd "${srcdir}"/build-${MSYSTEM}-qt6
+  mkdir -p ${srcdir}/build-${MSYSTEM}-qt6 && cd ${srcdir}/build-${MSYSTEM}-qt6
 
-  local PREFIX_WIN_QT6=$(cygpath -am ${pkgdirbase}/${MINGW_PACKAGE_PREFIX}-qwt-qt6${MINGW_PREFIX})
-  sed -s "s|%VALUE_QWT_INSTALL_PREFIX%|${PREFIX_WIN_QT6}|g" -i qwtconfig.pri
-  ${MINGW_PREFIX}/bin/qmake6 CONFIG-=debug_and_release CONFIG+=release qwt.pro
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+  ${MINGW_PREFIX}/bin/cmake \
+    -G"Ninja" \
+    -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DQWT_QT_VERSION_MAJOR=6 \
+    -DQWT_NAME_SUFFIX="-qt6" \
+    ../${_realname}
 
-  make
+  ${MINGW_PREFIX}/bin/cmake --build .
 }
 
 package_qwt-qt5() {
@@ -84,24 +67,10 @@ package_qwt-qt5() {
   conflicts=("${MINGW_PACKAGE_PREFIX}-${_realname}")
   replaces=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 
-  cd "${srcdir}"/build-${MSYSTEM}-qt5
+  DESTDIR=${pkgdir} ${MINGW_PREFIX}/bin/cmake --install ${srcdir}/build-${MSYSTEM}-qt5
 
-  make -j1 install
-
-  install -Dm644 "${srcdir}"/${_realname}-${pkgver}/COPYING \
-    "${pkgdir}"${MINGW_PREFIX}/share/licenses/${_realname}-qt5/COPYING
-
-  mkdir -p "${pkgdir}"${MINGW_PREFIX}/bin/
-  mv "${pkgdir}${MINGW_PREFIX}"/lib/*.dll "${pkgdir}${MINGW_PREFIX}"/bin/
-
-  local PREFIX_WIN=$(cygpath -am "${pkgdir}"${MINGW_PREFIX})
-  local PREFIX=$(cygpath -am ${MINGW_PREFIX})
-  sed -s "s|${PREFIX_WIN}|${MINGW_PREFIX}|g" \
-    -i "${pkgdir}"${MINGW_PREFIX}/share/qt5/mkspecs/features/qwtconfig.pri
-  sed -s "s|qwtAddLibrary(\$\${QWT_INSTALL_LIBS}, qwt)|qwtAddLibrary(\$\${QWT_INSTALL_LIBS}, qwt-qt5)|g" \
-    -i "${pkgdir}"${MINGW_PREFIX}/share/qt5/mkspecs/features/qwt.prf
-  sed -s "s|${PREFIX_WIN}|\$\{prefix\}|g" -i "${pkgdir}"${MINGW_PREFIX}/lib/pkgconfig/Qt5Qwt6.pc
-  sed -s "s|${PREFIX}|${MINGW_PREFIX}|g" -i "${pkgdir}"${MINGW_PREFIX}/lib/pkgconfig/Qt5Qwt6.pc
+  install -Dm644 ${srcdir}/${_realname}/COPYING \
+    ${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}-qt5/COPYING
 }
 
 package_qwt-qt6() {
@@ -111,24 +80,10 @@ package_qwt-qt6() {
            "${MINGW_PACKAGE_PREFIX}-qt6-svg")
   optdepends=("${MINGW_PACKAGE_PREFIX}-qt6-tools: For Designer plugin")
 
-  cd "${srcdir}"/build-${MSYSTEM}-qt6
+  DESTDIR=${pkgdir} ${MINGW_PREFIX}/bin/cmake --install ${srcdir}/build-${MSYSTEM}-qt6
 
-  make -j1 install
-
-  install -Dm644 "${srcdir}"/${_realname}-${pkgver}/COPYING \
-    "${pkgdir}"${MINGW_PREFIX}/share/licenses/${_realname}-qt6/COPYING
-
-  mkdir -p "${pkgdir}"${MINGW_PREFIX}/bin/
-  mv "${pkgdir}${MINGW_PREFIX}"/lib/*.dll "${pkgdir}${MINGW_PREFIX}"/bin/
-
-  local PREFIX_WIN=$(cygpath -am "${pkgdir}"${MINGW_PREFIX})
-  local PREFIX=$(cygpath -am ${MINGW_PREFIX})
-  sed -s "s|${PREFIX_WIN}|${MINGW_PREFIX}|g" \
-    -i "${pkgdir}"${MINGW_PREFIX}/share/qt6/mkspecs/features/qwtconfig.pri
-  sed -s "s|qwtAddLibrary(\$\${QWT_INSTALL_LIBS}, qwt)|qwtAddLibrary(\$\${QWT_INSTALL_LIBS}, qwt-qt6)|g" \
-    -i "${pkgdir}"${MINGW_PREFIX}/share/qt6/mkspecs/features/qwt.prf
-  sed -s "s|${PREFIX_WIN}|\$\{prefix\}|g" -i "${pkgdir}"${MINGW_PREFIX}/lib/pkgconfig/Qt6Qwt6.pc
-  sed -s "s|${PREFIX}|${MINGW_PREFIX}|g" -i "${pkgdir}"${MINGW_PREFIX}/lib/pkgconfig/Qt6Qwt6.pc
+  install -Dm644 ${srcdir}/${_realname}/COPYING \
+    ${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}-qt6/COPYING
 }
 
 # template start; name=mingw-w64-splitpkg-wrappers; version=1.0;
