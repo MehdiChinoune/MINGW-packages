@@ -10,22 +10,19 @@ on:
 
 jobs:
   build:
-    if: ${{ github.event_name != 'push' || github.ref != 'refs/heads/master'}}
+    if: ${{ github.event_name != 'push' || github.ref != 'refs/heads/updates'}}
     strategy:
       fail-fast: false
       matrix:
         include: [
-          { msystem: MINGW64, runner: windows-2022 },
-          { msystem: MINGW32, runner: windows-2022 },
-          { msystem: UCRT64, runner: windows-2022 },
-          { msystem: CLANG64, runner: windows-2022 },
-          { msystem: CLANG32, runner: windows-2022 },
-          # { msystem: CLANGARM64, runner: ['Windows', 'ARM64', 'CI'] }
+          { msystem: UCRT64, repo: ucrt, runner: windows-2022 },
+          { msystem: CLANG64, repo: clang, runner: windows-2022 }
         ]
     name: ${{ matrix.msystem }}
     runs-on: ${{ matrix.runner }}
     env:
       MSYS: "winjitdebug"
+      mingw_repo_sf: https://sourceforge.net/projects/mingw-updates/files/${{ matrix.repo }}
     steps:
       - name: Get CPU Name
         run : |
@@ -66,17 +63,15 @@ jobs:
           msystem: ${{ contains(matrix.msystem, 'ARM64') && 'MSYS' || matrix.msystem }}
           install: git python base-devel pactoys
           update: true
-          release: ${{ runner.arch != 'ARM64' }}
-          location: 'D:\M'
+          release: false
 
-      - name: Add staging repo
+      - name: Add staging and ${{ matrix.repo }} repos
         shell: msys2 {0}
         run: |
-          cp /etc/pacman.conf /etc/pacman.conf.bak
-          grep -qFx '[clangarm64]' /etc/pacman.conf || sed -i '/^# \[clangarm64\]/,/^$/ s|^# ||g' /etc/pacman.conf
           grep -qFx '[staging]' /etc/pacman.conf || sed -i '/^# \[staging\]/,/^$/ s|^# ||g' /etc/pacman.conf
+          sed -i '1s|^|[${{ matrix.repo }}]\nServer = ${{ env.mingw_repo_sf }}\nSigLevel = Never\n|' /etc/pacman.conf
 
-      - name: Update using staging
+      - name: Update using staging and ${{ matrix.repo }} repos
         run: |
           msys2 -c 'pacman --noconfirm -Suuy'
           msys2 -c 'pacman --noconfirm -Suu'
@@ -88,18 +83,14 @@ jobs:
 
       - name: CI-Build
         shell: msys2 {0}
-        id: build
+        continue-on-error: true
+        timeout-minutes: 345
         run: |
           cd /C/_
-          if [[ "$MSYSTEM" != "${{ matrix.msystem }}" ]]; then
-            MSYSTEM=${{ matrix.msystem }}
-            set +e
-            . shell ${MSYSTEM,,}
-            set -e
-          fi
+          sed -i 's|#PACKAGER="John Doe <john@doe.com>"|PACKAGER="Mehdi Chinoune <mehdi.chinoune@hotmail.com>"\n|g' /etc/makepkg_mingw.conf
           unset VCPKG_ROOT
           pacman -S --needed --noconfirm ${MINGW_PACKAGE_PREFIX}-ntldd
-          MINGW_ARCH=${{ matrix.msystem }} ./.ci/ci-build.sh
+          ./.ci/ci-build.sh
 
       - name: "Upload binaries"
         if: ${{ !cancelled() }}
@@ -117,18 +108,56 @@ jobs:
           path: ${{ runner.temp }}/_dumps/*.dmp
           if-no-files-found: ignore
 
-      - name: "Clean up runner"
-        if: ${{ always() }}
-        continue-on-error: true
+  deploy:
+    name: Upload ${{ matrix.msystem }} packages
+    runs-on: ubuntu-20.04
+    container: archlinux:base-devel
+    environment: upload-packages
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        include: [
+          { msystem: UCRT64, repo: ucrt },
+          { msystem: CLANG64, repo: clang }
+        ]
+    steps:
+
+      - uses: actions/checkout@v1
+
+      - name: Install required tools
         run: |
-          If (Test-Path "C:\_") { rm -r -fo "C:\_" }
-          msys2 -c 'mv -f /etc/pacman.conf.bak /etc/pacman.conf'
-          msys2 -c 'pacman --noconfirm -Suuy'
-          msys2 -c 'pacman --noconfirm -Suu'
+          sudo pacman -Syuu --noconfirm
+          sudo pacman -Syuu --noconfirm
+          sudo pacman -S --noconfirm --needed openssh rsync git
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: ${{ matrix.msystem }}-packages
+          path: artifacts
+
+      - name: Restore ssh private key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.PRIVATE_KEY_SSH }}
+          known_hosts: ${{ secrets.KNOWN_HOSTS_SSH }}
+
+      - name: Download and Update database files
+        run: |
+          rsync -zarv --include="*/" --include="${{ matrix.repo }}*" --exclude="*" mchinoune@frs.sourceforge.net:/home/frs/project/mingw-updates/${{ matrix.repo }}/ myrepo
+          repo-add myrepo/${{ matrix.repo }}.db.tar.gz artifacts/*.pkg.tar.*
+          rm myrepo/*.old
+
+      - name: Upload package to SF
+        run: |
+          rsync -t artifacts/*.pkg.tar.* mchinoune@frs.sourceforge.net:/home/frs/project/mingw-updates/${{ matrix.repo }}
+          rsync -t --copy-links myrepo/* mchinoune@frs.sourceforge.net:/home/frs/project/mingw-updates/${{ matrix.repo }}
 
   check:
     needs: [build]
     runs-on: windows-2022
+    env:
+      mingw_repo_sf: https://sourceforge.net/projects/mingw-updates/files/ucrt
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
@@ -146,12 +175,13 @@ jobs:
           msystem: UCRT64
           install: mingw-w64-ucrt-x86_64-python-pip
           release: false # since we aren't building anything
-      - name: Add staging repo
+      - name: Add staging and ucrt repos
         if: steps.check-run.outputs.run == 'true'
         shell: msys2 {0}
         run: |
           sed -i '1s|^|[staging]\nServer = https://repo.msys2.org/staging/\nSigLevel = Never\n|' /etc/pacman.conf
-      - name: Update using staging
+          sed -i '1s|^|[ucrt]\nServer = ${{ env.mingw_repo_sf }}\nSigLevel = Never\n|' /etc/pacman.conf
+      - name: Update using staging and ucrt
         if: steps.check-run.outputs.run == 'true'
         run: |
           msys2 -c 'pacman --noconfirm -Suuy'
@@ -176,6 +206,7 @@ jobs:
       - name: Grok packages
         uses: jeremyd2019/package-grokker/grok-artifacts@main
         if: steps.artifacts.outcome == 'success'
+        continue-on-error: true
         with:
           repo: ucrt64
           path: artifacts

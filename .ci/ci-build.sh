@@ -11,8 +11,6 @@ DIR="$( cd "$( dirname "$0" )" && pwd )"
 # Configure
 source "$DIR/ci-library.sh"
 mkdir artifacts
-git remote add upstream 'https://github.com/MSYS2/MINGW-packages'
-git fetch --quiet upstream
 # reduce time required to install packages by disabling pacman's disk space checking
 sed -i 's/^CheckSpace/#CheckSpace/g' /etc/pacman.conf
 
@@ -56,7 +54,7 @@ execute 'Approving recipe quality' check_recipe_quality
 message 'Adding an empty local repository'
 repo-add $PWD/artifacts/ci.db.tar.gz
 sed -i '1s|^|[ci]\nServer = file://'"$PWD"'/artifacts/\nSigLevel = Never\n|' /etc/pacman.conf
-pacman -Sy
+pacman -Sy --disable-download-timeout
 
 # Remove git and python
 pacman -R --recursive --unneeded --noconfirm --noprogressbar git python
@@ -67,14 +65,13 @@ export MAKEPKG_LINT_PKGBUILD=1
 message 'Building packages'
 for package in "${packages[@]}"; do
     echo "::group::[build] ${package}"
-    execute 'Clear cache' pacman -Scc --noconfirm
     execute 'Fetch keys' "$DIR/fetch-validpgpkeys.sh"
     cp -r ${package} B && cd B
     message 'Building binary'
     makepkg-mingw --noconfirm --noprogressbar --nocheck --syncdeps --rmdeps --cleanbuild || failure "${status} failed"
     cd - > /dev/null
     repo-add $PWD/artifacts/ci.db.tar.gz $PWD/B/*.pkg.tar.*
-    pacman -Sy
+    pacman -Sy --disable-download-timeout
     cp $PWD/B/*.pkg.tar.* $PWD/artifacts
     echo "::endgroup::"
 
