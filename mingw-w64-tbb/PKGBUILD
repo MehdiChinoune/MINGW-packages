@@ -20,15 +20,18 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cmake"
              "${MINGW_PACKAGE_PREFIX}-cc")
 source=("https://github.com/oneapi-src/${_realname}/archive/v${pkgver}/${_realname}-${pkgver}.tar.gz"
         001-fix-using-TBB-with-Debug-build-type.patch
-        004-support-mingw-aarch64.patch)
+        004-support-mingw-aarch64.patch
+        005-fix-output-name.patch)
 sha256sums=('eee380323bb7ce864355ed9431f85c43955faaae9e9bce35c62b372d7ffd9f8b'
             '094c556a1087563a3a5810db0fa81aed6432b3a8e91aab9a747e9a55ea262f2a'
-            '0f28cdc8a90e8dc3870cd584cf9f5f683e0a35696fe4dd816d1f6b8b5ea39de5')
+            '0f28cdc8a90e8dc3870cd584cf9f5f683e0a35696fe4dd816d1f6b8b5ea39de5'
+            'SKIP')
 
 prepare() {
   cd ${srcdir}/${_realname}-${pkgver}
   patch -p1 -i ${srcdir}/001-fix-using-TBB-with-Debug-build-type.patch
   patch -p1 -i ${srcdir}/004-support-mingw-aarch64.patch
+  patch -p1 -i ${srcdir}/005-fix-output-name.patch
 }
 
 build() {
