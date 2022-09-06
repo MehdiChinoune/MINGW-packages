@@ -24,10 +24,12 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-ninja")
 source=("https://github.com/oneapi-src/${_realname}/archive/v${pkgver}/${_realname}-${pkgver}.tar.gz"
         001-fix-using-TBB-with-Debug-build-type.patch
-        002-fix-link-flags-on-mingw.patch)
+        002-fix-link-flags-on-mingw.patch
+        005-fix-output-name.patch)
 sha256sums=('3ad5dd08954b39d113dc5b3f8a8dc6dc1fd5250032b7c491eb07aed5c94133e1'
             '094c556a1087563a3a5810db0fa81aed6432b3a8e91aab9a747e9a55ea262f2a'
-            '7105abda9ae82825bb7df12ed5bfba698b896945fca0023dcd040e51b3b7f1cf')
+            '7105abda9ae82825bb7df12ed5bfba698b896945fca0023dcd040e51b3b7f1cf'
+            'SKIP')
 
 apply_patch_with_msg() {
   for _patch in "$@"
@@ -41,8 +43,8 @@ prepare() {
   cd ${_realname}-${pkgver}
   apply_patch_with_msg \
     001-fix-using-TBB-with-Debug-build-type.patch \
-    002-fix-link-flags-on-mingw.patch
-
+    002-fix-link-flags-on-mingw.patch \
+    005-fix-output-name.patch
   find . -name "*.orig" -exec rm -f {} \;
 }
 
