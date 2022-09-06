@@ -22,11 +22,13 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
 source=("https://github.com/uxlfoundation/oneTBB/archive/v${pkgver}/${_realname}-${pkgver}.tar.gz"
         001-fix-using-TBB-with-Debug-build-type.patch
         002-fix-link-flags-on-mingw.patch
-        003-fix-getting-assembler-version-on-mingw.patch)
+        003-fix-getting-assembler-version-on-mingw.patch
+        005-fix-output-name.patch)
 sha256sums=('01598a46c1162c27253a0de0236f520fd8ee8166e9ebb84a4243574f88e6e50a'
             '094c556a1087563a3a5810db0fa81aed6432b3a8e91aab9a747e9a55ea262f2a'
             '7df24d43baf17e5abb25ea49f40f72936fa9d1bcd2f185d7efb5a852e65c00b0'
-            'd51db2fc6acbb6022fe1e9b0188d0b5bc7041b9db0905cad8a58d6fde3d1750e')
+            'd51db2fc6acbb6022fe1e9b0188d0b5bc7041b9db0905cad8a58d6fde3d1750e'
+            'SKIP')
 
 apply_patch_with_msg() {
   for _patch in "$@"
@@ -41,8 +43,8 @@ prepare() {
   apply_patch_with_msg \
     001-fix-using-TBB-with-Debug-build-type.patch \
     002-fix-link-flags-on-mingw.patch \
-    003-fix-getting-assembler-version-on-mingw.patch
-
+    003-fix-getting-assembler-version-on-mingw.patch \
+    005-fix-output-name.patch
   find . -name "*.orig" -exec rm -f {} \;
 }
 
