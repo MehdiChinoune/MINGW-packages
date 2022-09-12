@@ -31,7 +31,6 @@ _pkgfn=$_realname-$pkgver.src
 source=($_url/$_pkgfn.tar.xz{,.sig}
         ${_url}/cmake-${pkgver}.src.tar.xz{,.sig}
         "001-cast-to-make-gcc-happy.patch"
-        "002-hacks-for-static-linking.patch"
         "https://github.com/llvm/llvm-project/commit/cea951dccd9aaa7fee8a60ecf9170d7d3cc35086.patch"
         "https://github.com/llvm/llvm-project/commit/fb947c358661b3bd3d5e1fa776ec74cc0f308854.patch"
         "https://github.com/llvm/llvm-project/commit/d6ab42dec492ccd3f1b515796d9d2fb020c520bd.patch"
@@ -41,7 +40,6 @@ sha256sums=('3f168d38e7a37b928dcb94b33ce947f75d81eef6fa6a4f9d16b6dc5511c07358'
             '8986f29b634fdaa9862eedda78513969fe9788301c9f2d938f4c10a3e7a3e7ea'
             'SKIP'
             '11352ffbe7559a7170f2abd52b3552c877fbcf8fc82cff77b421e8b130a4dd66'
-            '7238f009264bc1b162b73ca3a2a0b224b65ec3ed384304f3e5464032c4c026f4'
             '159f038084d3999d0329db33f283b3440c47db7b2f1587fd0d158450647669a5'
             '5c5a459921024971a0dd8f5a5e8b8a2aa080c889b1786b5fc3635bea6378615f'
             'af870d62f893f9f5b3c1a2dd79b215b96735b13cc39f15284275658da44838c5'
@@ -67,7 +65,6 @@ prepare() {
     apply_patch_with_msg \
       "001-cast-to-make-gcc-happy.patch"
   fi
-  apply_patch_with_msg 002-hacks-for-static-linking.patch
 
   # https://github.com/llvm/llvm-project/issues/56349
   patch -Nbp2 -i "${srcdir}/cea951dccd9aaa7fee8a60ecf9170d7d3cc35086.patch"
@@ -79,8 +76,8 @@ prepare() {
 }
 
 build() {
-  cd ${srcdir}
-  rm -rf build-${MSYSTEM}-{shared,static}
+  [[ -d "${srcdir}/build-${MSYSTEM}" ]] && rm -rf "${srcdir}/build-${MSYSTEM}"
+  mkdir -p "${srcdir}/build-${MSYSTEM}" && cd "${srcdir}/build-${MSYSTEM}"
 
   if check_option "debug" "y"; then
     _build_type="Debug"
@@ -100,27 +97,23 @@ build() {
       ;;
   esac
 
-  for shared_libs in shared static; do
-    MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
     ${MINGW_PREFIX}/bin/cmake \
       -GNinja \
       -DCMAKE_BUILD_TYPE=${_build_type} \
       -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
       -DCMAKE_SYSTEM_IGNORE_PATH=/usr/lib \
       -DLIBOMP_FORTRAN_MODULES="$( (( _clangprefix )) && echo OFF || echo ON )" \
-      -DLIBOMP_ENABLE_SHARED="$( [[ $shared_libs == static ]] && echo OFF || echo ON )" \
+      -DLIBOMP_ENABLE_SHARED=ON \
       "${platform_config[@]}" \
       -Wno-dev \
-      -S $_pkgfn \
-      -B "build-${MSYSTEM}-${shared_libs}"
-    ${MINGW_PREFIX}/bin/cmake --build "build-${MSYSTEM}-${shared_libs}"
-  done
-  unset shared_libs
+      ../$_pkgfn
+
+  ${MINGW_PREFIX}/bin/cmake --build .
 }
 
 package() {
-  DESTDIR=${pkgdir} ${MINGW_PREFIX}/bin/cmake --install "${srcdir}/build-${MSYSTEM}-shared"
-  DESTDIR=${pkgdir} ${MINGW_PREFIX}/bin/cmake --install "${srcdir}/build-${MSYSTEM}-static"
+  DESTDIR=${pkgdir} ${MINGW_PREFIX}/bin/cmake --install "${srcdir}/build-${MSYSTEM}"
 
   install -d "$pkgdir${MINGW_PREFIX}"/share/licenses/${_realname}
   install -Dm644 $_pkgfn/LICENSE* -t "$pkgdir${MINGW_PREFIX}"/share/licenses/${_realname}
