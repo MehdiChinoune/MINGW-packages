@@ -11,7 +11,7 @@ nvchecker -c check-pypi.toml --logger json > events.json
 declare -a packages=($(jq -r '. | select (.event == "updated") | .name' events.json))
 declare -a package_versions=($(jq -r '. | select (.event == "updated") | .version' events.json))
 
-git switch -c updates origin/updates
+# git switch -c updates origin/updates
 
 i=0
 for package in ${packages[@]}; do
@@ -28,9 +28,9 @@ for package in ${packages[@]}; do
     sed -e "s|^pkgrel=.*|pkgrel=1|g" -i PKGBUILD
     updpkgsums
     cd ..
-    sed -e "s|^  \"${package}\":[^,]*|  \"${package}\": \"${new_ver}\"|g" -i oldver-pypi.json
     if [[ `git status --porcelain -- mingw-w64-${package}/PKGBUILD` ]]; then
-      git add mingw-w64-${package}/PKGBUILD
+      sed -e "s|^  \"${package}\":[^,]*|  \"${package}\": \"${new_ver}\"|g" -i oldver-pypi.json
+      git add mingw-w64-${package}/PKGBUILD oldver-pypi.json
       git commit -m "${package}: update to ${new_ver}"
       git push origin ${package}-update
     fi
