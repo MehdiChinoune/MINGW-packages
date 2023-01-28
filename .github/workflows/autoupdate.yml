@@ -20,11 +20,13 @@ jobs:
         with:
           msystem: UCRT64
           install: git
-          pacboy: jq:p python-nvchecker:p python-packaging:p
+          pacboy: jq:p python-nvchecker:p python-packaging:p github-cli:p
           update: true
           release: false
 
       - name: update
         shell: msys2 {0}
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           ./update-pypi.sh

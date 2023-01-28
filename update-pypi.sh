@@ -31,8 +31,18 @@ for package in ${packages[@]}; do
     if [[ `git status --porcelain -- mingw-w64-${package}/PKGBUILD` ]]; then
       sed -e "s|^  \"${package}\":[^,]*|  \"${package}\": \"${new_ver}\"|g" -i oldver-pypi.json
       git add mingw-w64-${package}/PKGBUILD oldver-pypi.json
-      git commit -m "${package}: update to ${new_ver}"
+      if (( ! ${branch_exist} )); then
+        git commit -m "${package}: update to ${new_ver}"
+      else
+        git commit --amend -m "${package}: update to ${new_ver}"
+      fi
       git push origin ${package}-update
+      pr_exist=$(gh pr list --head ${package}-update | wc -l)
+      if (( ! ${pr_exist} )); then
+        gh pr create --fill
+      else
+        gh pr edit ${package}-update -t "${package}: update to ${new_ver}"
+      fi
     fi
   fi
   i=$((${i}+1))
