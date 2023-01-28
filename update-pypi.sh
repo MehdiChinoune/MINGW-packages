@@ -4,7 +4,6 @@ git config --global user.email "mehdi.chinoune@hotmail.com"
 git config --global user.name "Mehdi Chinoune"
 git config --global --unset credential.helper
 
-git remote add upstream https://github.com/msys2/MINGW-packages
 git fetch --all
 
 nvchecker -c check-pypi.toml --logger json > events.json
@@ -12,14 +11,14 @@ nvchecker -c check-pypi.toml --logger json > events.json
 declare -a packages=($(jq -r '. | select (.event == "updated") | .name' events.json))
 declare -a package_versions=($(jq -r '. | select (.event == "updated") | .version' events.json))
 
-git switch -c master upstream/master
+git switch -c updates origin/updates
 
 i=0
 for package in ${packages[@]}; do
   if [[ -d mingw-w64-${package} ]]; then
     branch_exist=$(git ls-remote --heads https://github.com/MehdiChinoune/MINGW-packages.git ${package}-update | wc -l)
     if (( ! ${branch_exist} )); then
-      git checkout -b ${package}-update master
+      git checkout -b ${package}-update updates
     else
       git switch ${package}-update
     fi

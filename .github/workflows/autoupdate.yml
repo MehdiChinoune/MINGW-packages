@@ -5,11 +5,13 @@ concurrency:
   cancel-in-progress: true
 
 on:
-  push:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0/3 * * *'
 
 jobs:
   build:
-    if: ${{ github.event_name != 'push' || github.ref != 'refs/heads/master'}}
+    if: ${{ github.event_name != 'push' || github.ref != 'refs/heads/updates'}}
     name: autoupdate
     runs-on: windows-2022
     steps:
