@@ -371,6 +371,6 @@
   "python-yaml": "6.0",
   "python-zeroconf": "0.47.1",
   "python-zope.event": "4.5.0",
-  "sip": "6.7.5",
+  "sip": "6.7.6",
   "wxPython4.0": "4.0.7.2"
 }
