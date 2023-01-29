@@ -302,7 +302,7 @@
   "python-simplegeneric": "0.8.1",
   "python-singledispatch": "4.0.0",
   "python-six": "1.16.0",
-  "python-slugify": "7.0.0",
+  "python-slugify": "8.0.0",
   "python-snowballstemmer": "2.2.0",
   "python-sortedcontainers": "2.4.0",
   "python-sounddevice": "0.4.5",
