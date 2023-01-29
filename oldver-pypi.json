@@ -2,7 +2,7 @@
   "gi-docgen": "2023.1",
   "manim": "0.17.2",
   "mypy": "0.991",
-  "pyqt-builder": "1.14.0",
+  "pyqt-builder": "1.14.1",
   "pyqt5": "5.15.7",
   "pyqt5-3d": "5.15.5",
   "pyqt5-sip": "12.11.0",
