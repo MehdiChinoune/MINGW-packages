@@ -7,7 +7,7 @@ pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 _pkgver=20.1.0
 pkgver=${_pkgver/-/}
-pkgrel=2
+pkgrel=3
 pkgdesc="Fortran frontend for LLVM (mingw-w64)"
 arch=('any')
 mingw_arch=('ucrt64' 'clang64' 'clangarm64')
@@ -16,7 +16,6 @@ msys2_references=(
   "cpe: cpe:/a:llvm:llvm"
 )
 license=("spdx:Apache-2.0 WITH LLVM-exception")
-provides=($([[ ${MINGW_PACKAGE_PREFIX} != *-clang-* ]] || echo "${MINGW_PACKAGE_PREFIX}-fc"))
 depends=("${MINGW_PACKAGE_PREFIX}-clang"
          "${MINGW_PACKAGE_PREFIX}-llvm"
          "${MINGW_PACKAGE_PREFIX}-mlir")
@@ -104,6 +103,7 @@ build() {
     -DLLVM_ENABLE_ASSERTIONS=OFF \
     -DLLVM_ENABLE_THREADS=ON \
     -DLLVM_LINK_LLVM_DYLIB=ON \
+    -DBUILD_SHARED_LIBS=ON \
     -DCLANG_DIR=${MINGW_PREFIX}/lib/cmake/clang \
     -DLLVM_DIR=${MINGW_PREFIX}/lib/cmake/llvm \
     -DMLIR_DIR=${MINGW_PREFIX}/lib/cmake/mlir \
@@ -122,8 +122,37 @@ check() {
   ${MINGW_PREFIX}/bin/cmake.exe --build . -- check-flang || true
 }
 
-package() {
-  DESTDIR="${pkgdir}" cmake --install build-${MSYSTEM}
+package_flang() {
+  depends+=("${MINGW_PACKAGE_PREFIX}-flang-libs")
+  provides=($([[ ${MINGW_PACKAGE_PREFIX} != *-clang-* ]] || echo "${MINGW_PACKAGE_PREFIX}-fc"))
+  DESTDIR="${pkgdir}" cmake --install "${srcdir}/build-${MSYSTEM}"
 
   install -Dm644 "${srcdir}"/${_pkgfn}/LICENSE.TXT "${pkgdir}"${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE
+
+  mkdir -p ${srcdir}/runtimes
+  mv "${pkgdir}"${MINGW_PREFIX}/bin/libFortranDecimal.dll "${srcdir}"/runtimes/
+  mv "${pkgdir}"${MINGW_PREFIX}/bin/libFortranRuntime.dll "${srcdir}"/runtimes/
 }
+
+package_flang-libs() {
+  pkgdesc="Flang runtime libraries (mingw-w64)"
+  depends=($([[ ${MINGW_PACKAGE_PREFIX} == *-clang-* ]] || echo "${MINGW_PACKAGE_PREFIX}-gcc-libs"))
+  provides=($([[ ${MINGW_PACKAGE_PREFIX} != *-clang-* ]] || echo "${MINGW_PACKAGE_PREFIX}-fc-libs"))
+
+  install -Dm644 "${srcdir}"/${_pkgfn}/LICENSE.TXT "${pkgdir}"${MINGW_PREFIX}/share/licenses/${_realname}-libs/LICENSE
+
+  mkdir -p "${pkgdir}"${MINGW_PREFIX}/bin
+  mv "${srcdir}"/runtimes/libFortranDecimal.dll "${pkgdir}"${MINGW_PREFIX}/bin/
+  mv "${srcdir}"/runtimes/libFortranRuntime.dll "${pkgdir}"${MINGW_PREFIX}/bin/
+}
+
+# template start; name=mingw-w64-splitpkg-wrappers; version=1.0;
+# vim: set ft=bash :
+
+# generate wrappers
+for _name in "${pkgname[@]}"; do
+  _short="package_${_name#${MINGW_PACKAGE_PREFIX}-}"
+  _func="$(declare -f "${_short}")"
+  eval "${_func/#${_short}/package_${_name}}"
+done
+# template end;
