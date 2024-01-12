@@ -1,0 +1,368 @@
+--- a/configure.ac
++++ b/configure.ac
+@@ -969,6 +969,26 @@
+     fi
+     ;;
+ 
++mingw*)
++    using_freetype_fontconfig=no
++    using_x11=no
++    test_unix_dlapi=no
++    test_openldap=no
++    enable_pagein=no
++    build_skia=yes
++    _os=WINNT
++
++    DLLPOST=".dll"
++    LINKFLAGSNOUNDEFS=
++
++    if test "$host_cpu" = "aarch64"; then
++        build_skia=no
++        enable_gpgmepp=no
++        enable_coinmp=no
++        enable_firebird_sdbc=no
++    fi
++    ;;
++
+ darwin*) # macOS
+     using_freetype_fontconfig=no
+     using_x11=no
+@@ -1327,7 +1347,7 @@
+ dnl The following checks for gcc, cc and then cl (if it weren't guarded for win32)
+ dnl Needs to precede the AC_C_BIGENDIAN and AC_SEARCH_LIBS calls below, which apparently call
+ dnl AC_PROG_CC internally.
+-if test "$_os" != "WINNT"; then
++if test "$COM" != "MSC"; then
+     # AC_PROG_CC sets CFLAGS to -g -O2 if not set, avoid that
+     save_CFLAGS=$CFLAGS
+     AC_PROG_CC
+@@ -1337,7 +1357,7 @@
+     fi
+ fi
+ 
+-if test "$_os" != "WINNT"; then
++if test "$COM" != "MSC"; then
+     AC_C_BIGENDIAN([ENDIANNESS=big], [ENDIANNESS=little])
+ else
+     ENDIANNESS=little
+@@ -2955,7 +2975,7 @@
+ dnl Test whether to sign Windows Build
+ dnl ===================================================================
+ AC_MSG_CHECKING([whether to sign windows build])
+-if test "$enable_windows_build_signing" = "yes" -a "$_os" = "WINNT"; then
++if test "$enable_windows_build_signing" = "yes" -a "$COM" = "MSC"; then
+     AC_MSG_RESULT([yes])
+     WINDOWS_BUILD_SIGNING="TRUE"
+ else
+@@ -3464,7 +3484,7 @@
+ dnl  Checks for C compiler,
+ dnl  The check for the C++ compiler is later on.
+ dnl ===================================================================
+-if test "$_os" != "WINNT"; then
++if test "$COM" != "MSC"; then
+     GCC_HOME_SET="true"
+     AC_MSG_CHECKING([gcc home])
+     if test -z "$with_gcc_home"; then
+@@ -3840,7 +3860,7 @@
+     LIBO_URE_LIB_FOLDER=Frameworks
+     LIBO_URE_MISC_FOLDER=Resources/ure/share/misc
+     LIBO_URE_SHARE_JAVA_FOLDER=Resources/java
+-elif test $_os = WINNT; then
++elif test "$COM" = "MSC"; then
+     LIBO_BIN_FOLDER=program
+     LIBO_ETC_FOLDER=program
+     LIBO_LIBEXEC_FOLDER=program
+@@ -4279,7 +4299,7 @@
+ SOLARINC=
+ MSBUILD_PATH=
+ DEVENV=
+-if test "$_os" = "WINNT"; then
++if test "$COM" = "MSC"; then
+     AC_MSG_CHECKING([Visual C++])
+     find_msvc "$with_visual_studio"
+     if test -z "$vctest"; then
+@@ -4536,7 +4556,7 @@
+     elif test "$_os" = Emscripten; then
+         AC_MSG_RESULT([assumed yes (Emscripten Clang)])
+     else
+-        if test "$_os" = WINNT; then
++        if test "$COM" = MSC; then
+             dnl In which case, assume clang-cl:
+             my_args="/EP /TC"
+         else
+@@ -4557,7 +4577,7 @@
+ fi
+ 
+ SHOWINCLUDES_PREFIX=
+-if test "$_os" = WINNT; then
++if test "$COM" = MSC; then
+     dnl We need to guess the prefix of the -showIncludes output, it can be
+     dnl localized
+     AC_MSG_CHECKING([the dependency generation prefix (cl.exe -showIncludes)])
+@@ -5408,6 +5428,51 @@
+     esac
+     ;;
+ 
++mingw*)
++    COM=GCC
++    OS=WNT
++    RTL_OS=Windows
++    if test "$GNUMAKE_WIN_NATIVE" = "TRUE" ; then
++        P_SEP=";"
++    else
++        P_SEP=:
++    fi
++    case "$host_cpu" in
++    x86_64)
++        CPUNAME=X86_64
++        RTL_ARCH=X86_64
++        PLATFORMID=windows_x86_64
++        WINDOWS_X64=1
++        SCPDEFS="$SCPDEFS -DWINDOWS_X64"
++        WIN_HOST_ARCH="x64"
++        WIN_MULTI_ARCH="x86"
++        WIN_HOST_BITS=64
++        ;;
++    i*86)
++        CPUNAME=INTEL
++        RTL_ARCH=x86
++        PLATFORMID=windows_x86
++        WIN_HOST_ARCH="x86"
++        WIN_HOST_BITS=32
++        WIN_OTHER_ARCH="x64"
++        ;;
++    aarch64)
++        CPUNAME=AARCH64
++        RTL_ARCH=AARCH64
++        PLATFORMID=windows_aarch64
++        WINDOWS_X64=1
++        SCPDEFS="$SCPDEFS -DWINDOWS_AARCH64"
++        WIN_HOST_ARCH="arm64"
++        WIN_HOST_BITS=64
++        ;;
++    *)
++        AC_MSG_ERROR([Unsupported host_cpu $host_cpu for host_os $host_os])
++        ;;
++    esac
++
++    SCPDEFS="$SCPDEFS -D__MINGW32__"
++    ;;
++
+ *netbsd*)
+     COM=GCC
+     OS=NETBSD
+@@ -6295,7 +6360,7 @@
+ ENABLE_PCH=""
+ AC_MSG_CHECKING([whether to enable pch feature])
+ if test -z "$enable_pch"; then
+-    if test "$_os" = "WINNT"; then
++    if test "$COM" = MSC; then
+         # Enabled by default on Windows.
+         enable_pch=yes
+         # never use sccache on auto-enabled PCH builds, except if requested explicitly
+@@ -6309,7 +6374,7 @@
+ if test "$enable_pch" != no -a "$_os" = Emscripten -a "$ENABLE_WASM_EXCEPTIONS" = TRUE; then
+     AC_MSG_ERROR([PCH currently isn't supported for Emscripten with native EH (nEH) because of missing Sj/Lj support with nEH in clang.])
+ fi
+-if test "$enable_pch" != "no" -a "$_os" != "WINNT" -a "$GCC" != "yes" ; then
++if test "$enable_pch" != "no" -a "$COM" != MSC -a "$GCC" != "yes" ; then
+     AC_MSG_ERROR([Precompiled header not yet supported for your platform/compiler])
+ fi
+ if test "$enable_pch" = "system"; then
+@@ -6568,14 +6633,14 @@
+ dnl ===================================================================
+ dnl Check for pkg-config
+ dnl ===================================================================
+-if test "$_os" != "WINNT"; then
++if test "$COM" != MSC; then
+     PKG_PROG_PKG_CONFIG
+ fi
+ AC_SUBST(PKG_CONFIG)
+ AC_SUBST(PKG_CONFIG_PATH)
+ AC_SUBST(PKG_CONFIG_LIBDIR)
+ 
+-if test "$_os" != "WINNT"; then
++if test "$COM" != MSC; then
+ 
+     # If you use CC=/path/to/compiler/foo-gcc or even CC="ccache
+     # /path/to/compiler/foo-gcc" you need to set the AR etc env vars
+@@ -6813,7 +6878,7 @@
+ dnl =========================================
+ dnl Check for the Windows  SDK.
+ dnl =========================================
+-if test "$_os" = "WINNT"; then
++if test "$COM" = MSC; then
+     AC_MSG_CHECKING([for Windows SDK])
+     if test "$build_os" = "cygwin" -o "$build_os" = "wsl"; then
+         find_winsdk
+@@ -7058,7 +7123,7 @@
+ dnl Testing for C++ compiler and version...
+ dnl ===================================================================
+ 
+-if test "$_os" != "WINNT"; then
++if test "$COM" != MSC; then
+     # AC_PROG_CXX sets CXXFLAGS to -g -O2 if not set, avoid that
+     save_CXXFLAGS=$CXXFLAGS
+     AC_PROG_CXX
+@@ -7135,7 +7200,7 @@
+ dnl Find pre-processors.(should do that _after_ messing with CC/CXX)
+ dnl ===================================================================
+ 
+-if test "$_os" != "WINNT"; then
++if test "$COM" != MSC; then
+     AC_PROG_CXXCPP
+ 
+     dnl Check whether there's a C pre-processor.
+@@ -7147,7 +7212,7 @@
+ dnl Find integral type sizes and alignments
+ dnl ===================================================================
+ 
+-if test "$_os" != "WINNT"; then
++if test "$COM" != MSC; then
+ 
+     AC_CHECK_SIZEOF(long)
+     AC_CHECK_SIZEOF(short)
+@@ -7248,7 +7313,7 @@
+ 
+ dnl Calc jumbo sheets (1m+ rows) depend on 64 bit tools::Long .
+ AC_MSG_CHECKING([whether jumbo sheets are supported])
+-if test "$_os" != "WINNT"; then
++if test "$COM" != "MSC"; then
+     if test $SAL_TYPES_SIZEOFLONG -gt 4; then
+         AC_MSG_RESULT([yes])
+         ENABLE_JUMBO_SHEETS=TRUE
+@@ -7937,7 +8002,7 @@
+ AC_SUBST([HAVE_BROKEN_GCC_WSTRINGOP_OVERFLOW])
+ 
+ HAVE_DLLEXPORTINLINES=
+-if test "$_os" = "WINNT"; then
++if test "$COM" = "MSC"; then
+     AC_MSG_CHECKING([whether $CXX_BASE supports -Zc:dllexportInlines-])
+     AC_LANG_PUSH([C++])
+     save_CXXFLAGS=$CXXFLAGS
+@@ -8443,7 +8508,7 @@
+             ])
+         dnl TODO: Windows doesn't use LO_CLANG_SHARED_PLUGINS for now, see corresponding TODO
+         dnl comment in compilerplugins/Makefile-clang.mk:
+-        if test -n "$COMPILER_PLUGINS" && test "$_os" != "WINNT"; then
++        if test -n "$COMPILER_PLUGINS" && test "$COM" != "MSC"; then
+             LDFLAGS=""
+             AC_MSG_CHECKING([for clang libraries to use])
+             if test -z "$CLANGTOOLLIBS"; then
+@@ -8559,7 +8624,7 @@
+ ,)
+ 
+ UCRT_REDISTDIR="$with_ucrt_dir"
+-if test $_os = "WINNT"; then
++if test $COM = "MSC"; then
+     find_msvc_x64_dlls
+     MSVC_DLL_PATH=`win_short_path_for_make "$msvcdllpath"`
+     MSVC_DLLS="$msvcdlls"
+@@ -10623,7 +10688,7 @@
+     AC_LANG_PUSH([C++])
+     save_CPPFLAGS=$CPPFLAGS
+     # This is where upstream installs to, unfortunately no .pc or so...
+-    DRAGONBOX_CFLAGS=-I/usr/include/dragonbox-1.1.3
++    DRAGONBOX_CFLAGS=-I$prefix/include/dragonbox-1.1.3
+     CPPFLAGS="$CPPFLAGS $DRAGONBOX_CFLAGS"
+     AC_CHECK_HEADER([dragonbox/dragonbox.h], [],
+        [AC_MSG_ERROR([dragonbox/dragonbox.h not found. install dragonbox])], [])
+@@ -10704,11 +10769,13 @@
+     AC_MSG_RESULT([external])
+     SYSTEM_ODBC_HEADERS=TRUE
+ 
+-    if test "$build_os" = "cygwin" -o "$build_os" = "wsl"; then
++    if test "$_os" = "WINNT"; then
+         save_CPPFLAGS=$CPPFLAGS
+-        find_winsdk
+-        PathFormat "$winsdktest"
+-        CPPFLAGS="$CPPFLAGS -I$formatted_path/include/um -I$formatted_path/Include/$winsdklibsubdir/um -I$formatted_path/include -I$formatted_path/include/shared -I$formatted_path/include/$winsdklibsubdir/shared"
++        if test "$COM" = "MSC"; then
++            find_winsdk
++            PathFormat "$winsdktest"
++            CPPFLAGS="$CPPFLAGS -I$formatted_path/include/um -I$formatted_path/Include/$winsdklibsubdir/um -I$formatted_path/include -I$formatted_path/include/shared -I$formatted_path/include/$winsdklibsubdir/shared"
++        fi
+         AC_CHECK_HEADER(sqlext.h, [],
+             [AC_MSG_ERROR(odbc not found. install odbc)],
+             [#include <windows.h>])
+@@ -11305,7 +11372,7 @@
+         save_CXXFLAGS=$CXXFLAGS
+         save_IFS=$IFS
+         IFS=$P_SEP
+-        for i in $CPLUS_INCLUDE_PATH /usr/include; do
++        for i in $CPLUS_INCLUDE_PATH /usr/include $prefix/include; do
+             dnl Reset IFS as soon as possible, to avoid unexpected side effects (and the
+             dnl "/usr/include" fallback makes sure we get here at least once; resetting rather than
+             dnl unsetting follows the advice at <https://git.savannah.gnu.org/gitweb/?p=autoconf.git;
+@@ -11574,7 +11641,7 @@
+ dnl =========================================
+ dnl Check for uuidgen
+ dnl =========================================
+-if test "$_os" = "WINNT"; then
++if test "$COM" = "MSC"; then
+     # we must use the uuidgen from the Windows SDK, which will be in the LO_PATH, but isn't in
+     # the PATH for AC_PATH_PROG. It is already tested above in the WINDOWS_SDK_HOME check.
+     UUIDGEN=uuidgen.exe
+@@ -11732,7 +11799,7 @@
+ dnl testing assembler path
+ dnl ***************************************
+ ML_EXE=""
+-if test "$_os" = "WINNT"; then
++if test "$COM" = "MSC"; then
+     case "$WIN_HOST_ARCH" in
+     x86) assembler=ml.exe ;;
+     x64) assembler=ml64.exe ;;
+@@ -12376,7 +12443,7 @@
+         AC_MSG_CHECKING([for Clang])
+         AC_MSG_RESULT([$LO_CLANG_CC / $LO_CLANG_CXX])
+     else
+-        if test "$_os" = "WINNT"; then
++        if test "$COM" = "MSC"; then
+             AC_MSG_CHECKING([for clang-cl])
+             if test -x "$VC_PRODUCT_DIR/Tools/Llvm/bin/clang-cl.exe"; then
+                 LO_CLANG_CC=`win_short_path_for_make "$VC_PRODUCT_DIR/Tools/Llvm/bin/clang-cl.exe"`
+@@ -12418,7 +12485,7 @@
+             LO_CLANG_CXX=
+         fi
+     fi
+-    if test -n "$LO_CLANG_CC" -a -n "$LO_CLANG_CXX" -a "$_os" = "WINNT"; then
++    if test -n "$LO_CLANG_CC" -a -n "$LO_CLANG_CXX" -a "$COM" = "MSC"; then
+         save_CXX="$CXX"
+         CXX="$LO_CLANG_CXX"
+         AC_MSG_CHECKING([whether $CXX supports -Zc:dllexportInlines-])
+@@ -12439,7 +12506,7 @@
+     if test -z "$LO_CLANG_CC" -o -z "$LO_CLANG_CXX"; then
+         # Skia is the default on Windows and Mac, so hard-require Clang.
+         # Elsewhere it's used just by the 'gen' VCL backend which is rarely used.
+-        if test "$_os" = "WINNT" -o "$_os" = "Darwin"; then
++        if test "$COM" = "MSC" -o "$_os" = "Darwin"; then
+             AC_MSG_ERROR([Clang compiler not found. The Skia library needs to be built using Clang, or use --disable-skia.])
+         else
+             AC_MSG_WARN([Clang compiler not found.])
+@@ -12749,7 +12816,7 @@
+ 
+         GPG_ERROR_CFLAGS="-I${WORKDIR}/UnpackedTarball/libgpg-error/src"
+         LIBASSUAN_CFLAGS="-I${WORKDIR}/UnpackedTarball/libassuan/src"
+-        if test "$_os" != "WINNT"; then
++        if test "$COM" != "MSC"; then
+             GPG_ERROR_LIBS="-L${WORKDIR}/UnpackedTarball/libgpg-error/src/.libs -lgpg-error"
+             LIBASSUAN_LIBS="-L${WORKDIR}/UnpackedTarball/libassuan/src/.libs -lassuan"
+         fi
+@@ -12759,7 +12826,7 @@
+     AC_PATH_PROG(GPG, gpg)
+     # TODO: Windows's cygwin gpg does not seem to work with our gpgme,
+     # so let's exclude that manually for the moment
+-    if test -n "$GPG" -a "$_os" != "WINNT"; then
++    if test -n "$GPG" -a "$COM" != "MSC"; then
+         # make sure we not only have a working gpgme, but a full working
+         # gpg installation to run OpenPGP signature verification
+         AC_DEFINE([HAVE_FEATURE_GPGVERIFY])
+@@ -13925,7 +13992,7 @@
+ dnl ===================================================================
+ dnl Test whether to use avahi
+ dnl ===================================================================
+-if test "$_os" = "WINNT"; then
++if test "$COM" = "MSC"; then
+     # Windows uses bundled mDNSResponder
+     BUILD_TYPE="$BUILD_TYPE MDNSRESPONDER"
+ elif test "$_os" != "Darwin" -a "$enable_avahi" = "yes"; then

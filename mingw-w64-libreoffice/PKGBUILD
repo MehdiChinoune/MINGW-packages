@@ -1,0 +1,190 @@
+# Contributor: Mehdi Chinoune <mehdi.chinoune@hotmail.com>
+
+_realname=libreoffice
+pkgbase=mingw-w64-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=24.2.0.2
+pkgrel=1
+pkgdesc="Free Software Productivity Suite. (mingw-w64)"
+arch=('any')
+mingw_arch=('ucrt64' 'clang64' 'clangarm64')
+url='https://wiki.documentfoundation.org/DLP/Libraries/libreoffice'
+msys2_references=(
+  'archlinux: libreoffice'
+)
+license=('spdx:MPL-2.0')
+depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
+         "${MINGW_PACKAGE_PREFIX}-abseil-cpp"
+         "${MINGW_PACKAGE_PREFIX}-argon2"
+         "${MINGW_PACKAGE_PREFIX}-boost"
+         "${MINGW_PACKAGE_PREFIX}-box2d"
+         "${MINGW_PACKAGE_PREFIX}-clucene"
+         "${MINGW_PACKAGE_PREFIX}-curl"
+         "${MINGW_PACKAGE_PREFIX}-dbus-glib"
+         "${MINGW_PACKAGE_PREFIX}-dragonbox"
+         "${MINGW_PACKAGE_PREFIX}-frozen"
+         "${MINGW_PACKAGE_PREFIX}-glm"
+         "${MINGW_PACKAGE_PREFIX}-gpgme"
+         "${MINGW_PACKAGE_PREFIX}-graphite2"
+         "${MINGW_PACKAGE_PREFIX}-harfbuzz"
+         "${MINGW_PACKAGE_PREFIX}-hicolor-icon-theme"
+         "${MINGW_PACKAGE_PREFIX}-hunspell"
+         "${MINGW_PACKAGE_PREFIX}-hyphen"
+         "${MINGW_PACKAGE_PREFIX}-icu"
+         "${MINGW_PACKAGE_PREFIX}-lcms2"
+         "${MINGW_PACKAGE_PREFIX}-libabw"
+         "${MINGW_PACKAGE_PREFIX}-libatomic_ops"
+         "${MINGW_PACKAGE_PREFIX}-libcdr"
+         "${MINGW_PACKAGE_PREFIX}-libcmis"
+         "${MINGW_PACKAGE_PREFIX}-libe-book"
+         "${MINGW_PACKAGE_PREFIX}-libepoxy"
+         "${MINGW_PACKAGE_PREFIX}-libepubgen"
+         "${MINGW_PACKAGE_PREFIX}-libetonyek"
+         "${MINGW_PACKAGE_PREFIX}-libexttextcat"
+         "${MINGW_PACKAGE_PREFIX}-libffi"
+         "${MINGW_PACKAGE_PREFIX}-libfreehand"
+         "${MINGW_PACKAGE_PREFIX}-libjpeg"
+         "${MINGW_PACKAGE_PREFIX}-liblangtag"
+         "${MINGW_PACKAGE_PREFIX}-libmspub"
+         "${MINGW_PACKAGE_PREFIX}-libmwaw"
+         "${MINGW_PACKAGE_PREFIX}-libnumbertext"
+         "${MINGW_PACKAGE_PREFIX}-libodfgen"
+         "${MINGW_PACKAGE_PREFIX}-libpagemaker"
+         "${MINGW_PACKAGE_PREFIX}-libqxp"
+         "${MINGW_PACKAGE_PREFIX}-libstaroffice"
+         "${MINGW_PACKAGE_PREFIX}-libtommath"
+         "${MINGW_PACKAGE_PREFIX}-libvisio"
+         "${MINGW_PACKAGE_PREFIX}-libwebp"
+         "${MINGW_PACKAGE_PREFIX}-libwps"
+         "${MINGW_PACKAGE_PREFIX}-libwpd"
+         "${MINGW_PACKAGE_PREFIX}-libxslt"
+         "${MINGW_PACKAGE_PREFIX}-libzmf"
+         "${MINGW_PACKAGE_PREFIX}-lpsolve"
+         "${MINGW_PACKAGE_PREFIX}-neon"
+         "${MINGW_PACKAGE_PREFIX}-nspr"
+         "${MINGW_PACKAGE_PREFIX}-nss"
+         "${MINGW_PACKAGE_PREFIX}-orcus"
+         "${MINGW_PACKAGE_PREFIX}-pango"
+         "${MINGW_PACKAGE_PREFIX}-poppler"
+         "${MINGW_PACKAGE_PREFIX}-postgresql"
+         "${MINGW_PACKAGE_PREFIX}-python"
+         "${MINGW_PACKAGE_PREFIX}-redland"
+         #"${MINGW_PACKAGE_PREFIX}-ttf-liberation"
+         "${MINGW_PACKAGE_PREFIX}-ttf-dejavu"
+         #"${MINGW_PACKAGE_PREFIX}-ttf-carlito"
+         "${MINGW_PACKAGE_PREFIX}-xmlsec"
+         "${MINGW_PACKAGE_PREFIX}-zlib"
+         "${MINGW_PACKAGE_PREFIX}-zxcvbn-c"
+         "${MINGW_PACKAGE_PREFIX}-zxing-cpp")
+makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-clang"
+             "${MINGW_PACKAGE_PREFIX}-autotools"
+             "${MINGW_PACKAGE_PREFIX}-cppunit"
+             "${MINGW_PACKAGE_PREFIX}-gperf"
+             "${MINGW_PACKAGE_PREFIX}-gobject-introspection"
+             "${MINGW_PACKAGE_PREFIX}-mdds"
+             "${MINGW_PACKAGE_PREFIX}-coin-or-mp"
+             "${MINGW_PACKAGE_PREFIX}-firebird"
+             "${MINGW_PACKAGE_PREFIX}-gst-plugins-base"
+             "${MINGW_PACKAGE_PREFIX}-gtk3"
+             "${MINGW_PACKAGE_PREFIX}-gtk4"
+             "${MINGW_PACKAGE_PREFIX}-libfixmath"
+             "${MINGW_PACKAGE_PREFIX}-libmariadbclient"
+             "${MINGW_PACKAGE_PREFIX}-libpaper"
+             "${MINGW_PACKAGE_PREFIX}-libwpg"
+             "${MINGW_PACKAGE_PREFIX}-mythes"
+             "${MINGW_PACKAGE_PREFIX}-postgresql"
+             "${MINGW_PACKAGE_PREFIX}-qt6-base"
+             "${MINGW_PACKAGE_PREFIX}-sane"
+             "unzip"
+             "zip")
+_additional_source_url="https://dev-www.libreoffice.org/src"
+_additional_source_url2="https://dev-www.libreoffice.org/extern"
+source=("https://download.documentfoundation.org/${_realname}/src/${pkgver%.*}/${_realname}-${pkgver}.tar.xz"
+        "${_additional_source_url}/dtoa-20180411.tgz"
+        "${_additional_source_url}/frozen-1.1.1.tar.gz"
+        "${_additional_source_url}/IAccessible2-1.3+git20231013.3d8c7f0.tar.gz"
+        "${_additional_source_url}/zxcvbn-c-2.5.tar.gz"
+        "${_additional_source_url}/nss-3.90-with-nspr-4.35.tar.gz"
+        "${_additional_source_url}/pdfium-6179.tar.bz2"
+        "${_additional_source_url}/skia-m116-2ddcf183eb260f63698aa74d1bb380f247ad7ccd.tar.xz"
+        "${_additional_source_url}/twaindsm_2.4.1.orig.tar.gz"
+        "${_additional_source_url2}/f543e6e2d7275557a839a164941c0a86e5f2c3f2a0042bfc434c88c6dde9e140-opens___.ttf"
+        001-fix-configure.patch)
+sha256sums=('53107698fe98f46c41cb3bba116ec66111c2f1bd3332e69043e6764b3c5497d3'
+            '0082d0684f7db6f62361b76c4b7faba19e0c7ce5cb8e36c4b65fea8281e711b4'
+            'f7c7075750e8fceeac081e9ef01944f221b36d9725beac8681cbd2838d26be45'
+            '0e279003f5199f80031c6dcd08f79d6f65a0505139160e7df0d09b226bff4023'
+            '77d6c6ecb35952a8d8ce7f736b7a2bf466275c48210e309b73782d6b7e84dffd'
+            'f78ab1d911cae8bbc94758fb3bd0f731df4087423a4ff5db271ba65381f6b739'
+            '4d3f08fe0e2fda86246832085426616826dcca0912202874428bfbc24d13d95c'
+            '2223ebce534458a37826e8fe4f24635b0712cde7ed1bd3208f089f6fdd796e01'
+            '82c818be771f242388457aa8c807e4b52aa84dc22b21c6c56184a6b4cbb085e6'
+            'f543e6e2d7275557a839a164941c0a86e5f2c3f2a0042bfc434c88c6dde9e140'
+            'e77c1a6320af0ac00ab16ef0423cd85ad6e53a1dcf370878568e6657a16ce7d7')
+noextract=("${_realname}-${pkgver}.tar.xz"
+           "dtoa-20180411.tgz"
+           "frozen-1.1.1.tar.gz"
+           "IAccessible2-1.3+git20231013.3d8c7f0.tar.gz"
+           "zxcvbn-c-2.5.tar.gz"
+           "nss-3.90-with-nspr-4.35.tar.gz"
+           "pdfium-6179.tar.bz2"
+           "skia-m116-2ddcf183eb260f63698aa74d1bb380f247ad7ccd.tar.xz"
+           "twaindsm_2.4.1.orig.tar.gz")
+
+prepare() {
+  echo "Extracting ${_realname}-${pkgver}.tar.xz ..."
+  tar -xJf ${_realname}-${pkgver}.tar.xz || true
+
+  # move external sources into place
+  mkdir -p "${srcdir}"/ext_sources
+  for source in "${noextrac[@]:1}"; do
+    cp "${srcdir}"/$source "${srcdir}"/ext_sources/
+  done
+
+  cd "${_realname}-${pkgver}"
+  patch -p1 -i "${srcdir}"/001-fix-configure.patch
+
+  ACLOCAL="aclocal -I${srcdir}/${_realname}-${pkgver}/m4" \
+  autoreconf -fiv -I "${srcdir}"/${_realname}-${pkgver}
+}
+
+build() {
+  mkdir -p "${srcdir}/build-${MSYSTEM}" && cd "${srcdir}/build-${MSYSTEM}"
+
+  SYSTEM_GENCCODE=${MINGW_PREFIX}/sbin/genccode.exe \
+  SYSTEM_GENCMN=${MINGW_PREFIX}/sbin/gencmn.exe \
+  ../"${_realname}-${pkgver}"/autogen.sh \
+    --prefix="${MINGW_PREFIX}" \
+    --with-parallelism=${MAKEFLAGS/-j/} \
+    --with-external-tar="${srcdir}/ext_sources" \
+    --disable-fetch-external \
+    --with-system-libs \
+    --with-boost-date-time=boost_date_time-mt \
+    --with-boost-filesystem=boost_filesystem-mt \
+    --with-boost-iostreams=boost_iostreams-mt \
+    --with-boost-locale=boost_locale-mt \
+    --with-boost-system=boost_system-mt \
+    --enable-qt5 \
+    --enable-qt6 \
+    --enable-gtk3 \
+    --enable-gtk4 \
+    --without-java \
+    --without-fonts
+
+  make
+}
+
+check() {
+  cd "${srcdir}/build-${MSYSTEM}"
+
+  make check
+}
+
+package() {
+  cd "${srcdir}/build-${MSYSTEM}"
+
+  make install DESTDIR="${pkgdir}"
+
+  install -Dm644 "${srcdir}/${_realname}-${pkgver}/COPYING.MPL" "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE"
+}
