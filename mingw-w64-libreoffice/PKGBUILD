@@ -145,8 +145,7 @@ prepare() {
   cd "${_realname}-${pkgver}"
   patch -p1 -i "${srcdir}"/001-fix-configure.patch
 
-  ACLOCAL="aclocal -I${srcdir}/${_realname}-${pkgver}/m4" \
-  autoreconf -fiv -I "${srcdir}"/${_realname}-${pkgver}
+  NOCONFIGURE=1 ./autogen.sh
 }
 
 build() {
