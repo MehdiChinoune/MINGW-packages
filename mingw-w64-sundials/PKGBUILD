@@ -14,7 +14,7 @@ _realname=sundials
 pkgbase="mingw-w64-${_realname}"
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
 pkgver=7.0.0
-pkgrel=1
+pkgrel=2
 pkgdesc="SUite of Nonlinear and DIfferential/ALgebraic equation Solvers (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -31,11 +31,13 @@ depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
          "${MINGW_PACKAGE_PREFIX}-openblas"
          "${MINGW_PACKAGE_PREFIX}-omp"
          "${MINGW_PACKAGE_PREFIX}-suitesparse"
+         $([[ ${MINGW_PACKAGE_PREFIX} == *-clang-* ]] || echo "${MINGW_PACKAGE_PREFIX}-gcc-libgfortran")
          $([[ "$_enable_mpi" == "yes" ]] && echo \
            "${MINGW_PACKAGE_PREFIX}-petsc" \
            "${MINGW_PACKAGE_PREFIX}-superlu_dist"))
 makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-cmake"
+            $([[ ${MINGW_PACKAGE_PREFIX} == *-clang-* ]] || echo "${MINGW_PACKAGE_PREFIX}-fc")
              $([[ "$_enable_mpi" == "yes" ]] && echo "${MINGW_PACKAGE_PREFIX}-msmpi"))
 optdepends=("${MINGW_PACKAGE_PREFIX}-python: for running examples")
 source=(https://github.com/LLNL/sundials/releases/download/v${pkgver}/${_realname}-${pkgver}.tar.gz
@@ -74,8 +76,10 @@ build() {
     _extra_config+=("-DCMAKE_BUILD_TYPE=Debug")
   fi
 
-  if [[ ${MINGW_PACKAGE_PREFIX} == *-clang-* ]]; then
-    export FFLAGS="-Qunused-arguments"
+  if [[ ${MINGW_PACKAGE_PREFIX} != *-clang-* ]]; then
+    _extra_config+=("-DBUILD_FORTRAN_MODULE_INTERFACE=ON")
+  else
+    _extra_config+=("-DBUILD_FORTRAN_MODULE_INTERFACE=OFF")
   fi
 
   if [[ "$_enable_mpi" != "yes" ]]; then
@@ -101,12 +105,13 @@ build() {
   fi
 
   I_MPI_ROOT="" \
+  CFLAGS+=" -Wno-incompatible-pointer-types" \
+  LDFLAGS+=" -Wl,--export-all-symbols" \
   MSYS2_ARG_CONV_EXCL="CMAKE_INSTALL_PREFIX=;EXAMPLES_INSTALL_PATH=" \
   ${MINGW_PREFIX}/bin/cmake \
     -D BUILD_ARKODE=ON \
     -D BUILD_CVODE=ON \
     -D BUILD_CVODES=ON \
-    -D BUILD_FORTRAN_MODULE_INTERFACE=OFF \
     -D BUILD_IDA=ON \
     -D BUILD_IDAS=ON \
     -D BUILD_KINSOL=ON \
@@ -139,16 +144,17 @@ build() {
     -D ENABLE_XBRAID=OFF \
     -D EXAMPLES_ENABLE_C=ON \
     -D EXAMPLES_ENABLE_CXX=ON \
-    -D EXAMPLES_ENABLE_F2003=OFF \
+    -D EXAMPLES_ENABLE_F2003=ON \
     -D EXAMPLES_INSTALL=ON \
     -D EXAMPLES_INSTALL_PATH=${MINGW_PREFIX}/share/sundials/examples \
     -D LAPACK_LIBRARIES=${MINGW_PREFIX}/lib/libopenblas.dll.a \
     -D SUNDIALS_BUILD_WITH_PROFILING=OFF \
     -D SUNDIALS_BUILD_WITH_MONITORING=ON \
-    -D SUNDIALS_INDEX_SIZE=32 \
+    -D SUNDIALS_INDEX_SIZE=64 \
     -D SUNDIALS_PRECISION=DOUBLE \
-    -DSUNDIALS_LAPACK_CASE=LOWER \
-    -DSUNDIALS_LAPACK_UNDERSCORES=ONE \
+    -D SUNDIALS_LAPACK_CASE=LOWER \
+    -D SUNDIALS_LAPACK_UNDERSCORES=ONE \
+    -D Fortran_INSTALL_MODDIR=include/sundials/fortran \
     -B build-${MSYSTEM} \
     -S ${_realname}-${pkgver}
 
