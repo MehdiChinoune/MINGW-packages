@@ -1,0 +1,69 @@
+# Maintainer: Mehdi Chinoune <mehdi.chinoune@hotmail.com>
+
+_realname=makhber
+pkgbase=mingw-w64-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=0.9.8.2
+pkgrel=1
+pkgdesc="Visualization and Analysis of Scientific Data (mingw-w64)"
+arch=('any')
+url='https://github.com/Makhber/makhber'
+license=("spdx:GPL-2.0-or-later")
+depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
+         "${MINGW_PACKAGE_PREFIX}-gl2ps"
+         "${MINGW_PACKAGE_PREFIX}-gsl"
+         "${MINGW_PACKAGE_PREFIX}-liborigin"
+         "${MINGW_PACKAGE_PREFIX}-muparser"
+         "${MINGW_PACKAGE_PREFIX}-python-pyqt5"
+         "${MINGW_PACKAGE_PREFIX}-qt5-base"
+         "${MINGW_PACKAGE_PREFIX}-qt5-svg"
+         "${MINGW_PACKAGE_PREFIX}-zlib")
+makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-cmake"
+             "${MINGW_PACKAGE_PREFIX}-ninja"
+             "${MINGW_PACKAGE_PREFIX}-pkgconf"
+             "${MINGW_PACKAGE_PREFIX}-qt5-tools"
+             "${MINGW_PACKAGE_PREFIX}-pyqt-builder")
+checkdepends=("${MINGW_PACKAGE_PREFIX}-gtest")
+source=("${url}/releases/download/${pkgver}/Makhber-${pkgver}-src.tar.xz")
+sha256sums=('121021a8af47502e7461a510c8f858ebaaaa2901c52ce8b2cbe7bd2dc04e1cee')
+
+build() {
+  declare -a _extra_config
+  if check_option "debug" "n"; then
+    _extra_config+=("-DCMAKE_BUILD_TYPE=Release")
+  else
+    _extra_config+=("-DCMAKE_BUILD_TYPE=Debug")
+  fi
+
+  CXXFLAGS+=" -Wno-ignored-attributes" \
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+    "${MINGW_PREFIX}"/bin/cmake.exe \
+      -GNinja \
+      -DCMAKE_INSTALL_PREFIX="${MINGW_PREFIX}" \
+      "${_extra_config[@]}" \
+      -DBUILD_SHARED_LIBS=ON \
+      -DMAKHBER_SCRIPTING_PYTHON=ON \
+      -DPython3_EXECUTABLE=${MINGW_PREFIX}/bin/python \
+      -S ${_realname}-${pkgver}-src \
+      -B build-${MSYSTEM}
+
+  "${MINGW_PREFIX}"/bin/cmake.exe --build build-${MSYSTEM}
+}
+
+check() {
+  cd "${srcdir}"/build-${MSYSTEM}
+
+  "${MINGW_PREFIX}"/bin/cmake.exe ../${_realname}-${pkgver}-src -DMAKHBER_BUILD_TESTS=ON
+  "${MINGW_PREFIX}"/bin/cmake.exe --build .
+  "${MINGW_PREFIX}"/bin/ctest --output-on-failure || true
+}
+
+package() {
+  cd "${srcdir}"/build-${MSYSTEM}
+
+  DESTDIR="${pkgdir}" "${MINGW_PREFIX}"/bin/cmake.exe --install .
+
+  install -Dm644 "${srcdir}"/${_realname}-${pkgver}-src/LICENSE \
+    "${pkgdir}"${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE
+}
