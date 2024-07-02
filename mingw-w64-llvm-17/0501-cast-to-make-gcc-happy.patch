@@ -1,0 +1,40 @@
+--- a/runtime/src/kmp_atomic.cpp
++++ b/runtime/src/kmp_atomic.cpp
+@@ -646,15 +646,15 @@
+ 
+ static inline kmp_cmplx128_a4_t operator+(kmp_cmplx128_a4_t &lhs,
+                                           kmp_cmplx128_a4_t &rhs) {
+-  return lhs.q + rhs.q;
++  return (kmp_cmplx128_a4_t)(lhs.q + rhs.q);
+ }
+ static inline kmp_cmplx128_a4_t operator-(kmp_cmplx128_a4_t &lhs,
+                                           kmp_cmplx128_a4_t &rhs) {
+-  return lhs.q - rhs.q;
++  return (kmp_cmplx128_a4_t)(lhs.q - rhs.q);
+ }
+ static inline kmp_cmplx128_a4_t operator*(kmp_cmplx128_a4_t &lhs,
+                                           kmp_cmplx128_a4_t &rhs) {
+-  return lhs.q * rhs.q;
++  return (kmp_cmplx128_a4_t)(lhs.q * rhs.q);
+ }
+ static inline kmp_cmplx128_a4_t operator/(kmp_cmplx128_a4_t &lhs,
+                                           kmp_cmplx128_a4_t &rhs) {
+@@ -663,15 +663,15 @@
+ 
+ static inline kmp_cmplx128_a16_t operator+(kmp_cmplx128_a16_t &lhs,
+                                            kmp_cmplx128_a16_t &rhs) {
+-  return lhs.q + rhs.q;
++  return (kmp_cmplx128_a16_t)(lhs.q + rhs.q);
+ }
+ static inline kmp_cmplx128_a16_t operator-(kmp_cmplx128_a16_t &lhs,
+                                            kmp_cmplx128_a16_t &rhs) {
+-  return lhs.q - rhs.q;
++  return (kmp_cmplx128_a16_t)(lhs.q - rhs.q);
+ }
+ static inline kmp_cmplx128_a16_t operator*(kmp_cmplx128_a16_t &lhs,
+                                            kmp_cmplx128_a16_t &rhs) {
+-  return lhs.q * rhs.q;
++  return kmp_cmplx128_a16_t(lhs.q * rhs.q);
+ }
+ static inline kmp_cmplx128_a16_t operator/(kmp_cmplx128_a16_t &lhs,
+                                            kmp_cmplx128_a16_t &rhs) {
