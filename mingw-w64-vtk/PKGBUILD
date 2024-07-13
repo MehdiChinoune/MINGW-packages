@@ -5,7 +5,7 @@ _realname=vtk
 pkgbase="mingw-w64-${_realname}"
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
 pkgver=9.3.1
-pkgrel=1
+pkgrel=2
 pkgdesc="A software system for 3D computer graphics, image processing and visualization (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -67,6 +67,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-proj"
              "${MINGW_PACKAGE_PREFIX}-python"
              "${MINGW_PACKAGE_PREFIX}-qt6-declarative"
+             "${MINGW_PACKAGE_PREFIX}-seacas"
              "${MINGW_PACKAGE_PREFIX}-sqlite3"
              # "${MINGW_PACKAGE_PREFIX}-tk"
              "${MINGW_PACKAGE_PREFIX}-unixodbc"
@@ -175,7 +176,6 @@ build() {
     -DVTK_MODULE_ENABLE_VTK_RenderingZSpace=NO \
     -DVTK_USE_EXTERNAL=ON \
     -DVTK_MODULE_USE_EXTERNAL_VTK_exprtk=OFF \
-    -DVTK_MODULE_USE_EXTERNAL_VTK_ioss=OFF \
     -DVTK_MODULE_USE_EXTERNAL_VTK_pegtl=OFF \
     -DVTK_WRAP_JAVA=OFF \
     -DVTK_WRAP_PYTHON=ON \
@@ -185,6 +185,7 @@ build() {
     -DVTK_SMP_ENABLE_OPENMP=ON \
     -DVTK_USE_VIDEO_FOR_WINDOWS=ON \
     -DVTK_ENABLE_OSPRAY=OFF \
+    -DSEACASIoss_INCLUDE_DIRS=${MINGW_PREFIX}/include \
     ../${_realname}-${pkgver}
 
   ${MINGW_PREFIX}/bin/cmake --build .
