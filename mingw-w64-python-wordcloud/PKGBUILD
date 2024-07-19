@@ -1,10 +1,11 @@
 # Maintainer: Biswapriyo Nath <nathbappai@gmail.com>
+# https://github.com/amueller/word_cloud/issues/765
 
 _realname=wordcloud
 pkgbase=mingw-w64-python-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
 pkgver=1.9.3
-pkgrel=2
+pkgrel=3
 pkgdesc='A little word cloud generator in Python (mingw-w64)'
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
