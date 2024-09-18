@@ -28,7 +28,7 @@ pkgname=("${MINGW_PACKAGE_PREFIX}-llvm"
          "${MINGW_PACKAGE_PREFIX}-compiler-rt"
          $( (( _clangprefix )) && echo "${MINGW_PACKAGE_PREFIX}-gcc-compat" )
          "${MINGW_PACKAGE_PREFIX}-lld")
-_version=18.1.8
+_version=19.1.0
 _rc=""
 _tag=llvmorg-${_version}${_rc}
 pkgver=${_version}${_rc/-/}
@@ -79,23 +79,23 @@ source=("${_url}/llvm-${pkgver}.src.tar.xz"{,.sig}
         "0303-ignore-new-bfd-options.patch"
         # 0401-0499 -> clang-tools-extra
         )
-sha256sums=('f68cf90f369bc7d0158ba70d860b0cb34dbc163d6ff0ebc6cfa5e515b9b2e28d'
+sha256sums=('a8b141cbfa13f50d84ce545899bd311aaa60d59dfbf7f3a0cf84f25badc1544d'
             'SKIP'
-            '5724fe0a13087d5579104cedd2f8b3bc10a212fb79a0fcdac98f4880e19f4519'
+            '03c3be44ff8e602213222fb99645c239965623d2bf2a6e4d210249520112377e'
             'SKIP'
-            'e58877fcd95ed106824bd1a31276dd17ed0c53adcd60ca75289eac0654f0a7f1'
+            'eec4beef68f7135011995684d47ac02e0d3781618abb2a6fe18a8dcef6db586f'
             'SKIP'
-            'e054e99a9c9240720616e927cb52363abbc8b4f1ef0286bad3df79ec8fdf892f'
+            '808b858e93b0bbae4002e13dcbe8bee850c514a58cbfb63b03d8b465ba95a3de'
             'SKIP'
-            '800e6805fb613eb8428f7a199f6d06c4c19f78f2db69157a129bb04fc1c99769'
+            '8d125e7513735c57adbdd1bbce59ff2d5844c2bf64a00ff94fe1c04b941ca2b2'
             'SKIP'
-            '59badef592dd34893cd319d42b323aaa990b452d05c7180ff20f23ab1b41e837'
+            'dc78b6a9ac8a097ca6ac0f23c06821d65e6ea3bf666026f529994c1d01056ae7'
             'SKIP'
-            'b76b810f3d3dc5d08e83c4236cb6e395aa9bd5e3ea861e8c319b216d093db074'
+            'f521e6cdb6598d777c6120d086aee3993f182ab38bc59ce4a59c48fae4839b8c'
             'SKIP'
             'eb03df53671df6627768141b3aaa76abe176a14e5e47911c97bec544387c4aff'
-            '0aff3a85d70ae437dfc634fe40db506bf5701403049284ffbdb931135ae8a483'
-            '016fbf6f742c062cc59360070264546c10385b1e8c37605758f62dcbea8f9bcc'
+            'af44e409b281cf941d3191fa323da1899311681f1ee4790fbbced51e74fba345'
+            '46aaaf453527530b106ff0f5d252037209a731a1765983f3a5ffba78082260de'
             '5f86e542dd1ec92b2fe06ee59061c3e23512df7bafabe82206f2b7d80b81836b'
             '715cb8862753854b2d9256e0b70003e2d1f57083d83eaeaf5a095fc72b8a4e26'
             '2770cadf8ccf6b31aece6aee8f76dceb71e6e9d01fdf3be74c3743480ce34899'
@@ -257,6 +257,10 @@ build() {
       -DCLANG_DEFAULT_CXX_STDLIB=libc++
       -DCLANG_LINKS_TO_CREATE="${_clang_links}"
       -DCOMPILER_RT_USE_BUILTINS_LIBRARY=ON
+    )
+  else
+    platform_config+=(
+      -DCOMPILER_RT_BUILD_LIBFUZZER=OFF
     )
   fi
 
