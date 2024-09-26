@@ -4,17 +4,18 @@ _realname=adol-c
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 pkgver=2.7.2
-pkgrel=6
+pkgrel=7
 pkgdesc='Automatic Differentiation of Algorithms written in C/C++ (mingw-w64)'
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
 url='https://github.com/coin-or/ADOL-C'
 license=('spdx:EPL-1.0')
-depends=("${MINGW_PACKAGE_PREFIX}-boost"
+depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
          "${MINGW_PACKAGE_PREFIX}-omp")
+         #"${MINGW_PACKAGE_PREFIX}-boost")
 makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-autotools")
-source=(https://github.com/coin-or/ADOL-C/archive/releases/${pkgver}.tar.gz)
+source=(https://github.com/coin-or/ADOL-C/archive/releases/${pkgver}/${_realname}-${pkgver}.tar.gz)
 sha256sums=('701E0856BAAE91B98397960D5E0A87A549988DE9D4002D0E9A56FA08F5455F6E')
 
 prepare() {
@@ -37,7 +38,7 @@ build() {
     --enable-static \
     --with-gnu-ld \
     --libdir=${MINGW_PREFIX}/lib \
-    --with-boost=${MINGW_PREFIX} \
+    --with-boost-system=no \
     "${extra_config[@]}"
 
   make
