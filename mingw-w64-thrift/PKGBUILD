@@ -3,10 +3,8 @@
 _realname=thrift
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-replaces=("${MINGW_PACKAGE_PREFIX}-${_realname}-git")
-conflicts=("${MINGW_PACKAGE_PREFIX}-${_realname}-git")
 pkgver=0.20.0
-pkgrel=1
+pkgrel=2
 pkgdesc="Apache Thrift is a software framework for scalable cross-language services development (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -63,7 +61,7 @@ build() {
   )
 
   MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
-    "${MINGW_PREFIX}"/bin/cmake.exe \
+    "${MINGW_PREFIX}"/bin/cmake.exe -Wno-dev \
     -GNinja \
     -DCMAKE_INSTALL_PREFIX="${MINGW_PREFIX}" \
     "${_extra_config[@]}" \
@@ -74,7 +72,7 @@ build() {
   "${MINGW_PREFIX}"/bin/cmake.exe --build "build-${MSYSTEM}-static"
 
   MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
-    "${MINGW_PREFIX}"/bin/cmake.exe \
+    "${MINGW_PREFIX}"/bin/cmake.exe -Wno-dev \
     -GNinja \
     -DCMAKE_INSTALL_PREFIX="${MINGW_PREFIX}" \
     "${_extra_config[@]}" \
