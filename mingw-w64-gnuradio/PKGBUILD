@@ -4,7 +4,7 @@ _realname=gnuradio
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 pkgver=3.10.11.0
-pkgrel=6
+pkgrel=7
 pkgdesc="General purpose DSP and SDR toolkit (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64')
@@ -14,8 +14,12 @@ msys2_references=(
   'archlinux: gnuradio'
 )
 license=(spdx:GPL-3.0-or-later)
-depends=("${MINGW_PACKAGE_PREFIX}-codec2"
+depends=(
+  "${MINGW_PACKAGE_PREFIX}-angleproject"
   "${MINGW_PACKAGE_PREFIX}-boost"
+  "${MINGW_PACKAGE_PREFIX}-codec2"
+  "${MINGW_PACKAGE_PREFIX}-fftw"
+  "${MINGW_PACKAGE_PREFIX}-fmt"
   "${MINGW_PACKAGE_PREFIX}-gcc-libs"
   "${MINGW_PACKAGE_PREFIX}-gmp"
   "${MINGW_PACKAGE_PREFIX}-gsl"
@@ -23,11 +27,11 @@ depends=("${MINGW_PACKAGE_PREFIX}-codec2"
   "${MINGW_PACKAGE_PREFIX}-gtk3"
   "${MINGW_PACKAGE_PREFIX}-libad9361-iio"
   "${MINGW_PACKAGE_PREFIX}-libiio"
+  "${MINGW_PACKAGE_PREFIX}-libsndfile"
   "${MINGW_PACKAGE_PREFIX}-libuhd" 
   "${MINGW_PACKAGE_PREFIX}-libunwind"
-  "${MINGW_PACKAGE_PREFIX}-fftw"
   "${MINGW_PACKAGE_PREFIX}-mathjax2"
-  "${MINGW_PACKAGE_PREFIX}-volk"
+  "${MINGW_PACKAGE_PREFIX}-portaudio"
   "${MINGW_PACKAGE_PREFIX}-python-click"
   "${MINGW_PACKAGE_PREFIX}-python-click-plugins"
   "${MINGW_PACKAGE_PREFIX}-python-gobject"
@@ -46,14 +50,11 @@ depends=("${MINGW_PACKAGE_PREFIX}-codec2"
   "${MINGW_PACKAGE_PREFIX}-python-lxml"
   "${MINGW_PACKAGE_PREFIX}-python-pyopengl"
   "${MINGW_PACKAGE_PREFIX}-qt5-base"
-  "${MINGW_PACKAGE_PREFIX}-angleproject"
   "${MINGW_PACKAGE_PREFIX}-qwt-qt5"
   "${MINGW_PACKAGE_PREFIX}-SDL"
   "${MINGW_PACKAGE_PREFIX}-soapysdr"
-  "${MINGW_PACKAGE_PREFIX}-portaudio"
-  "${MINGW_PACKAGE_PREFIX}-libsndfile"
   "${MINGW_PACKAGE_PREFIX}-spdlog"
-  "${MINGW_PACKAGE_PREFIX}-fmt"
+  "${MINGW_PACKAGE_PREFIX}-volk"
   "${MINGW_PACKAGE_PREFIX}-zeromq")
 makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-cmake"
