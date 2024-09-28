@@ -4,24 +4,23 @@ _realname=libftdi
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
 pkgver=1.5
-pkgrel=7
+pkgrel=8
 pkgdesc='Library to talk to FTDI chips, with Python 3 bindings (mingw-w64)'
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
 url="https://www.intra2net.com/en/developer/libftdi/"
 license=('LGPL', 'GPL')
-makedepends=("${MINGW_PACKAGE_PREFIX}-cmake"
+makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-cmake"
              "${MINGW_PACKAGE_PREFIX}-boost"
              "${MINGW_PACKAGE_PREFIX}-swig"
              "${MINGW_PACKAGE_PREFIX}-python"
-             "${MINGW_PACKAGE_PREFIX}-gettext-tools"
-             "${MINGW_PACKAGE_PREFIX}-cc")
+             "${MINGW_PACKAGE_PREFIX}-gettext-tools")
 depends=("${MINGW_PACKAGE_PREFIX}-libusb"
          "${MINGW_PACKAGE_PREFIX}-confuse"
          "${MINGW_PACKAGE_PREFIX}-gettext-runtime"
          "${MINGW_PACKAGE_PREFIX}-libiconv")
 optdepends=("${MINGW_PACKAGE_PREFIX}-python: Python bindings to libftdi")
-options=('staticlibs' 'strip')
 source=("https://www.intra2net.com/en/developer/libftdi/download/libftdi1-${pkgver}.tar.bz2"
         "0001-cmake-fix-libdir.patch"
         "0002-libftdi-include-sys-time-timeval.patch")
