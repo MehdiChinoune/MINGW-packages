@@ -4,7 +4,7 @@ _realname=soci
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
 pkgver=4.0.3
-pkgrel=5
+pkgrel=6
 pkgdesc="SOCI - The C++ Database Access Library (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -14,10 +14,11 @@ msys2_references=(
   'aur: soci'
 )
 license=('spdx:BSL-1.0')
-depends=("${MINGW_PACKAGE_PREFIX}-boost")
+depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs")
 makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-cmake"
              "${MINGW_PACKAGE_PREFIX}-ninja"
+             "${MINGW_PACKAGE_PREFIX}-boost"
              $([[ ${CARCH} == aarch64 ]] || echo "${MINGW_PACKAGE_PREFIX}-firebird")
              "${MINGW_PACKAGE_PREFIX}-libmariadbclient"
              "${MINGW_PACKAGE_PREFIX}-postgresql"
