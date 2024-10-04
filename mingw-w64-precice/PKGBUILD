@@ -23,9 +23,8 @@ depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
          "${MINGW_PACKAGE_PREFIX}-python-numpy")
 makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-cmake"
-             "${MINGW_PACKAGE_PREFIX}-fc"
+             "${MINGW_PACKAGE_PREFIX}-ninja"
              "${MINGW_PACKAGE_PREFIX}-msmpi"
-             #"${MINGW_PACKAGE_PREFIX}-ninja"
              #"${MINGW_PACKAGE_PREFIX}-petsc-build"
              "${MINGW_PACKAGE_PREFIX}-eigen3"
              "git")
@@ -68,6 +67,7 @@ build() {
     CXXFLAGS+=" -Wno-deprecated-declarations -Wno-inconsistent-dllimport"
   else
     CXXFLAGS+=" -Wno-attributes"
+    LDFLAGS+=" -Wl,--export-all-symbols"
   fi
 
   # Shared Build
@@ -89,7 +89,7 @@ build() {
       -DPRECICE_CONFIGURE_PACKAGE_GENERATION=ON \
       -DPRECICE_BINDINGS_C=OFF \
       -DPRECICE_BINDINGS_FORTRAN=OFF \
-      -DPRECICE_BUILD_TOOLS=OFF \
+      -DPRECICE_BUILD_TOOLS=ON \
       -DPC_PETSc_INCLUDE_DIRS="$PREFIX_WIN/src/petsc/include;$PREFIX_WIN/src/petsc/$PETSC_ARCH/include" \
       -Wno-dev \
       ../${_realname}-${pkgver}
