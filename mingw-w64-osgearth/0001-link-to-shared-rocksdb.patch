@@ -1,0 +1,10 @@
+--- a/src/osgEarthDrivers/cache_rocksdb/CMakeLists.txt
++++ b/src/osgEarthDrivers/cache_rocksdb/CMakeLists.txt
+@@ -21,6 +21,6 @@
+             RocksDBCacheDriver.cpp )
+             
+     target_link_libraries(osgdb_osgearth_cache_rocksdb
+-        PRIVATE RocksDB::rocksdb)    
++        PRIVATE RocksDB::rocksdb-shared)    
+         
+ endif()
