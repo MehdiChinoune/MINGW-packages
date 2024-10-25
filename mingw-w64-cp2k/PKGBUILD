@@ -3,8 +3,8 @@
 _realname=cp2k
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=2024.1
-pkgrel=2
+pkgver=2024.3
+pkgrel=1
 pkgdesc="A quantum chemistry and solid state physics software package (mingw-w64)"
 arch=('any')
 mingw_arch=('ucrt64')
@@ -26,7 +26,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              #$([[ ${CARCH} != x86_64 ]] || echo "${MINGW_PACKAGE_PREFIX}-libxsmm")
              "${MINGW_PACKAGE_PREFIX}-python")
 source=("https://github.com/cp2k/cp2k/releases/download/v${pkgver}/${_realname}-${pkgver}.tar.bz2")
-sha256sums=('a7abf149a278dfd5283dc592a2c4ae803b37d040df25d62a5e35af5c4557668f')
+sha256sums=('a6eeee773b6b1fb417def576e4049a89a08a0ed5feffcd7f0b33c7d7b48f19ba')
 noextract=("${_realname}-${pkgver}.tar.bz2")
 
 prepare() {
