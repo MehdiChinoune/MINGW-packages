@@ -3,7 +3,7 @@
 _realname=abinit
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=10.0.5
+pkgver=10.2.7
 pkgrel=1
 pkgdesc="Atomic-scale simulation software. (mingw-w64)"
 arch=('any')
@@ -30,14 +30,14 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-msmpi"
              "${MINGW_PACKAGE_PREFIX}-python"
              "${MINGW_PACKAGE_PREFIX}-wannier90")
-source=("https://www.abinit.org/sites/default/files/packages/${_realname}-${pkgver}.tar.gz"
+source=("https://forge.abinit.org/${_realname}-${pkgver}.tar.gz"
         "001-fix-build-on-mingw.patch"
         "002-fix-pkgconfig-file.patch"
         "003-fix-version.patch")
-sha256sums=('07fed4df03ae32178933373b990bbda4431ea836fc7bebec05b17e4267bb7f4e'
-            'eb4db135a0d01a0e5624aca081817b6a66ef433933331d0bd89e3c9ee8fd2b18'
+sha256sums=('e0e1049b01b4ebaec29be632cd554caeccb4b2a8acf2e148c8ac505e6b226dc1'
+            '7229e68adbcf19b3977203b5f606fa5178d6d00afcb78046cd4ee360ac27a8b3'
             '466f7f86384f02c99e9f7a948f2b38229a10962ff849cd1e8bf06b0c6ddd7481'
-            'c17be9dc3e3b4f2dd84fbb4133daba4a8ac84240aea487ee0790850fc7e51538')
+            '8e3419bec00d263a7d2a3f0437cde4b7e165e3eb5ce62b04ca54c014f9752ae3')
 
 prepare() {
   cd "${srcdir}"/${_realname}-${pkgver}
