@@ -3,7 +3,8 @@
 _realname=abinit
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=10.0.5
+pkgver=10.2.5
+_archive_ver=10.2.4.84-9554b-dirty
 pkgrel=1
 pkgdesc="Atomic-scale simulation software. (mingw-w64)"
 arch=('any')
@@ -30,17 +31,17 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-msmpi"
              "${MINGW_PACKAGE_PREFIX}-python"
              "${MINGW_PACKAGE_PREFIX}-wannier90")
-source=("https://www.abinit.org/sites/default/files/packages/${_realname}-${pkgver}.tar.gz"
+source=("https://forge.abinit.org/${_realname}-${pkgver}.tar.gz"
         "001-fix-build-on-mingw.patch"
         "002-fix-pkgconfig-file.patch"
         "003-fix-version.patch")
-sha256sums=('07fed4df03ae32178933373b990bbda4431ea836fc7bebec05b17e4267bb7f4e'
-            'eb4db135a0d01a0e5624aca081817b6a66ef433933331d0bd89e3c9ee8fd2b18'
+sha256sums=('4f72fa457056617e6ed94db21264507eda66cc50224c7ed96b990d6b82de9ac1'
+            'a8f7a4ef59381a4e01467af12107935506d87da6526a8d0c2cbff0124f3e09a6'
             '466f7f86384f02c99e9f7a948f2b38229a10962ff849cd1e8bf06b0c6ddd7481'
             'c17be9dc3e3b4f2dd84fbb4133daba4a8ac84240aea487ee0790850fc7e51538')
 
 prepare() {
-  cd "${srcdir}"/${_realname}-${pkgver}
+  cd "${srcdir}"/${_realname}-${_archive_ver}
 
   patch -Np1 -i "${srcdir}"/001-fix-build-on-mingw.patch
   patch -Np1 -i "${srcdir}"/002-fix-pkgconfig-file.patch
@@ -62,7 +63,7 @@ build() {
       "${_extra_config[@]}" \
       -DBLA_VENDOR=OpenBLAS \
       -DWANNIER_ROOT=${MINGW_PREFIX} \
-      -S "${_realname}-${pkgver}" \
+      -S "${_realname}-${_archive_ver}" \
       -B "build-${MSYSTEM}"
 
   "${MINGW_PREFIX}"/bin/cmake.exe --build "build-${MSYSTEM}"
@@ -71,6 +72,6 @@ build() {
 package() {
   DESTDIR="${pkgdir}" "${MINGW_PREFIX}"/bin/cmake.exe --install "build-${MSYSTEM}"
 
-  install -Dm644 "${srcdir}"/${_realname}-${pkgver}/COPYING \
+  install -Dm644 "${srcdir}"/${_realname}-${_archive_ver}/COPYING \
     "${pkgdir}"${MINGW_PREFIX}/share/licenses/${_realname}/COPYING
 }

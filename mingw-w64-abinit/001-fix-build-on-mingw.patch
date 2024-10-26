@@ -53,7 +53,7 @@
  add_library(abinit::02_clib ALIAS 02_clib)
 --- a/shared/common/src/02_clib/fsi_posix.c
 +++ b/shared/common/src/02_clib/fsi_posix.c
-@@ -21,6 +21,10 @@
+@@ -25,6 +25,10 @@
  #include <sys/stat.h>
  #include "abi_clib.h"
  #include "xmalloc.h"
@@ -74,8 +74,8 @@
   public :: clib_ulimit_stack    ! Set stack size limit to maximum allowed value.
 +#endif
   public :: clib_getpid
-  !public :: clib_usleep         ! Suspend calling thread for microseconds of clock time
- 
+  public :: clib_setenv
+  public :: clib_mkdir_if_needed
 @@ -116,7 +118,7 @@
       integer(c_int),intent(out) :: ierr
     end subroutine
@@ -91,9 +91,9 @@
   end interface
 -
 +#endif
-   !interface
-   !  ! suspend calling thread for microseconds of clock time
-   !  ! uses unistd.h for Fortran standard compliant sleep.
+  interface
+    integer(C_INT) function setenv(name, value, overwrite) bind(C, name="setenv")
+      import
 --- a/shared/common/src/02_clib/sockets.c
 +++ b/shared/common/src/02_clib/sockets.c
 @@ -53,10 +53,16 @@
@@ -130,16 +130,6 @@
    abinit::02_clib
 --- a/shared/common/src/12_hide_mpi/m_xmpi.F90
 +++ b/shared/common/src/12_hide_mpi/m_xmpi.F90
-@@ -38,7 +38,9 @@
- #ifdef FC_NAG
-  use f90_unix_proc
- #endif
-+#ifndef _WIN32
-  use m_clib, only : clib_ulimit_stack !, clib_getpid !, clib_usleep
-+#endif
- 
-  implicit none
- 
 @@ -815,8 +817,10 @@
   end if
  #endif
@@ -151,6 +141,32 @@
  
   if (xmpi_comm_rank(xmpi_world) == 0) then
  
+--- a/shared/common/src/28_numeric_noabirule/CMakeLists.txt
++++ b/shared/common/src/28_numeric_noabirule/CMakeLists.txt
+@@ -5,15 +5,12 @@
+   m_abi_linalg.F90
+   m_array.F90
+   m_bessel.F90
+-  m_bessel2.F90
+-  m_brentq.F90
+   m_bspline.F90
+   m_cplxtools.F90
+   m_elpa.F90
+   m_gaussian_quadrature.F90
+   m_hide_blas.F90
+   m_hide_lapack.F90
+-  m_hybrd.F90
+   m_lebedev.F90
+   m_levenberg_marquardt.F90
+   m_lib_four.F90
+@@ -23,7 +20,6 @@
+   m_random_xoroshiro128plus.F90
+   m_random_zbq.F90
+   m_slk.F90
+-  m_slsqp.F90
+   m_sort.F90
+   m_splines.F90
+   )
 --- a/src/57_iopsp_parser/CMakeLists.txt
 +++ b/src/57_iopsp_parser/CMakeLists.txt
 @@ -37,6 +37,7 @@
@@ -171,3 +187,21 @@
    )
  
  add_library(abinit::64_psp ALIAS 64_psp)
+--- a/src/65_paw/CMakeLists.txt
++++ b/src/65_paw/CMakeLists.txt
+@@ -10,7 +10,6 @@
+   m_paw_dfptnl.F90
+   m_paw_dmft.F90
+   m_paw_efield.F90
+-  m_paw_exactDC.F90
+   m_paw_hr.F90
+   m_paw_init.F90
+   m_paw_lmn.F90
+@@ -26,7 +25,6 @@
+   m_paw_sym.F90
+   m_paw_tools.F90
+   m_paw_uj.F90
+-  m_paw_yukawa.F90
+   m_pawfgr.F90
+   m_pawpwij.F90
+   )
