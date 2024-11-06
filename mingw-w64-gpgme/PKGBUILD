@@ -6,11 +6,10 @@ _realname=gpgme
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
          $([[ ${CARCH} == i686 ]] || echo \
-           "${MINGW_PACKAGE_PREFIX}-qgpgme-qt5" \
-           "${MINGW_PACKAGE_PREFIX}-qgpgme-qt6" \
+           "${MINGW_PACKAGE_PREFIX}-qgpgme-qt" \
            "${MINGW_PACKAGE_PREFIX}-python-gpgme"))
-pkgver=1.23.2
-pkgrel=6
+pkgver=1.24.0
+pkgrel=1
 pkgdesc="A C wrapper library for GnuPG (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -40,14 +39,11 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "doxygen")
 source=("https://www.gnupg.org/ftp/gcrypt/${_realname}/${_realname}-${pkgver}.tar.bz2"{,.sig}
         0001-fix-find-moc-qt6.patch
-        0002-Build-Python-bindings-without-distutils.patch::"https://git.gnupg.org/cgi-bin/gitweb.cgi?p=gpgme.git;a=patch;h=5844d9e7"
-        0003-Fix-build-with-setuptools-72.2.0.patch::"https://git.gnupg.org/cgi-bin/gitweb.cgi?p=gpgme.git;a=patch;h=ecd0c86d"
         0004-gpgme-find-gnupg.patch
         0005-invoke-scripts-via-sh.patch
         0007-mkdefsinc-use-CPPFLAGS.patch
         0008-no-py2.patch
         0009-fix-broken-version.patch
-        0010-m4-check-python-exit-code.patch
         relocatable-cmake.patch
         gpgmepp-portable-types.patch)
 #These might be signed by any of these keys https://gnupg.org/signature_key.html
@@ -55,19 +51,16 @@ validpgpkeys=('5B80C5754298F0CB55D8ED6ABCEF7E294B092E28'
               '6DAA6E64A76D2840571B4902528897B826403ADA'
               'AC8E115BF73E2D8D47FA9908E98E9B2D19C6C8BD'
               '02F38DFF731FF97CB039A1DA549E695E905BA208')
-sha256sums=('9499e8b1f33cccb6815527a1bc16049d35a6198a6c5fae0185f2bd561bce5224'
+sha256sums=('61e3a6ad89323fecfaff176bc1728fb8c3312f2faa83424d9d5077ba20f5f7da'
             'SKIP'
-            'c5079439302d931371118117ad9a2478163c7a84bb1400a89f2437459eb70f5c'
-            '21cb8ff3f141427d5c55d388cb88c6f5774f592370719d3b632c4a8a70ff179b'
-            '69202c576f5f9980bc88bf9e963fd6199093c89ab8dc3be02ab6c460d65fe1b4'
+            '1b00e60ed994a88bef17b3e047879793cb918c0f6fcb3d2d66e7906a2fd961c0'
             '0ff731656094213854877cfe8f88f4ea562a2191c708a26f567b8ecb4873d5df'
             '75f77086c96fb4bcb9edad01bf64bbf11a7ec435f751b901f3fb180b410fa236'
             'f022993b4ae8f69f8248a6e22a0b6f0d0f43a074cdbcdbe2efb479e48064f988'
-            '0b0d511f9d47844d3fd806864310d9abbeb1285d43f6ffa33babf55a4a410458'
-            'ace3d5166372e0422a625f76a2890d70f2916d9239ade74e58bd23077e9c1c6b'
-            '5e8e7e773a09ed1e1724c9d7216eaaecce52af49152513366026a2fa3245d762'
-            '81f412ffdeeb2a0757248b517fbda9caae9913b1552c88abb8347faa4d1efea2'
-            'a110b40d146a7c561140b68831027f61d2132e1069d2476b2e0a4034bc54fae1')
+            '8c148ec5124e34d80442d655e6d157dddb316b6804c4317a25dba9b9ad4ab0a9'
+            '143cfc654adf37924c6e9dd4990b91f037ac835d736b42dfa725315afe100fa0'
+            '5c4b51e1f7d295b6aa648bb536529e18f932d36dde0c1fc19a073469bf193023'
+            '697633e11590f7e2660771fbfe5bf8fd5b8337638a467f4268083050b864b66e')
 
 _apply_patch_with_msg() {
   for _patch in "$@"
@@ -82,14 +75,11 @@ prepare() {
 
   _apply_patch_with_msg \
     0001-fix-find-moc-qt6.patch \
-    0002-Build-Python-bindings-without-distutils.patch \
-    0003-Fix-build-with-setuptools-72.2.0.patch \
     0004-gpgme-find-gnupg.patch \
     0005-invoke-scripts-via-sh.patch \
     0007-mkdefsinc-use-CPPFLAGS.patch \
     0008-no-py2.patch \
     0009-fix-broken-version.patch \
-    0010-m4-check-python-exit-code.patch \
     relocatable-cmake.patch \
     gpgmepp-portable-types.patch
 
@@ -128,24 +118,6 @@ build() {
     cd lang/python/
     top_builddir="${srcdir}"/build-${MSYSTEM} \
     ${MINGW_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
-
-    cp -r "${srcdir}"/${_realname}-${pkgver} "${srcdir}"/build-${MSYSTEM}-qt6
-    cd "${srcdir}"/build-${MSYSTEM}-qt6
-
-    ./configure \
-      --prefix=${MINGW_PREFIX} \
-      --libexecdir=${MINGW_PREFIX}/bin \
-      --disable-fd-passing \
-      --enable-shared \
-      --enable-static \
-      --disable-gpgsm-test \
-      --disable-gpgconf-test \
-      --disable-gpg-test \
-      --enable-w32-glib \
-      --with-libtool-modification=never \
-      --enable-languages=cpp,qt6
-
-    make
   fi
 }
 
@@ -169,25 +141,22 @@ package_gpgme() {
     rm -r "${pkgdir}${MINGW_PREFIX}"/bin/libqgpgme*
     rm -r "${pkgdir}${MINGW_PREFIX}"/lib/{cmake/QGpgme/,libqgpgme.*}
     rm -r "${pkgdir}${MINGW_PREFIX}"/lib/python*
+    rm -r "${pkgdir}${MINGW_PREFIX}"/include/qgpgme-qt6
   fi
 }
 
-package_qgpgme-qt5() {
-  pkgdesc="Qt5 bindings for GPGme (mingw-w64)"
+package_qgpgme-qt() {
+  pkgdesc="Qt bindings for GPGme (mingw-w64)"
   depends=("${MINGW_PACKAGE_PREFIX}-gpgme"
            "${MINGW_PACKAGE_PREFIX}-qt5-base")
+  provides=("${MINGW_PACKAGE_PREFIX}-qgpgme-qt5"
+            "${MINGW_PACKAGE_PREFIX}-qgpgme-qt6")
+  replaces=("${MINGW_PACKAGE_PREFIX}-qgpgme-qt5"
+            "${MINGW_PACKAGE_PREFIX}-qgpgme-qt6")
+  conflicts=("${MINGW_PACKAGE_PREFIX}-qgpgme-qt5"
+             "${MINGW_PACKAGE_PREFIX}-qgpgme-qt6")
 
   cd "${srcdir}"/build-${MSYSTEM}/lang/qt
-  make DESTDIR="${pkgdir}" install
-  rm -r "${pkgdir}${MINGW_PREFIX}"/include
-}
-
-package_qgpgme-qt6() {
-  pkgdesc="Qt6 bindings for GPGme (mingw-w64)"
-  depends=("${MINGW_PACKAGE_PREFIX}-gpgme"
-           "${MINGW_PACKAGE_PREFIX}-qt6-base")
-
-  cd "${srcdir}"/build-${MSYSTEM}-qt6/lang/qt
   make DESTDIR="${pkgdir}" install
   rm -r "${pkgdir}${MINGW_PREFIX}"/include
 }
