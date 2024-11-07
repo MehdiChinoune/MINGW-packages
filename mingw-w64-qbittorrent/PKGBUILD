@@ -4,7 +4,7 @@ _realname=qbittorrent
 pkgbase=mingw-w64-${_realname}
 pkgname=${MINGW_PACKAGE_PREFIX}-${_realname}
 pkgver=5.0.1
-pkgrel=1
+pkgrel=2
 pkgdesc="An advanced BitTorrent client programmed in C++, based on Qt toolkit and libtorrent-rasterbar (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -14,17 +14,18 @@ msys2_references=(
   "cpe: cpe:/a:qbittorrent:qbittorrent"
 )
 license=('spdx:GPL-2.0-or-later')
-depends=("${MINGW_PACKAGE_PREFIX}-boost"
+depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
          "${MINGW_PACKAGE_PREFIX}-openssl"
          "${MINGW_PACKAGE_PREFIX}-qt6-base"
-         "${MINGW_PACKAGE_PREFIX}-qt6-svg"
          "${MINGW_PACKAGE_PREFIX}-libtorrent-rasterbar"
          "${MINGW_PACKAGE_PREFIX}-zlib")
-optdepends=("${MINGW_PACKAGE_PREFIX}-python: needed for torrent search tab")
 makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-cmake"
              "${MINGW_PACKAGE_PREFIX}-ninja"
+             "${MINGW_PACKAGE_PREFIX}-boost"
+             "${MINGW_PACKAGE_PREFIX}-qt6-svg"
              "${MINGW_PACKAGE_PREFIX}-qt6-tools")
+optdepends=("${MINGW_PACKAGE_PREFIX}-python: needed for torrent search tab")
 source=("https://downloads.sourceforge.net/sourceforge/qbittorrent/${_realname}-${pkgver}.tar.xz"{,.asc}
         004-unixy-install.patch
         005-no-invalid-redef.patch)
