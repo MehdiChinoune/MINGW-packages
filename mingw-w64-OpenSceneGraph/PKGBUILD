@@ -6,7 +6,7 @@ pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 _pkgver=3.6.5
 pkgver=${_pkgver//-/}
-pkgrel=33
+pkgrel=34
 pkgdesc="Open source high performance 3D graphics toolkit (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -19,9 +19,10 @@ license=("spdx:LGPL-2.1-only WITH WxWindows-exception-3.1")
 makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-cmake"
              "${MINGW_PACKAGE_PREFIX}-ninja"
+             "${MINGW_PACKAGE_PREFIX}-boost"
              "${MINGW_PACKAGE_PREFIX}-cyrus-sasl"
              "${MINGW_PACKAGE_PREFIX}-wxwidgets${_wx_basever}-msw")
-depends=("${MINGW_PACKAGE_PREFIX}-boost"
+depends=("${MINGW_PACKAGE_PREFIX}-boost-libs"
          "${MINGW_PACKAGE_PREFIX}-collada-dom"
          "${MINGW_PACKAGE_PREFIX}-curl"
          "${MINGW_PACKAGE_PREFIX}-dcmtk"
