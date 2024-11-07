@@ -10,29 +10,41 @@ pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 pkgver=16.0.0
 _pkgver=${pkgver//./-}
-pkgrel=2
+pkgrel=3
 pkgdesc='Algorithms for the solution of large-scale scientific problems" (mingw-w64)'
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64')
 url="http://trilinos.org"
 msys2_repository_url="https://github.com/trilinos/Trilinos"
 license=('spdx:BSD-3-Clause AND LGPL-2.1-or-later')
-depends=("${MINGW_PACKAGE_PREFIX}-python"
-         "${MINGW_PACKAGE_PREFIX}-openblas"
-         "${MINGW_PACKAGE_PREFIX}-boost"
-         "${MINGW_PACKAGE_PREFIX}-netcdf"
-         "${MINGW_PACKAGE_PREFIX}-matio"
+depends=("${MINGW_PACKAGE_PREFIX}-boost"
+         "${MINGW_PACKAGE_PREFIX}-cereal"
+         "${MINGW_PACKAGE_PREFIX}-cppunit"
+         "${MINGW_PACKAGE_PREFIX}-glpk"
          "${MINGW_PACKAGE_PREFIX}-hdf5"
-         "${MINGW_PACKAGE_PREFIX}-msmpi")
+         "${MINGW_PACKAGE_PREFIX}-hwloc"
+         "${MINGW_PACKAGE_PREFIX}-hypre"
+         "${MINGW_PACKAGE_PREFIX}-matio"
+         "${MINGW_PACKAGE_PREFIX}-metis"
+         "${MINGW_PACKAGE_PREFIX}-netcdf"
+         "${MINGW_PACKAGE_PREFIX}-openblas"
+         "${MINGW_PACKAGE_PREFIX}-parmetis"
+         "${MINGW_PACKAGE_PREFIX}-suitesparse"
+         "${MINGW_PACKAGE_PREFIX}-superlu"
+         "${MINGW_PACKAGE_PREFIX}-superlu_dist"
+         "${MINGW_PACKAGE_PREFIX}-python"
+         "${MINGW_PACKAGE_PREFIX}-yaml-cpp")
 makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-cmake"
              "${MINGW_PACKAGE_PREFIX}-ninja"
+             "${MINGW_PACKAGE_PREFIX}-doxygen"
+             #"${MINGW_PACKAGE_PREFIX}-msmpi"
              "${MINGW_PACKAGE_PREFIX}-fc"
              "${MINGW_PACKAGE_PREFIX}-perl"
              "${MINGW_PACKAGE_PREFIX}-bc"
              "${MINGW_PACKAGE_PREFIX}-python-numpy"
              "unzip")
-optdepends=("${MINGW_PACKAGE_PREFIX}-seacas")
+#optdepends=("${MINGW_PACKAGE_PREFIX}-seacas")
 source=("https://github.com/${_realname}/Trilinos/archive/${_realname}-release-${_pkgver}.tar.gz")
 sha256sums=('46bfc40419ed2aa2db38c144fb8e61d4aa8170eaa654a88d833ba6b92903f309')
 noextract=(${_realname}-release-${_pkgver}.tar.gz)
@@ -57,18 +69,19 @@ build() {
     ${MINGW_PREFIX}/bin/cmake \
       -GNinja \
       -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
+      -DCMAKE_Fortran_FLAGS="$FCFLAGS -fallow-argument-mismatch" \
       "${extra_config[@]}" \
       -DBLAS_LIBRARY_NAMES="openblas" \
       -DLAPACK_LIBRARY_NAMES="openblas" \
       -DTrilinos_ENABLE_Fortran=$([[ ${MINGW_PACKAGE_PREFIX} != *-clang-* ]] && echo "ON" || echo "OFF") \
       -DTrilinos_ENABLE_ALL_OPTIONAL_PACKAGES=ON \
       -DTrilinos_ENABLE_ALL_PACKAGES=ON \
-      -DTPL_ENABLE_DLlib=OFF \
+      -DTrilinos_ENABLE_Epetra=OFF \
+      -DTrilinos_ENABLE_Galeri=OFF \
       -DTrilinos_ENABLE_Xpetra=OFF \
-      -DTrilinos_ENABLE_Epetra=ON \
       -DTrilinos_ENABLE_Intrepid2=OFF \
       -DTrilinos_ENABLE_SEACAS=OFF \
-      -DCMAKE_Fortran_FLAGS="$FCFLAGS -fallow-argument-mismatch" \
+      -DTPL_ENABLE_DLlib=OFF \
       ../Trilinos-${_realname}-release-${_pkgver}
       
   ${MINGW_PREFIX}/bin/cmake --build .
@@ -76,10 +89,12 @@ build() {
   #Shared Build
   mkdir -p "${srcdir}/build-${MSYSTEM}-shared" && cd "${srcdir}/build-${MSYSTEM}-shared"
 
+  CXXFLAGS+=" -Wno-ignored-attributes" \
   MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
     ${MINGW_PREFIX}/bin/cmake \
       -GNinja \
       -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
+      -DCMAKE_Fortran_FLAGS="$FCFLAGS -fallow-argument-mismatch" \
       "${extra_config[@]}" \
       -DBUILD_SHARED_LIBS=ON \
       -DBLAS_LIBRARY_NAMES="openblas" \
@@ -87,12 +102,35 @@ build() {
       -DTrilinos_ENABLE_Fortran=$([[ ${MINGW_PACKAGE_PREFIX} != *-clang-* ]] && echo "ON" || echo "OFF") \
       -DTrilinos_ENABLE_ALL_OPTIONAL_PACKAGES=ON \
       -DTrilinos_ENABLE_ALL_PACKAGES=ON \
-      -DTPL_ENABLE_DLlib=OFF \
-      -DTrilinos_ENABLE_Xpetra=OFF \
-      -DTrilinos_ENABLE_Epetra=ON \
+      -DTrilinos_ENABLE_AMD=ON \
+      -DTrilinos_ENABLE_Boost=ON \
+      -DTrilinos_ENABLE_Cereal=ON \
+      -DTrilinos_ENABLE_Cholmod=ON \
+      -DTrilinos_ENABLE_CppUnit=ON \
+      -DTrilinos_ENABLE_GLPK=ON \
+      -DTrilinos_ENABLE_HDF5=ON \
+      -DTrilinos_ENABLE_HWLOC=ON \
+      -DTrilinos_ENABLE_HYPRE=ON \
+      -DTrilinos_ENABLE_Matio=ON \
+      -DTrilinos_ENABLE_METIS=ON \
+      -DTrilinos_ENABLE_MUMPS=ON \
+      -DTrilinos_ENABLE_Netcdf=ON \
+      -DTrilinos_ENABLE_ParMETIS=ON \
+      -DTrilinos_ENABLE_SuperLU=ON \
+      -DTrilinos_ENABLE_SuperLUDist=ON \
+      -DTrilinos_ENABLE_UMFPACK=ON \
+      -DTrilinos_ENABLE_yamlcpp=ON \
+      -DTrilinos_ENABLE_Epetra=OFF \
+      -DTrilinos_ENABLE_Galeri=OFF \
       -DTrilinos_ENABLE_Intrepid2=OFF \
       -DTrilinos_ENABLE_SEACAS=OFF \
-      -DCMAKE_Fortran_FLAGS="$FCFLAGS -fallow-argument-mismatch" \
+      -DTrilinos_ENABLE_Xpetra=OFF \
+      -DTPL_ENABLE_DLlib=OFF \
+      -DTPL_Cholmod_INCLUDE_DIRS=${MINGW_PREFIX}/include/suitesparse \
+      -DTPL_AMD_INCLUDE_DIRS==${MINGW_PREFIX}/include/suitesparse \
+      -DTPL_UMFPACK_INCLUDE_DIRS==${MINGW_PREFIX}/include/suitesparse \
+      -DTPL_SuperLU_INCLUDE_DIRS=${MINGW_PREFIX}/include/superlu \
+      -DTPL_SuperLUDist_INCLUDE_DIRS=${MINGW_PREFIX}/include/superlu_dist \
       ../Trilinos-${_realname}-release-${_pkgver}
       
   ${MINGW_PREFIX}/bin/cmake --build .
@@ -106,7 +144,9 @@ package() {
   #Shared Install
   cd "${srcdir}/build-${MSYSTEM}-shared"
   DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake --install .
-  install -Dm644 "${srcdir}"/Trilinos-${_realname}-release-${_pkgver}/LICENSE "${pkgdir}"${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE
+
+  install -Dm644 "${srcdir}"/Trilinos-${_realname}-release-${_pkgver}/LICENSE \
+    "${pkgdir}"${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE
 
   # Remove conflict with seacas package
   #rm -r "${pkgdir}"${MINGW_PREFIX}/lib/external_packages/DLlib
