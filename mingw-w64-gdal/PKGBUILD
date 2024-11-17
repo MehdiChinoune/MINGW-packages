@@ -8,7 +8,7 @@ _realname=gdal
 pkgbase=mingw-w64-${_realname,,}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
          "${MINGW_PACKAGE_PREFIX}-python-${_realname}")
-pkgver=3.9.3
+pkgver=3.10.0
 pkgrel=1
 pkgdesc="A translator library for raster geospatial data formats (mingw-w64)"
 arch=('any')
@@ -81,7 +81,7 @@ depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
 source=(https://github.com/OSGeo/gdal/releases/download/v${pkgver}/gdal-${pkgver}.tar.gz
         001-fix-bindings-install-path.patch
         002-remove-manual-soversion.patch)
-sha256sums=('f293d8ccc6b98f617db88f8593eae37f7e4b32d49a615b2cba5ced12c7bebdae'
+sha256sums=('946ef444489bedbc1b04bd4c115d67ae8d3f3e4a5798d5a2f1cb2a11014105b2'
             'bfb0b42c8562bd45ae5cff71d42b042e398dff9a9c1f5bb08d8717a7753d4f3f'
             'fc815a58fe229db3c44bae15f405cafbeb82de91ec3f35564569c5bbecb1c3d7')
 
