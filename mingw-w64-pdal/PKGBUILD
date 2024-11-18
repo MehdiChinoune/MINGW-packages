@@ -3,8 +3,8 @@
 _realname=pdal
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=2.8.0
-pkgrel=2
+pkgver=2.8.1
+pkgrel=1
 pkgdesc="A C++ library for translating and manipulating point cloud data (mingw-w64)"
 arch=(any)
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -36,8 +36,15 @@ optdepends=("${MINGW_PACKAGE_PREFIX}-draco: Draco plugin, Read data in the draco
             "${MINGW_PACKAGE_PREFIX}-hdf5: HDF plugin, read data in the HDF format"
             "${MINGW_PACKAGE_PREFIX}-postgresql: PostgreSQL PointCloud plugin, read/write PostgreSQL PointCloud objects"
             "${MINGW_PACKAGE_PREFIX}-tiledb: TileDB plugin, read/write data from TileDB")
-source=("https://github.com/PDAL/PDAL/releases/download/${pkgver}/PDAL-${pkgver}-src.tar.bz2")
-sha256sums=('8a6d7646912a4e7a382f06451b14a1f5f2e8aa4e0b391dc91c30701222198b77')
+source=("https://github.com/PDAL/PDAL/releases/download/${pkgver}/PDAL-${pkgver}-src.tar.bz2"
+        "001-fix-build-with-clang-19.patch::https://github.com/PDAL/PDAL/commit/c11a4d3a.patch")
+sha256sums=('0e8d7deabe721f806b275dda6cf5630a8e43dc7210299b57c91f46fadcc34b31'
+            '24924d90dd10e4e58bde932c64db9bce009a7757bd3d749e3c8696ae5be7748a')
+
+prepare() {
+  cd PDAL-${pkgver}-src
+  patch -p1 -i "${srcdir}"/001-fix-build-with-clang-19.patch
+}
 
 build() {
   mkdir -p "${srcdir}"/build-${MSYSTEM} && cd "${srcdir}"/build-${MSYSTEM}
