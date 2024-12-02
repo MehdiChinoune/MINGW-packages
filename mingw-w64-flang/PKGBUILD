@@ -9,7 +9,7 @@ _version=19.1.4
 _rc=""
 _tag=llvmorg-${_version}${_rc}
 pkgver=${_version}${_rc/-/}
-pkgrel=1
+pkgrel=2
 pkgdesc="Fortran frontend for LLVM (mingw-w64)"
 arch=('any')
 mingw_arch=('ucrt64' 'clang64' 'clangarm64')
@@ -34,6 +34,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-clang-tools-extra"
              $([[ "$_compiler" == "gcc" ]] && echo \
                "${MINGW_PACKAGE_PREFIX}-gcc")
              )
+optdepends=("${MINGW_PACKAGE_PREFIX}-llvm-openmp")
 _pkgfn=${_realname}-${pkgver}.src
 _url=https://github.com/llvm/llvm-project/releases/download/${_tag}
 source=("${_url}/${_pkgfn}.tar.xz"{,.sig}
@@ -128,5 +129,6 @@ check() {
 package() {
   DESTDIR="${pkgdir}" cmake --install build-${MSYSTEM}
 
-  install -Dm644 "${srcdir}"/${_pkgfn}/LICENSE.TXT "${pkgdir}"${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE
+  install -Dm644 "${srcdir}"/${_pkgfn}/LICENSE.TXT \
+    "${pkgdir}"${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE
 }
