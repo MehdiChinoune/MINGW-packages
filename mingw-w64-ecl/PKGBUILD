@@ -1,0 +1,67 @@
+# Contributor: Mehdi Chinoune <mehdi.chinoune@hotmail.com>
+
+_realname=ecl
+pkgbase=mingw-w64-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=24.5.10
+pkgrel=1
+pkgdesc="Embeddable Common-Lisp. (mingw-w64)"
+arch=('any')
+mingw_arch=('ucrt64' 'clang64' 'clangarm64')
+url='https://www.somepackage.org/'
+msys2_repository_url="https://gitlab.com/embeddable-common-lisp/ecl"
+license=('spdx:LGPL-2.1-or-later')
+depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
+         "${MINGW_PACKAGE_PREFIX}-gmp"
+         "${MINGW_PACKAGE_PREFIX}-libffi")
+makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-autotools"
+             "${MINGW_PACKAGE_PREFIX}-texinfo")
+source=("https://common-lisp.net/project/ecl/static/files/release/ecl-${pkgver}.tgz")
+sha256sums=('e4ea65bb1861e0e495386bfa8bc673bd014e96d3cf9d91e9038f91435cbe622b')
+
+prepare() {
+  cd "${_realname}-${pkgver}"/src
+
+  autoreconf -vfi
+}
+
+build() {
+  [[ -d build-${MSYSTEM} ]] && rm -rf build-${MSYSTEM}
+  cp -r ${_realname}-${pkgver} "build-${MSYSTEM}" && cd "build-${MSYSTEM}"
+
+  declare -a _extra_config
+  if [[ ${CARCH} != aarch64 ]]; then
+    _extra_config+=("--with-sse=yes")
+  fi
+
+  CFLAGS+=" -Wno-int-conversion -Wno-implicit-int -Wno-incompatible-pointer-types" \
+  ./configure \
+    --prefix="${MINGW_PREFIX}" \
+    --bindir=${MINGW_PREFIX}/bin \
+    --libdir=${MINGW_PREFIX}/lib \
+    --includedir=${MINGW_PREFIX}/include \
+    --with-clos-streams \
+    --with-dffi \
+    --with-serve-event \
+    --with-tcp \
+    --enable-boehm=included \
+    --enable-c99complex \
+    --enable-gmp \
+    --enable-threads \
+    --enable-shared \
+    "${_extra_config[@]}"
+
+  make
+}
+
+package() {
+  cd "build-${MSYSTEM}"
+
+  make install DESTDIR="${pkgdir}" INSTALL_TARGET='install'
+
+  install -Dm644 "${srcdir}"/${_realname}-${pkgver}/COPYING \
+    "${pkgdir}"${MINGW_PREFIX}/share/licenses/${_realname}/COPYING
+  install -Dm644 "${srcdir}"/${_realname}-${pkgver}/LICENSE \
+    "${pkgdir}"${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE
+}
