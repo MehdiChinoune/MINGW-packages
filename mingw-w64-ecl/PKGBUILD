@@ -4,7 +4,7 @@ _realname=ecl
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 pkgver=24.5.10
-pkgrel=1
+pkgrel=2
 pkgdesc="Embeddable Common-Lisp. (mingw-w64)"
 arch=('any')
 mingw_arch=('ucrt64' 'clang64' 'clangarm64')
@@ -17,12 +17,17 @@ depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
 makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-autotools"
              "${MINGW_PACKAGE_PREFIX}-texinfo")
-source=("https://common-lisp.net/project/ecl/static/files/release/ecl-${pkgver}.tgz")
-sha256sums=('e4ea65bb1861e0e495386bfa8bc673bd014e96d3cf9d91e9038f91435cbe622b')
+source=("https://common-lisp.net/project/ecl/static/files/release/ecl-${pkgver}.tgz"
+        "001-silent-error-about-codepage.patch")
+sha256sums=('e4ea65bb1861e0e495386bfa8bc673bd014e96d3cf9d91e9038f91435cbe622b'
+            '25057159e7acd368f5d97643ded882a0c3251903a4dc882016fd9c40d82c1160')
 
 prepare() {
-  cd "${_realname}-${pkgver}"/src
+  cd "${_realname}-${pkgver}"
 
+  patch -p1 -i "${srcdir}"/001-silent-error-about-codepage.patch
+
+  cd src
   autoreconf -vfi
 }
 

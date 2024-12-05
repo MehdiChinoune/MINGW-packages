@@ -1,0 +1,11 @@
+--- a/src/c/main.d
++++ b/src/c/main.d
+@@ -449,7 +449,7 @@
+   .known_signals = ECL_NIL
+ };
+ 
+-#if !defined(ECL_MS_WINDOWS_HOST)
++#if !defined(_MSC_VER)
+ #define maybe_fix_console_stream(strm) (void)0
+ #else
+ static void
