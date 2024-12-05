@@ -1,0 +1,53 @@
+# Contributor: Mehdi Chinoune <mehdi.chinoune@hotmail.com>
+
+_realname=gcl
+pkgbase=mingw-w64-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=2.6.14
+pkgrel=1
+pkgdesc="An implementation of Common Lisp (mingw-w64)"
+arch=('any')
+mingw_arch=('ucrt64' 'clang64' 'clangarm64')
+url='https://www.gnu.org/software/gcl/'
+msys2_repository_url="https://git.savannah.gnu.org/cgit/gcl.git"
+license=('spdx:LGPL-2.0-or-later')
+makedepends=("${MINGW_PACKAGE_PREFIX}-gmp")
+makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-autotools"
+             "${MINGW_PACKAGE_PREFIX}-texinfo"
+             "${MINGW_PACKAGE_PREFIX}-texlive-bin")
+source=("https://ftp.gnu.org/gnu/gcl/gcl-${pkgver}.tar.gz")
+sha256sums=('09f3417c512aa1733a638809d3a63ac290eeb9448be82795f5b6681bd307345a')
+
+prepare() {
+  cd "${_realname}-${pkgver}"
+
+  autoreconf -fiv
+}
+
+build() {
+  [[ -d "build-${MSYSTEM}" ]] && rm -rf "build-${MSYSTEM}"
+  cp -r ${_realname}-${pkgver} "build-${MSYSTEM}" && cd "build-${MSYSTEM}"
+
+  ./configure \
+    --prefix="${MINGW_PREFIX}" \
+    --disable-static \
+    --disable-xgcl
+
+  make
+}
+
+check() {
+  cd "build-${MSYSTEM}"
+
+  make check
+}
+
+package() {
+  cd "build-${MSYSTEM}"
+
+  make install DESTDIR="${pkgdir}"
+
+  install -Dm644 "${srcdir}"/${_realname}-${pkgver}/COPYING.LIB-2.0 \
+    "${pkgdir}"${MINGW_PREFIX}/share/licenses/${_realname}/COPYING.LIB-2.0
+}
