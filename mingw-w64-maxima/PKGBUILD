@@ -1,0 +1,57 @@
+# Contributor: Mehdi Chinoune <mehdi.chinoune@hotmail.com>
+
+_realname=maxima
+pkgbase=mingw-w64-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=5.47.0
+pkgrel=1
+pkgdesc="Computer Algebra System written in Common Lisp (mingw-w64)"
+arch=('any')
+mingw_arch=('ucrt64')
+url='https://maxima.sourceforge.io/'
+msys2_repository_url="https://sourceforge.net/p/maxima/code/ci/master/tree/"
+license=('spdx:GPL-2.0-or-later')
+depends=("${MINGW_PACKAGE_PREFIX}-sbcl"
+         "${MINGW_PACKAGE_PREFIX}-texinfo")
+makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-autotools"
+             "${MINGW_PACKAGE_PREFIX}-emacs"
+             "${MINGW_PACKAGE_PREFIX}-python"
+             "${MINGW_PACKAGE_PREFIX}-tk")
+optdepends=("${MINGW_PACKAGE_PREFIX}-gnuplot: plotting capabilities"
+            "${MINGW_PACKAGE_PREFIX}-tk: graphical xmaxima interface")
+options=(!zipman) # don't zip info pages or they won't work inside maxima
+source=("https://downloads.sourceforge.net/sourceforge/${_realname}/${_realname}-${pkgver}.tar.gz")
+sha256sums=('9104021b24fd53e8c03a983509cb42e937a925e8c0c85c335d7709a14fd40f7a')
+
+prepare() {
+  cd "${_realname}-${pkgver}"
+
+  autoreconf -fiv
+}
+
+build() {
+  [[ -d build-${MSYSTEM} ]] && rm -rf build-${MSYSTEM}
+  cp -r ${_realname}-${pkgver} "build-${MSYSTEM}" && cd "build-${MSYSTEM}"
+
+  ./configure \
+    --prefix=${MINGW_PREFIX} \
+    --mandir=${MINGW_PREFIX}/share/man \
+    --infodir=${MINGW_PREFIX}/share/info \
+    --libexecdir=${MINGW_PREFIX}/lib \
+    --enable-sbcl \
+    --with-default-lisp=sbcl \
+    --enable-xmaxima \
+    --enable-gettext
+
+  make
+}
+
+package() {
+  cd "build-${MSYSTEM}"
+
+  make install emacsdir=${MINGW_PREFIX}/share/emacs/site-lisp/maxima DESTDIR="${pkgdir}"
+
+  install -Dm644 "${srcdir}"/${_realname}-${pkgver}/COPYING \
+    "${pkgdir}"${MINGW_PREFIX}/share/licenses/${_realname}/COPYING
+}
