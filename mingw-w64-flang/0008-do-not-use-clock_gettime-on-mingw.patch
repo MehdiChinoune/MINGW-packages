@@ -9,3 +9,14 @@
        timespec ts;
        clock_gettime(CLOCK_REALTIME, &ts);
        generator.seed(ts.tv_sec & ts.tv_nsec);
+--- a/tools/f18-parse-demo/f18-parse-demo.cpp
++++ b/tools/f18-parse-demo/f18-parse-demo.cpp
+@@ -65,7 +65,7 @@
+ }
+ 
+ #if _POSIX_C_SOURCE >= 199309L && _POSIX_TIMERS > 0 && _POSIX_CPUTIME && \
+-    defined CLOCK_PROCESS_CPUTIME_ID
++    defined CLOCK_PROCESS_CPUTIME_ID && !defined(__MINGW32__)
+ static constexpr bool canTime{true};
+ double CPUseconds() {
+   struct timespec tspec;
