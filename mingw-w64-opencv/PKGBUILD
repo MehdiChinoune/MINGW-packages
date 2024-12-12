@@ -7,7 +7,7 @@ pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
          "${MINGW_PACKAGE_PREFIX}-python-${_realname}")
 pkgver=4.10.0
-pkgrel=11
+pkgrel=12
 pkgdesc="Open Source Computer Vision Library (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -47,7 +47,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-cmake"
              "${MINGW_PACKAGE_PREFIX}-ninja"
              "${MINGW_PACKAGE_PREFIX}-cereal"
-             "${MINGW_PACKAGE_PREFIX}-vtk"
+             $([[ ${MINGW_PACKAGE_PREFIX} == *-clang-* ]] || echo "${MINGW_PACKAGE_PREFIX}-vtk")
              "${MINGW_PACKAGE_PREFIX}-utf8cpp"
              "${MINGW_PACKAGE_PREFIX}-eigen3"
              "${MINGW_PACKAGE_PREFIX}-fast_float"
@@ -106,8 +106,12 @@ prepare() {
     0004-generate-proper-pkg-config-file.patch \
     0008-mingw-w64-cmake-lib-path.patch \
     0014-python-install-path.patch \
-    0015-windres-cant-handle-spaces-in-defines.patch \
-    0021-requires-vtk.patch
+    0015-windres-cant-handle-spaces-in-defines.patch
+
+  if [[ ${MINGW_PACKAGE_PREFIX} != *-clang-* ]]; then
+    apply_patch_with_msg \
+      0021-requires-vtk.patch
+  fi
 
   cd "${srcdir}/${_realname}_contrib-${pkgver}"
   apply_patch_with_msg \
@@ -130,6 +134,12 @@ build() {
 
   if [ ${MSYSTEM} == "CLANG64" ]; then
     _extra_config+=("-DCPU_DISPATCH=SSE4_1;SSE4_2;AVX;FP16;AVX2")
+  fi
+
+  if [[ ${MINGW_PACKAGE_PREFIX} == *-clang-* ]]; then
+    _extra_config+=("-DWITH_VTK=OFF" "-DOPENCV_FORCE_VTK=OFF")
+  else
+    _extra_config+=("-DWITH_VTK=ON" "-DOPENCV_FORCE_VTK=ON")
   fi
 
   CFLAGS+=" -D_POSIX_SOURCE -Wno-attributes" \
@@ -159,7 +169,6 @@ build() {
     -DWITH_OPENJPEG=ON \
     -DWITH_QT=ON \
     -DWITH_TBB=ON \
-    -DWITH_VTK=ON \
     -DWITH_GDAL=OFF \
     -DWITH_GSTREAMER=$([[ "$_enable_gst" == "yes" ]] && echo "ON" || echo "OFF") \
     -DWITH_GTK=OFF \
@@ -174,7 +183,6 @@ build() {
     -DOPENCV_SKIP_CMAKE_ROOT_CONFIG=ON \
     -DOPENCV_FFMPEG_USE_FIND_PACKAGE=ON \
     -DOPENCV_FFMPEG_SKIP_DOWNLOAD=ON \
-    -DOPENCV_FORCE_VTK=ON \
     -DOPENCV_DLLVERSION="" \
     -DPYTHON_DEFAULT_EXECUTABLE=${MINGW_PREFIX}/bin/python \
     -DPYTHON3_EXECUTABLE=${MINGW_PREFIX}/bin/python \
