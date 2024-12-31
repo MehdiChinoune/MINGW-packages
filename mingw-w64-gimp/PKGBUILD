@@ -4,7 +4,7 @@ _realname=gimp
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 pkgver=2.10.38
-pkgrel=4
+pkgrel=5
 pkgdesc="GNU Image Manipulation Program (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64')
@@ -33,7 +33,7 @@ depends=("${MINGW_PACKAGE_PREFIX}-babl"
          "${MINGW_PACKAGE_PREFIX}-libheif"
          "${MINGW_PACKAGE_PREFIX}-libmng"
          "${MINGW_PACKAGE_PREFIX}-libmypaint"
-         "${MINGW_PACKAGE_PREFIX}-librsvg"
+         $([[ ${CARCH} == i686 ]] || echo "${MINGW_PACKAGE_PREFIX}-librsvg")
          "${MINGW_PACKAGE_PREFIX}-libwmf"
          "${MINGW_PACKAGE_PREFIX}-mypaint-brushes"
          "${MINGW_PACKAGE_PREFIX}-openexr"
@@ -114,9 +114,6 @@ build() {
   CFLAGS+=" -Wno-error=int-conversion" CXXFLAGS+=" -Wno-error=int-conversion" \
   ../${_realname}-${pkgver}/configure \
     --prefix="${MINGW_PREFIX}" \
-    --build=${MINGW_CHOST} \
-    --host=${MINGW_CHOST} \
-    --target=${MINGW_CHOST} \
     --sysconfdir="${MINGW_PREFIX}"/etc \
     --enable-mp \
     --enable-gimp-console \

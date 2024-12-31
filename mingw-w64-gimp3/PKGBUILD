@@ -6,7 +6,7 @@ _pkgver=3.0.0
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 pkgver=${_pkgver}${_pkgversuffix}
-pkgrel=3
+pkgrel=4
 pkgdesc="GNU Image Manipulation Program (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -98,6 +98,11 @@ prepare() {
 
 build() {
   mkdir -p "${srcdir}"/build-${MSYSTEM} && cd "${srcdir}"/build-${MSYSTEM}
+
+  declare -a _extra_config
+  if [[ ${CARCH} == i686 ]]; then
+    _extra_config+=("-Dvector-icons=false")
+  fi
 
   CFLAGS+=" -Wno-incompatible-pointer-types" \
   MSYS2_ARG_CONV_EXCL="--prefix=" \
