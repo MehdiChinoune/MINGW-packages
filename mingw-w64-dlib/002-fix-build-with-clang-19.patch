@@ -1,0 +1,11 @@
+--- a/dlib/unicode/unicode_abstract.h
++++ b/dlib/unicode/unicode_abstract.h
+@@ -14,7 +14,7 @@
+ // ----------------------------------------------------------------------------------------
+ 
+     // a typedef for an unsigned 32bit integer to hold our UNICODE characters 
+-    using unichar = uint32;
++    using unichar = char32_t;
+ 
+     // a typedef for a string object to hold our UNICODE strings
+     using ustring = std::basic_string<unichar>;
