@@ -4,15 +4,16 @@ _realname=cp2k
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 pkgver=2025.1
-pkgrel=1
+pkgrel=2
 pkgdesc="A quantum chemistry and solid state physics software package (mingw-w64)"
 arch=('any')
 mingw_arch=('ucrt64')
 url='https://www.cp2k.org'
 msys2_repository_url="https://github.com/cp2k/cp2k"
 license=('spdx:GPL-2.0-or-later')
-depends=("${MINGW_PACKAGE_PREFIX}-fftw"
+depends=("${MINGW_PACKAGE_PREFIX}-dftd4"
          "${MINGW_PACKAGE_PREFIX}-dbcsr"
+         "${MINGW_PACKAGE_PREFIX}-fftw"
          $([[ ${MINGW_PACKAGE_PREFIX} == *-clang-* ]] || echo "${MINGW_PACKAGE_PREFIX}-gcc-libgfortran")
          "${MINGW_PACKAGE_PREFIX}-libint2"
          "${MINGW_PACKAGE_PREFIX}-libxc"
@@ -57,6 +58,7 @@ build() {
       -DCMAKE_INSTALL_PREFIX="${MINGW_PREFIX}" \
       "${_extra_config[@]}" \
       -DBUILD_SHARED_LIBS=ON \
+      -DCP2K_USE_DFTD4=ON \
       -DCP2K_USE_LIBINT2=ON \
       -DCP2K_USE_LIBXC=ON \
       -DCP2K_USE_SPGLIB=ON \
