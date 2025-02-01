@@ -4,7 +4,7 @@ _realname=multicharge
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 pkgver=0.3.0
-pkgrel=1
+pkgrel=2
 pkgdesc="Electronegativity equilibration model for atomic partial charges. (mingw-w64)"
 arch=('any')
 mingw_arch=('ucrt64')
@@ -18,14 +18,17 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-fc"
              "${MINGW_PACKAGE_PREFIX}-cmake"
              "${MINGW_PACKAGE_PREFIX}-ninja")
 source=("https://github.com/grimme-lab/multicharge/archive/v${pkgver}/${_realname}-${pkgver}.tar.gz"
-        "001-fix-install-dll.patch")
+        "001-fix-install-dll.patch"
+        "002-Fix-CMake-config-file.patch")
 sha256sums=('2fcc1f80871f404f005e9db458ffaec95bb28a19516a0245278cd3175b63a6b2'
-            '45f7108ef51ab31ca0956e0ce7b896a0e98cea2a32bb1240d349cf2f3c202418')
+            '45f7108ef51ab31ca0956e0ce7b896a0e98cea2a32bb1240d349cf2f3c202418'
+            '8ae32dd410ab0c9d4884db34c6ac8abe6d778e869192368f8c95573f273b27f2')
 
 prepare() {
   cd "${srcdir}"/${_realname}-${pkgver}
 
   patch -Np1 -i "${srcdir}"/001-fix-install-dll.patch
+  patch -Np1 -i "${srcdir}"/002-Fix-CMake-config-file.patch
 }
 
 build() {

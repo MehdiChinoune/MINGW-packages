@@ -24,6 +24,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-fc"
              "${MINGW_PACKAGE_PREFIX}-cmake"
              "${MINGW_PACKAGE_PREFIX}-ninja"
+             "${MINGW_PACKAGE_PREFIX}-multicharge"
              #$([[ ${CARCH} != x86_64 ]] || echo "${MINGW_PACKAGE_PREFIX}-libxsmm")
              "${MINGW_PACKAGE_PREFIX}-python")
 source=("https://github.com/cp2k/cp2k/releases/download/v${pkgver}/${_realname}-${pkgver}.tar.bz2"
