@@ -1,0 +1,11 @@
+--- a/torch/utils/__init__.py
++++ b/torch/utils/__init__.py
+@@ -34,7 +34,7 @@
+     cmake_prefix_path = None
+ else:
+     cmake_prefix_path = _osp.join(
+-        _osp.dirname(_osp.dirname(__file__)), "share", "cmake"
++        _osp.dirname(_osp.dirname(__file__)), "lib", "cmake"
+     )
+ 
+ 

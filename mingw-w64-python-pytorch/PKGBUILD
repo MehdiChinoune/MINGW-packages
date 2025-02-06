@@ -1,0 +1,172 @@
+# Contributor: Mehdi Chinoune <mehdi.chinoune@hotmail.con>
+
+_realname=pytorch
+pkgbase="mingw-w64-python-${_realname}"
+pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
+pkgver=2.6.0
+pkgrel=1
+pkgdesc='Tensors and Dynamic neural networks in Python. (mingw-w64)'
+arch=('any')
+mingw_arch=(ucrt64 clang64 clangarm64)
+url="https://pytorch.org"
+license=('spdx:BSD-3-Clause')
+depends=("${MINGW_PACKAGE_PREFIX}-eigen3"
+         "${MINGW_PACKAGE_PREFIX}-ffmpeg"
+         "${MINGW_PACKAGE_PREFIX}-glog"
+         "${MINGW_PACKAGE_PREFIX}-gflags"
+         "${MINGW_PACKAGE_PREFIX}-libuv"
+         "${MINGW_PACKAGE_PREFIX}-llvm-openmp"
+         "${MINGW_PACKAGE_PREFIX}-opencv"
+         "${MINGW_PACKAGE_PREFIX}-protobuf"
+         "${MINGW_PACKAGE_PREFIX}-pybind11"
+         "${MINGW_PACKAGE_PREFIX}-python"
+         "${MINGW_PACKAGE_PREFIX}-python-filelock"
+         "${MINGW_PACKAGE_PREFIX}-python-jinja"
+         "${MINGW_PACKAGE_PREFIX}-python-networkx"
+         "${MINGW_PACKAGE_PREFIX}-python-numpy"
+         "${MINGW_PACKAGE_PREFIX}-python-sympy"
+         "${MINGW_PACKAGE_PREFIX}-python-typing_extensions"
+         "${MINGW_PACKAGE_PREFIX}-python-yaml"
+         "${MINGW_PACKAGE_PREFIX}-qt6-base")
+makedepends=("${MINGW_PACKAGE_PREFIX}-python-build"
+             "${MINGW_PACKAGE_PREFIX}-python-installer"
+             "${MINGW_PACKAGE_PREFIX}-python-setuptools"
+             "${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-cmake"
+             "${MINGW_PACKAGE_PREFIX}-ninja"
+             "${MINGW_PACKAGE_PREFIX}-onednn"
+             "${MINGW_PACKAGE_PREFIX}-shaderc"
+             "${MINGW_PACKAGE_PREFIX}-vulkan-headers"
+             "${MINGW_PACKAGE_PREFIX}-doxygen"
+             'git')
+source=("https://github.com/pytorch/pytorch/releases/download/v${pkgver}/${_realname}-v${pkgver}.tar.gz"
+        # generated using parse-submodules
+        fix_include_system.patch
+        use-system-libuv.patch
+        87773.patch
+        disable-werror1.patch
+        disable-werror2.patch
+        disable-werror4.patch
+        glog-0.7.patch
+        pytorch-missing-iostream.patch
+        fix_cmake_prefix_path.patch)
+sha256sums=('3005690eb7b083c443a38c7657938af63902f524ad87a6c83f1aca38c77e3b57'
+            'f9080a481ea0e8bb8a3d3af2b8ded971535067a7d2f0e7f264628a22b8d0287f'
+            'c432f49156da3b494d71ee5fae311e13083a4d83dd5965789b112dbcb0f0328e'
+            '0c8d112d7e2317cd915cc71ecb6822224985b20c67e43bff9eda22d075b94dba'
+            'aef06c8ec703b10a61de8654d990941d1828ec351c0d829c5c46a91a989b31ea'
+            '78476c2d0987a6d3f5bc34c340fd1c638d52f3a7f94b480b77d3dfac3c95d831'
+            '37d3b9c6c001d182291fe368df4051a254ad9c0be8ded33f541222d91b229940'
+            'ccc30a94606978571e04762d4c08ac02e1cc52b839d8e42e996d5bee67ab7b06'
+            '1ffbb2ec81553e246f1d5805a6f22e86fac464411db68f7bca35052c48c12493'
+            '9633752383bbc01cd79f782ae94126d4782493aca556331f52a7aa5669b19b9f')
+noextract=("${_realname}-v${pkgver}.tar.gz")
+
+get_pyver () {
+  python -c 'import sys; print(str(sys.version_info[0]) + "." + str(sys.version_info[1]))'
+}
+
+prepare() {
+  echo "Extracting ${_realname}-v${pkgver}.tar.gz ..."
+  tar -xzf ${_realname}-v${pkgver}.tar.gz || true
+
+  cd "${srcdir}/${_realname}-v${pkgver}"
+
+  # Fix cmake prefix path (FS#78665)
+  patch -Np1 -i "${srcdir}"/fix_cmake_prefix_path.patch
+
+  # https://bugs.archlinux.org/task/64981
+  patch -Np1 -i "${srcdir}"/fix_include_system.patch
+
+  # Use system libuv
+  patch -Np1 -i "${srcdir}"/use-system-libuv.patch
+
+  # Fix building against glog 0.6
+  patch -Np1 -i "${srcdir}/87773.patch"
+
+  # Fix building against glog 0.7
+  patch -p1 -i "${srcdir}/glog-0.7.patch"
+
+  # Disable -Werror
+  patch -Np1 -i "${srcdir}/disable-werror1.patch"
+  patch -Np1 -i "${srcdir}/disable-werror2.patch"
+  patch -Np1 -i "${srcdir}/disable-werror4.patch"
+
+  patch -Np1 -i "${srcdir}/pytorch-missing-iostream.patch"
+
+  # cd third_party/XNNPACK
+  # git cherry-pick -X theirs --no-commit 5f23827e66cca435fa400b6e221892ac95af0079
+  # cd ../..
+}
+
+# Common build configuration, called in all package() functions.
+_prepare() {
+  export VERBOSE=1
+  export PYTORCH_BUILD_VERSION="${pkgver}"
+  export PYTORCH_BUILD_NUMBER=1
+
+  # Check tools/setup_helpers/cmake.py, setup.py and CMakeLists.txt for a list of flags that can be set via env vars.
+  export ATEN_NO_TEST=ON  # do not build ATen tests
+  export USE_MKLDNN=OFF
+  export BUILD_CUSTOM_PROTOBUF=OFF
+  export USE_FFMPEG=ON
+  export USE_GFLAGS=ON
+  export USE_GLOG=ON
+  export USE_OBSERVERS=ON
+  export USE_OPENCV=ON
+  export USE_VULKAN=ON
+  # export USE_SYSTEM_LIBS=ON  # experimental, not all libs present in repos
+  export USE_SYSTEM_PYBIND11=ON
+  export USE_SYSTEM_EIGEN_INSTALL=ON
+
+  export USE_CUDA=0
+  export USE_CUDNN=0
+  export USE_ROCM=0
+}
+
+build() {
+  cp -r "${_realname}-v${pkgver}" "python-build-${MSYSTEM}" && cd "python-build-${MSYSTEM}"
+
+  if [[ ${CARCH} == x86_64 ]]; then
+    echo "add_definitions(-march=x86-64-v3)" >> cmake/MiscCheck.cmake
+  fi
+
+  # this horrible hack is necessary because the current release
+  # ships inconsistent CMake which tries to build objects before
+  # their dependencies, build twice when dependencies are available
+  ${MINGW_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation || \
+  ${MINGW_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
+}
+
+package() {
+  cd "${srcdir}/python-build-${MSYSTEM}"
+
+  # Prevent setup.py from re-running CMake and rebuilding
+  sed -e 's/RUN_BUILD_DEPS = True/RUN_BUILD_DEPS = False/g' -i setup.py
+
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    ${MINGW_PREFIX}/bin/python -m installer --prefix=${MINGW_PREFIX} \
+    --destdir="${pkgdir}" dist/*.whl
+
+  install -Dm644 LICENSE "${pkgdir}${MINGW_PREFIX}/share/licenses/${pkgname}/LICENSE"
+
+  pytorchpath="${MINGW_PREFIX}/lib/python$(get_pyver)/site-packages/torch"
+
+  # put CMake files in correct place
+  mv "${pkgdir}/${pytorchpath}/share/cmake" "${pkgdir}${MINGW_PREFIX}/lib/cmake"
+
+  # put C++ API in correct place
+  mv "${pkgdir}"${pytorchpath}/include "${pkgdir}${MINGW_PREFIX}/include"
+
+  for _lib in "${pkgdir}"${pytorchpath}/lib/*.dll.a; do
+    cp "${_lib}" "${pkgdir}"${MINGW_PREFIX}/lib/
+  done
+
+  install -d "${pkgdir}"${MINGW_PREFIX}/bin
+  for _lib in "${pkgdir}"${pytorchpath}/lib/*.dll; do
+    cp "${_lib}" "${pkgdir}"${MINGW_PREFIX}/bin/
+  done
+
+  # Clean up duplicates with Arch packages
+  rm "${pkgdir}"${MINGW_PREFIX}/include/*.h
+}
