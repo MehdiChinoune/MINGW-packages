@@ -1,0 +1,56 @@
+--- a/onnxruntime/core/framework/execution_providers.h
++++ b/onnxruntime/core/framework/execution_providers.h
+@@ -11,7 +11,7 @@
+ #include "core/framework/execution_provider.h"
+ #include "core/graph/graph_viewer.h"
+ #include "core/common/logging/logging.h"
+-#ifdef _WIN32
++#ifdef _MSC_VER
+ #include <winmeta.h>
+ #include <evntrace.h>
+ #include "core/platform/tracing.h"
+@@ -26,7 +26,7 @@
+ class ExecutionProviders {
+  public:
+   ExecutionProviders() {
+-#ifdef _WIN32
++#ifdef _MSC_VER
+     // Register callback for ETW capture state (rundown)
+     etw_callback_ = onnxruntime::WindowsTelemetry::EtwInternalCallback(
+         [this](
+@@ -64,7 +64,7 @@
+   }
+ 
+   ~ExecutionProviders() {
+-#ifdef _WIN32
++#ifdef _MSC_VER
+     WindowsTelemetry ::UnregisterInternalCallback(etw_callback_);
+ #endif
+   }
+@@ -87,7 +87,7 @@
+     auto providerOptions = p_exec_provider->GetProviderOptions();
+     exec_provider_options_[provider_id] = providerOptions;
+ 
+-#ifdef _WIN32
++#ifdef _MSC_VER
+     LogProviderOptions(provider_id, providerOptions, false);
+ #endif
+ 
+@@ -96,7 +96,7 @@
+     return Status::OK();
+   }
+ 
+-#ifdef _WIN32
++#ifdef _MSC_VER
+   void LogProviderOptions(const std::string& provider_id, const ProviderOptions& providerOptions, bool captureState) {
+     for (const auto& config_pair : providerOptions) {
+       TraceLoggingWrite(
+@@ -167,7 +167,7 @@
+   // or whether it was explicitly added by the caller.
+   bool cpu_execution_provider_was_implicitly_added_ = false;
+ 
+-#ifdef _WIN32
++#ifdef _MSC_VER
+   WindowsTelemetry::EtwInternalCallback etw_callback_;
+ #endif
+ };

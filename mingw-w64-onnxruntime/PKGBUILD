@@ -1,0 +1,166 @@
+# Contributor: Mehdi Chinoune <mehdi.chinoune@hotmail.com>
+
+_realname=onnxruntime
+pkgbase=mingw-w64-python-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
+         "${MINGW_PACKAGE_PREFIX}-python-${_realname}")
+pkgver=1.20.1
+pkgrel=1
+pkgdesc="A cross-platform, high performance ML inferencing and training accelerator. (mingw-w64)"
+arch=('any')
+mingw_arch=('ucrt64' 'clang64' 'clangarm64')
+url='https://onnxruntime.ai'
+msys2_repository_url="https://github.com/microsoft/onnxruntime"
+license=('spdx:MIT')
+makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-cmake"
+             "${MINGW_PACKAGE_PREFIX}-ninja"
+             "${MINGW_PACKAGE_PREFIX}-abseil-cpp"
+             "${MINGW_PACKAGE_PREFIX}-boost"
+             "${MINGW_PACKAGE_PREFIX}-flatbuffers"
+             "${MINGW_PACKAGE_PREFIX}-onednn"
+             "${MINGW_PACKAGE_PREFIX}-onnx"
+             "${MINGW_PACKAGE_PREFIX}-protobuf"
+             "${MINGW_PACKAGE_PREFIX}-re2"
+             "${MINGW_PACKAGE_PREFIX}-chrono-date"
+             "${MINGW_PACKAGE_PREFIX}-cxxopts"
+             "${MINGW_PACKAGE_PREFIX}-microsoft-gsl"
+             "${MINGW_PACKAGE_PREFIX}-nlohmann-json"
+             "${MINGW_PACKAGE_PREFIX}-python-build"
+             "${MINGW_PACKAGE_PREFIX}-python-installer"
+             "${MINGW_PACKAGE_PREFIX}-python-setuptools"
+             "${MINGW_PACKAGE_PREFIX}-pybind11"
+             "${MINGW_PACKAGE_PREFIX}-python-coloredlogs"
+             "${MINGW_PACKAGE_PREFIX}-python-numpy"
+             "${MINGW_PACKAGE_PREFIX}-python-packaging"
+             "${MINGW_PACKAGE_PREFIX}-python-protobuf"
+             "${MINGW_PACKAGE_PREFIX}-python-sympy")
+source=("https://github.com/microsoft/onnxruntime/archive/v${pkgver}/${_realname}-${pkgver}.tar.gz"
+        001-use-system-onednn.patch
+        002-use-system-flatbuffers.patch
+        003-use-system-nlohmann-json.patch
+        004-use-system-microsoft-gsl.patch
+        005-use-system-pybind11.patch
+        006-no-winmeta_h-on-mingw-w64.patch
+        007-dont-use-msvc-flags-on-mingw-w64.patch
+        008-include-missing-header-on-windows.patch)
+sha256sums=('d4c005506a2bbf88a838b14f8d1578406b8be2fb64abb50beeff908fb272529e'
+            '2984c6412b4d09fca7c09bbda267578fc10b21fee904811f16e0b662c3e348a4'
+            '1a85cf4d434d624a2bb35249e5fabc7a1ed74e2329c43d7992d89b7081d5b837'
+            '1be064aed0b8aa7bdd967c84a7c17af17640d4d7f9c269c6e533a82b8ff3cac9'
+            '4fc7639a88c3c71cbbae8be38544c0e1990584f4c87cc4cb7de3ebef432799f4'
+            '35edbe7e694ca5f89368954ea85e4d1149cb192fb150c3d09b020223742e77c6'
+            'ecfc21a7a3586705f31bfab863ed430832d531eeac8656ac5bca88dd9bd4b33c'
+            '659aed91e619e3f0fcf7b1d7899dee0dd911edbf0229cb9eb3c52d2541f92674'
+            '5d85e5be579a3ff19a94bbd03ca19c271eb919c5e4e866ba33a391da91a74ec3')
+
+apply_patch_with_msg() {
+  for _patch in "$@"
+  do
+    msg2 "Applying $_patch"
+    patch -Np1 -i "${srcdir}/$_patch"
+  done
+}
+
+prepare() {
+  cd "${_realname}-${pkgver}"
+
+  apply_patch_with_msg \
+    001-use-system-onednn.patch \
+    002-use-system-flatbuffers.patch \
+    003-use-system-nlohmann-json.patch \
+    004-use-system-microsoft-gsl.patch \
+    005-use-system-pybind11.patch \
+    006-no-winmeta_h-on-mingw-w64.patch \
+    007-dont-use-msvc-flags-on-mingw-w64.patch \
+    008-include-missing-header-on-windows.patch
+}
+
+build() {
+  declare -a _extra_config
+  if check_option "debug" "n"; then
+    _extra_config+=("-DCMAKE_BUILD_TYPE=Release")
+  else
+    _extra_config+=("-DCMAKE_BUILD_TYPE=Debug")
+  fi
+
+  if [[ ${CARCH} == x86_64 ]]; then
+    _extra_config+=("-Donnxruntime_USE_AVX2=ON")
+  fi
+
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+    cmake -Wno-dev \
+    --compile-no-warning-as-error \
+    --log-level=VERBOSE \
+    -GNinja \
+    -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
+    -DCMAKE_POLICY_DEFAULT_CMP0168=NEW \
+    -Donnxruntime_ENABLE_PYTHON=ON \
+    -Donnxruntime_BUILD_SHARED_LIB=ON \
+    -Donnxruntime_BUILD_UNIT_TESTS=OFF \
+    -DBUILD_TESTING=OFF \
+    -Donnxruntime_ENABLE_TRAINING=ON \
+    -Donnxruntime_ENABLE_LAZY_TENSOR=OFF \
+    -Donnxruntime_USE_DNNL=ON \
+    -Donnxruntime_ENABLE_CPUINFO=OFF \
+    -Donnxruntime_ENABLE_ATEN=OFF \
+    -DPython_EXECUTABLE=${MINGW_PREFIX}/bin/python \
+    -S ${_realname}-${pkgver}/cmake \
+    -B build-${MSYSTEM}
+
+  cmake --build build-${MSYSTEM}
+
+  cp ${_realname}-${pkgver}/setup.py "build-${MSYSTEM}"/
+  cp ${_realname}-${pkgver}/docs/python/README.rst "build-${MSYSTEM}"/docs/python/README.rst
+
+  python -m build --wheel --skip-dependency-check --no-isolation
+}
+
+package_onnxruntime() {
+  depends=("${MINGW_PACKAGE_PREFIX}-abseil-cpp"
+           "${MINGW_PACKAGE_PREFIX}-boost-libs"
+           "${MINGW_PACKAGE_PREFIX}-onednn"
+           "${MINGW_PACKAGE_PREFIX}-onnx"
+           "${MINGW_PACKAGE_PREFIX}-protobuf"
+           "${MINGW_PACKAGE_PREFIX}-re2")
+
+  DESTDIR="${pkgdir}" cmake --install build-${MSYSTEM}
+
+  install -Dm644 "${srcdir}"/${_realname}-${pkgver}/LICENSE \
+    "${pkgdir}"${MINGW_PREFIX}/share/licenses/python-${_realname}/LICENSE
+  install -Dm644 "${srcdir}"/${_realname}-${pkgver}/ThirdPartyNotices.txt \
+    "${pkgdir}"${MINGW_PREFIX}/share/licenses/python-${_realname}/ThirdPartyNotices.txt
+}
+
+package_python-onnxruntime() {
+  depends=("${MINGW_PACKAGE_PREFIX}-python"
+           "${MINGW_PACKAGE_PREFIX}-python-coloredlogs"
+           "${MINGW_PACKAGE_PREFIX}-python-numpy"
+           "${MINGW_PACKAGE_PREFIX}-python-packaging"
+           "${MINGW_PACKAGE_PREFIX}-python-protobuf"
+           "${MINGW_PACKAGE_PREFIX}-python-sympy"
+           "${MINGW_PACKAGE_PREFIX}-onnxruntime")
+  options=('!strip')
+
+  cd "build-${MSYSTEM}"
+
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    python -m installer --prefix=${MINGW_PREFIX} \
+    --destdir="${pkgdir}" dist/*.whl
+
+  install -Dm644 "${srcdir}"/${_realname}-${pkgver}/LICENSE \
+    "${pkgdir}"${MINGW_PREFIX}/share/licenses/python-${_realname}/LICENSE
+  install -Dm644 "${srcdir}"/${_realname}-${pkgver}/ThirdPartyNotices.txt \
+    "${pkgdir}"${MINGW_PREFIX}/share/licenses/python-${_realname}/ThirdPartyNotices.txt
+}
+
+# template start; name=mingw-w64-splitpkg-wrappers; version=1.0;
+# vim: set ft=bash :
+
+# generate wrappers
+for _name in "${pkgname[@]}"; do
+  _short="package_${_name#${MINGW_PACKAGE_PREFIX}-}"
+  _func="$(declare -f "${_short}")"
+  eval "${_func/#${_short}/package_${_name}}"
+done
+# template end;

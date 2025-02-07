@@ -1,0 +1,20 @@
+--- a/cmake/external/onnxruntime_external_deps.cmake
++++ b/cmake/external/onnxruntime_external_deps.cmake
+@@ -478,7 +478,7 @@
+     URL ${DEP_URL_flatbuffers}
+     URL_HASH SHA1=${DEP_SHA1_flatbuffers}
+     PATCH_COMMAND ${ONNXRUNTIME_FLATBUFFERS_PATCH_COMMAND}
+-    FIND_PACKAGE_ARGS 23.5.9 NAMES Flatbuffers flatbuffers
++    FIND_PACKAGE_ARGS NAMES Flatbuffers flatbuffers
+ )
+ 
+ onnxruntime_fetchcontent_makeavailable(flatbuffers)
+@@ -506,6 +506,8 @@
+       target_compile_options(flatc PRIVATE /FI${CMAKE_BINARY_DIR}/gdk_cstdlib_wrapper.h)
+     endif()
+   endif()
++else()
++  add_executable(flatc ALIAS flatbuffers::flatc)
+ endif()
+ 
+ # ONNX

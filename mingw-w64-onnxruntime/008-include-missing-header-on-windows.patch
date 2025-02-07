@@ -1,0 +1,10 @@
+--- a/include/onnxruntime/core/common/status.h
++++ b/include/onnxruntime/core/common/status.h
+@@ -17,6 +17,7 @@
+ #include <ostream>
+ #include <string>
+ #ifdef _WIN32
++#include <wtypesbase.h>
+ #include <winerror.h>
+ #endif
+ namespace onnxruntime {

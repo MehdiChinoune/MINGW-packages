@@ -1,0 +1,11 @@
+--- a/cmake/CMakeLists.txt
++++ b/cmake/CMakeLists.txt
+@@ -614,7 +614,7 @@
+ include(external/onnxruntime_external_deps.cmake)
+ 
+ set(ORT_WARNING_FLAGS)
+-if (WIN32)
++if (MSVC)
+     # class needs to have dll-interface to be used by clients
+     list(APPEND ORT_WARNING_FLAGS "/wd4251")
+     # issued by thrust nonstandard extension used: nameless struct/union

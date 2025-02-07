@@ -1,0 +1,11 @@
+--- a/cmake/external/onnxruntime_external_deps.cmake
++++ b/cmake/external/onnxruntime_external_deps.cmake
+@@ -434,7 +434,7 @@
+     GSL
+     URL ${DEP_URL_microsoft_gsl}
+     URL_HASH SHA1=${DEP_SHA1_microsoft_gsl}
+-    FIND_PACKAGE_ARGS 4.0 NAMES Microsoft.GSL
++    FIND_PACKAGE_ARGS NAMES Microsoft.GSL
+   )
+ endif()
+ set(GSL_TARGET "Microsoft.GSL::GSL")

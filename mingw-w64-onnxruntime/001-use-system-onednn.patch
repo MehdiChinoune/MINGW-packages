@@ -1,0 +1,48 @@
+--- a/cmake/external/dnnl.cmake
++++ b/cmake/external/dnnl.cmake
+@@ -36,6 +36,14 @@
+ endif()
+ 
+ if (onnxruntime_USE_DNNL)
++# https://oneapi-src.github.io/oneDNN/dev_guide_transition_to_dnnl.html
++find_package(dnnl CONFIG)
++if (TARGET DNNL::dnnl)
++  message(STATUS "DNNL version: ${dnnl_VERSION}")
++  add_library(project_dnnl INTERFACE)
++  add_library(dnnl INTERFACE)
++  target_link_libraries(dnnl INTERFACE DNNL::dnnl)
++else ()
+   set(DNNL_SOURCE ${CMAKE_CURRENT_BINARY_DIR}/dnnl/src/dnnl/src)
+   set(DNNL_INSTALL ${CMAKE_CURRENT_BINARY_DIR}/dnnl/install)
+   set(DNNL_LIB_DIR ${DNNL_INSTALL}/${CMAKE_INSTALL_LIBDIR})
+@@ -65,3 +73,4 @@
+   )
+   link_directories(${DNNL_LIB_DIR})
+ endif()
++endif()
+--- a/cmake/onnxruntime_python.cmake
++++ b/cmake/onnxruntime_python.cmake
+@@ -871,7 +871,7 @@
+   endif()
+ endif()
+ 
+-if (onnxruntime_USE_DNNL)
++if (onnxruntime_USE_DNNL AND NOT TARGET DNNL::dnnl)
+   add_custom_command(
+     TARGET onnxruntime_pybind11_state POST_BUILD
+     COMMAND ${CMAKE_COMMAND} -E copy
+--- a/cmake/onnxruntime_unittests.cmake
++++ b/cmake/onnxruntime_unittests.cmake
+@@ -1085,10 +1085,12 @@
+       target_compile_definitions(onnxruntime_test_all PUBLIC -DDNNL_GPU_RUNTIME=OCL)
+     endif()
+     list(APPEND onnx_test_libs dnnl)
++    if (NOT TARGET DNNL::dnnl)
+     add_custom_command(
+       TARGET ${test_data_target} POST_BUILD
+       COMMAND ${CMAKE_COMMAND} -E copy ${DNNL_DLL_PATH} $<TARGET_FILE_DIR:${test_data_target}>
+       )
++    endif()
+   endif()
+   if(WIN32)
+     if (onnxruntime_USE_TVM)
