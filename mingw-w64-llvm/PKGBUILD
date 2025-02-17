@@ -11,7 +11,7 @@ if [[ $MINGW_PACKAGE_PREFIX == *-clang-* ]]; then
   _clangprefix=1
   _compiler=clang
   if [[ ${CARCH} != i686 ]]; then
-    _pgo=1
+    _pgo=0
   fi
 else
   _compiler=clang
@@ -30,7 +30,7 @@ pkgname=("${MINGW_PACKAGE_PREFIX}-llvm"
          "${MINGW_PACKAGE_PREFIX}-lld")
 _pkgver=20.1.0
 pkgver=${_pkgver/-/}
-pkgrel=1
+pkgrel=2
 pkgdesc="C language family frontend for LLVM (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -60,6 +60,7 @@ source=("${_url}/llvm-${_pkgver}.src.tar.xz"{,.sig}
         "${_url}/clang-${_pkgver}.src.tar.xz"{,.sig}
         "${_url}/clang-tools-extra-${_pkgver}.src.tar.xz"{,.sig}
         "${_url}/compiler-rt-${_pkgver}.src.tar.xz"{,.sig}
+        "${_url}/runtimes-${_pkgver}.src.tar.xz"{,.sig}
         "${_url}/lld-${_pkgver}.src.tar.xz"{,.sig}
         "${_url}/cmake-${_pkgver}.src.tar.xz"{,.sig}
         "${_url}/third-party-${_pkgver}.src.tar.xz"{,.sig}
@@ -83,6 +84,8 @@ sha256sums=('29a42977809cb5e1c076e4495a79dc86b17386e5ab9fa4ca1a580aeb0a2ece5e'
             '98e504119931480f6d78a8e03164e56b832525726e6fc73d96e5166a71b97aa6'
             'SKIP'
             '85798479b6762433a6fc8a87f4cbdb1dc050926220a8240d9e0e126f08e6f25f'
+            'SKIP'
+            'cd3aadbfbf654868a70b1e59df0d7c5620444957342dc85cfe989dabd308530d'
             'SKIP'
             '0deea791d2eb1558ba0f266bc68ed38ee6b78fbbfa6b75c343405efe38e9ddbf'
             'SKIP'
@@ -123,7 +126,7 @@ prepare() {
   tar -xJf "${srcdir}"/clang-${_pkgver}.src.tar.xz -C "${srcdir}" || true
 
   # Rename Directories
-  for pkg in llvm clang clang-tools-extra compiler-rt lld cmake third-party; do
+  for pkg in llvm clang clang-tools-extra compiler-rt runtimes lld cmake third-party; do
     mv ${pkg}-${_pkgver}.src ${pkg}
   done
 
@@ -210,7 +213,8 @@ build() {
     ${MINGW_PREFIX}/bin/cmake.exe \
       -GNinja \
       -DDEFAULT_SYSROOT=${MINGW_PREFIX} \
-      -DLLVM_ENABLE_PROJECTS="clang;compiler-rt" \
+      -DLLVM_ENABLE_PROJECTS="clang" \
+      -DLLVM_ENABLE_RUNTIMES="compiler-rt" \
       -DLLVM_BUILD_INSTRUMENTED=IR \
       -DLLVM_TARGETS_TO_BUILD=Native \
       -DCLANG_DEFAULT_RTLIB=compiler-rt \
@@ -256,7 +260,7 @@ build() {
     )
   fi
 
-  local _projects="clang;clang-tools-extra;compiler-rt;lld"
+  local _projects="clang;clang-tools-extra;lld"
 
   case "${CARCH}" in
     x86_64|i?86)
@@ -284,11 +288,14 @@ build() {
   MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
   ${MINGW_PREFIX}/bin/cmake.exe \
     -GNinja \
+    -DDEFAULT_SYSROOT=${MINGW_PREFIX} \
     -DLLVM_ENABLE_PROJECTS="${_projects}" \
+    -DLLVM_ENABLE_RUNTIMES="compiler-rt" \
     -DLLVM_ENABLE_RTTI=ON \
     -DLLVM_INSTALL_UTILS=ON \
     -DLIBCLANG_BUILD_STATIC=ON \
     -DLLD_DEFAULT_LD_LLD_IS_MINGW=ON \
+    -DSANITIZER_ALLOW_CXXABI=OFF \
     "${common_cmake_args[@]}" \
     "${platform_config[@]}" \
     ../llvm
@@ -386,7 +393,8 @@ package_compiler-rt() {
   url="https://compiler-rt.llvm.org/"
   depends=($( (( _clangprefix )) || echo "${MINGW_PACKAGE_PREFIX}-gcc-libs"))
 
-  DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake --install "${srcdir}"/build-${MSYSTEM}/projects/compiler-rt
+  DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake --install "${srcdir}"/build-${MSYSTEM}/runtimes/builtins-bins
+  DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake --install "${srcdir}"/build-${MSYSTEM}/runtimes/runtimes-bins/compiler-rt
   mkdir -p "${pkgdir}"${MINGW_PREFIX}/bin/
   find "${pkgdir}"${MINGW_PREFIX}/lib/clang/${pkgver%.[0-9].*}/lib/windows/ \
     -name '*.dll' -exec mv '{}' "${pkgdir}"${MINGW_PREFIX}/bin/ \;
@@ -437,7 +445,7 @@ package_llvm() {
   # Disable automatic installation of components that go into subpackages
   # -i.orig to check what has been removed in-case it starts dropping more than it should
   sed -i.orig '/\(clang\|lld\)\/cmake_install.cmake/d' build-${MSYSTEM}/tools/cmake_install.cmake
-  sed -i.orig '/compiler-rt\/cmake_install.cmake/d' build-${MSYSTEM}/projects/cmake_install.cmake
+  sed -i.orig '/runtimes\/cmake_install.cmake/d' build-${MSYSTEM}/cmake_install.cmake
   DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake --install build-${MSYSTEM}
 
   install -Dm644 "${srcdir}"/llvm/LICENSE.TXT "${pkgdir}"${MINGW_PREFIX}/share/licenses/llvm/LICENSE
