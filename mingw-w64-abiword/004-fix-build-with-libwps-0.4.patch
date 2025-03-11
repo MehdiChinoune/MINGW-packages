@@ -1,0 +1,23 @@
+--- a/plugins/wordperfect/plugin.m4
++++ b/plugins/wordperfect/plugin.m4
+@@ -1,6 +1,6 @@
+ 
+ wordperfect_pkgs="libwpd-0.10 $gsf_req"
+-wordperfect_wps_pkgs='libwps-0.3'
++wordperfect_wps_pkgs='libwps-0.4'
+ wordperfect_deps="no"
+ 
+ WORDPERFECT_CFLAGS=
+--- a/plugins/wordperfect/xp/ie_imp_WordPerfect.cpp
++++ b/plugins/wordperfect/xp/ie_imp_WordPerfect.cpp
+@@ -1389,7 +1389,9 @@ UT_Confidence_t IE_Imp_MSWorks_Sniffer::recognizeContents (GsfInput * input)
+ 	AbiWordperfectInputStream gsfInput(input);
+ 
+ 	libwps::WPSKind kind;
+-	libwps::WPSConfidence confidence = libwps::WPSDocument::isFileFormatSupported(&gsfInput, kind);
++        libwps::WPSCreator creator;
++        bool needsEncoding = false;
++	libwps::WPSConfidence confidence = libwps::WPSDocument::isFileFormatSupported(&gsfInput, kind, creator, needsEncoding);
+ 	
+ 	if (kind != libwps::WPS_TEXT)
+ 		confidence = libwps::WPS_CONFIDENCE_NONE;
