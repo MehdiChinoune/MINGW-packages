@@ -1,0 +1,33 @@
+--- a/src/af/util/xp/ut_types.h
++++ b/src/af/util/xp/ut_types.h
+@@ -40,7 +40,7 @@ typedef guint8		UT_Byte;
+ 
+ typedef guint8		UT_Byte;
+ 
+-typedef gunichar        UT_UCS4Char;
++typedef char32_t        UT_UCS4Char;
+ typedef guint16      UT_UCS2Char;
+ typedef gint32          UT_GrowBufElement;
+ 
+--- a/src/text/fmt/xp/fv_View_protected.cpp
++++ b/src/text/fmt/xp/fv_View_protected.cpp
+@@ -5752,7 +5752,7 @@ UT_UCSChar * FV_View::_lookupSuggestion(fl_BlockLayout
+ 		UT_uint32 len = iLength;
+ 		for (UT_uint32 ldex=0; ldex < len && ldex < INPUTWORDLEN; ldex++)
+ 		{
+-			stMisspelledWord += *pWord == UCS_RQUOTE ? '\'' : *pWord;
++			stMisspelledWord += *pWord == UCS_RQUOTE ? U'\'' : *pWord;
+ 			++pWord;
+ 		}
+ 
+--- a/src/wp/ap/gtk/ap_UnixApp.cpp
++++ b/src/wp/ap/gtk/ap_UnixApp.cpp
+@@ -863,7 +863,7 @@
+ 	if (len < (strlen(G_MODULE_SUFFIX) + 2)) // this is ".so" and at least one char for the filename
+ 		return false;
+ 	const char *suffix = file+(len-3);
+-	if(0 == strcmp (suffix, "."G_MODULE_SUFFIX))
++	if(0 == strcmp (suffix, "." G_MODULE_SUFFIX))
+ 		return true;
+ 	return false;
+ }
