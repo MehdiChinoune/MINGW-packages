@@ -1,0 +1,101 @@
+# Contributor: Mehdi Chinoune <mehdi.chinoune@hotmail.com>
+
+_realname=abiword
+pkgbase=mingw-w64-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=3.0.6
+pkgrel=1
+pkgdesc="A word processor. (mingw-w64)"
+arch=('any')
+mingw_arch=('ucrt64' 'clang64' 'clangarm64')
+url='https://gitlab.gnome.org/World/AbiWord'
+license=('spdx:GPL-2.0-or-later')
+depends=("${MINGW_PACKAGE_PREFIX}-cairo"
+         "${MINGW_PACKAGE_PREFIX}-enchant"
+         "${MINGW_PACKAGE_PREFIX}-fribidi"
+         "${MINGW_PACKAGE_PREFIX}-gcc-libs"
+         "${MINGW_PACKAGE_PREFIX}-gdk-pixbuf2"
+         "${MINGW_PACKAGE_PREFIX}-glib2"
+         "${MINGW_PACKAGE_PREFIX}-goffice"
+         "${MINGW_PACKAGE_PREFIX}-gtk3"
+         "${MINGW_PACKAGE_PREFIX}-libgsf"
+         "${MINGW_PACKAGE_PREFIX}-libical"
+         "${MINGW_PACKAGE_PREFIX}-libiconv"
+         "${MINGW_PACKAGE_PREFIX}-libjpeg-turbo"
+         "${MINGW_PACKAGE_PREFIX}-libpng"
+         "${MINGW_PACKAGE_PREFIX}-librsvg"
+         "${MINGW_PACKAGE_PREFIX}-libxml2"
+         "${MINGW_PACKAGE_PREFIX}-libxslt"
+         "${MINGW_PACKAGE_PREFIX}-pango"
+         "${MINGW_PACKAGE_PREFIX}-rasqal"
+         "${MINGW_PACKAGE_PREFIX}-readline"
+         "${MINGW_PACKAGE_PREFIX}-redland"
+         "${MINGW_PACKAGE_PREFIX}-wv"
+         "${MINGW_PACKAGE_PREFIX}-zlib")
+makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-autotools"
+             "${MINGW_PACKAGE_PREFIX}-boost"
+             "${MINGW_PACKAGE_PREFIX}-libwmf"
+             "${MINGW_PACKAGE_PREFIX}-libwpg"
+             "${MINGW_PACKAGE_PREFIX}-libwps"
+             "autoconf-archive")
+source=("https://gitlab.gnome.org/World/AbiWord/-/archive/release-${pkgver}/AbiWord-release-${pkgver}.tar.bz2"
+        001-support-python3.patch::https://gitlab.gnome.org/World/AbiWord/-/commit/51787d61.patch
+        002-support-enchant2.patch::https://gitlab.gnome.org/World/AbiWord/-/commit/ae05e92d.patch
+        003-fix-build-with-librevenge.patch
+        004-fix-build-with-libwps-0.4.patch
+        005-do-not-redefine-winnt-version.patch
+        006-fix-build-with-clang.patch)
+sha256sums=('c560058f16caf28cf0937f993325f426ba4b082720ef42fa767118e02def1b63'
+            '96826ee7a9d5b315b8793e92bca26c72eb7b2116d47156183f2308fb45c997c9'
+            '65446554aad6cbecb8298b050b91da6f3d6919db69bf561aaa177e55a852b54b'
+            '06077d62c792e0ab8f79462d4e05de4089f74d4f4e1b4fe094d00b751d2231f0'
+            '86391051771dad410cc436678eee5c79ebbf3593fb2b21d756df9fc793e16331'
+            'a2d1fb084490ff0bf3da0ce2a3c3b54d7410186737237d5b8e0d9631e18ce619'
+            'b5c9468f276ab018923eb93cc4e8b5b80a8cf39983c473b2915050eac2cf8d6a')
+
+apply_patch_with_msg() {
+  for _patch in "$@"
+  do
+    msg2 "Applying $_patch"
+    patch -Nbp1 -i "${srcdir}/$_patch"
+  done
+}
+
+prepare() {
+  cd "AbiWord-release-${pkgver}"
+
+  apply_patch_with_msg \
+    001-support-python3.patch \
+    002-support-enchant2.patch \
+    003-fix-build-with-librevenge.patch \
+    004-fix-build-with-libwps-0.4.patch \
+    005-do-not-redefine-winnt-version.patch \
+    006-fix-build-with-clang.patch
+
+  ./autogen-common.sh
+  autoreconf -fiv
+}
+
+build() {
+  mkdir -p "build-${MSYSTEM}" && cd "build-${MSYSTEM}"
+
+  CXXFLAGS+=" -Wno-deprecated-declarations -DWIN32" \
+  ../AbiWord-release-${pkgver}/configure \
+    --prefix="${MINGW_PREFIX}" \
+    --enable-shared \
+    --enable-plugins \
+    --enable-clipart \
+    --enable-templates
+
+  make
+}
+
+package() {
+  cd "build-${MSYSTEM}"
+
+  make install DESTDIR="${pkgdir}"
+
+  install -Dm644 "${srcdir}"/AbiWord-release-${pkgver}/COPYING \
+    "${pkgdir}"${MINGW_PREFIX}/share/licenses/${_realname}/COPYING
+}
