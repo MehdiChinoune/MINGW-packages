@@ -74,7 +74,7 @@ prepare() {
 build() {
   mkdir -p "build-${MSYSTEM}" && cd "build-${MSYSTEM}"
 
-  CFLAGS+=" -DWIN32" \
+  CXXFLAGS+=" -DWIN32" \
   ../AbiWord-release-${pkgver}/configure \
     --prefix="${MINGW_PREFIX}" \
     --enable-shared \
