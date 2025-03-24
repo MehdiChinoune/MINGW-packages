@@ -1,0 +1,56 @@
+--- a/BUILD.gn
++++ b/BUILD.gn
+@@ -1582,10 +1582,6 @@
+   }
+ }
+ 
+-group("experimental") {
+-  deps = [ "experimental/sktext" ]
+-}
+-
+ config("our_vulkan_headers") {
+   include_dirs = [ "include/third_party/vulkan" ]
+ }
+@@ -2124,7 +2120,6 @@
+       ":skia",
+       ":test",
+       ":tool_utils",
+-      "experimental/sktext:tests",
+       "modules/skottie:tests",
+       "modules/skparagraph:tests",
+       "modules/sksg:tests",
+@@ -2284,7 +2279,6 @@
+       ":flags",
+       ":gpu_tool_utils",
+       ":xml",
+-      "experimental/sktext:samples",
+       "modules/audioplayer",
+       "modules/skparagraph:samples",
+       "modules/skshaper",
+@@ -2613,7 +2607,6 @@
+       deps = [
+         ":sk_app",
+         ":skia",
+-        "experimental/sktext:sktext",
+         "modules/skottie:skottie",
+       ]
+     }
+@@ -2861,7 +2854,6 @@
+         ":skia",
+         ":tool_utils",
+         ":trace",
+-        "experimental/sktext",
+         "modules/audioplayer",
+         "modules/particles",
+         "modules/skottie",
+@@ -2930,10 +2922,6 @@
+       is_shared_library = is_android
+       deps = [ "modules/skplaintexteditor:editor_app" ]
+     }
+-    test_app("text_editor") {
+-      is_shared_library = is_android
+-      deps = [ "experimental/sktext:text_editor" ]
+-    }
+   }
+ 
+   skia_executable("image_diff_metric") {
