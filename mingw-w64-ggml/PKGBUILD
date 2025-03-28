@@ -4,7 +4,7 @@ _realname=ggml
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 pkgver=0.0.1867
-pkgrel=1
+pkgrel=2
 pkgdesc="Tensor library for machine learning. (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -22,14 +22,20 @@ makedepends=(
   "${MINGW_PACKAGE_PREFIX}-cc"
   "${MINGW_PACKAGE_PREFIX}-cmake"
   "${MINGW_PACKAGE_PREFIX}-ninja"
+  "${MINGW_PACKAGE_PREFIX}-fmt"
   "${MINGW_PACKAGE_PREFIX}-opencl-headers"
   "${MINGW_PACKAGE_PREFIX}-shaderc"
+  "${MINGW_PACKAGE_PREFIX}-spdlog"
   "${MINGW_PACKAGE_PREFIX}-vulkan-headers"
   'git'
 )
 _commit='4190f231d0f7597a8102328d52bfbf6325c1be9b'
-source=("${_realname}"::"git+${url}.git#commit=${_commit}")
-sha256sums=('a3c2376ddf3145dc0b337dabd0bec525a9fc51cc84a430bf9397b8d48c3ccade')
+source=("${_realname}"::"git+${url}.git#commit=${_commit}"
+        "001-fix-build-kompute-with-external-spdlog.patch"
+        "002-fix-build-kompute-with-external-fmt.patch::https://github.com/KomputeProject/kompute/commit/e7985da9.patch")
+sha256sums=('a3c2376ddf3145dc0b337dabd0bec525a9fc51cc84a430bf9397b8d48c3ccade'
+            '5607fa3ed0fdccad24387ee2d77ffeaca8153e22ec6fbad52b57da8dd9d7ab54'
+            'd0b18d01abee2ac25b9cc132713cf5b8a07cb36fcdafc8336aec42fd93c26b20')
 
 
 pkgver() {
@@ -40,6 +46,12 @@ pkgver() {
 
 prepare() {
   cd ${_realname}
+
+  git submodule update --init --depth=1
+
+  cd src/ggml-kompute/kompute
+  patch -p1 -i "${srcdir}"/001-fix-build-kompute-with-external-spdlog.patch
+  patch -p1 -i "${srcdir}"/002-fix-build-kompute-with-external-fmt.patch
 }
 
 build() {
@@ -60,6 +72,7 @@ build() {
       -DGGML_RPC=ON \
       -DGGML_BLAS=ON \
       -DGGML_BLAS_VENDOR=OpenBLAS \
+      -DGGML_KOMPUTE=ON \
       -DGGML_OPENCL=ON \
       -DGGML_OPENMP=ON \
       -DGGML_VULKAN=ON \
@@ -70,6 +83,11 @@ build() {
       -DGGML_WIN_VER="0x603" \
       -DGGML_BUILD_EXAMPLES=OFF \
       -DGGML_BUILD_TESTS=OFF \
+      -DKOMPUTE_OPT_DISABLE_VULKAN_VERSION_CHECK=ON \
+      -DKOMPUTE_OPT_USE_SPDLOG=ON \
+      -DKOMPUTE_OPT_USE_BUILT_IN_FMT=OFF \
+      -DKOMPUTE_OPT_USE_BUILT_IN_SPDLOG=OFF \
+      -DKOMPUTE_OPT_USE_BUILT_IN_VULKAN_HEADER=OFF \
       -DPython3_EXECUTABLE=${MINGW_PREFIX}/bin/python \
       -S "${_realname}" \
       -B "build-${MSYSTEM}"
