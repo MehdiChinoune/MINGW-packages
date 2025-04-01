@@ -4,8 +4,8 @@
 _realname=vtk
 pkgbase="mingw-w64-${_realname}"
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=9.4.1
-pkgrel=3
+pkgver=9.4.2
+pkgrel=1
 pkgdesc="A software system for 3D computer graphics, image processing and visualization (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -119,7 +119,7 @@ source=(https://www.vtk.org/files/release/${pkgver%.*}/VTK-${pkgver}.tar.gz
         "008-update-to-diy-3.6.0.patch"
         "009-diy-3-compatibility.patch"
         "011-anari-integer-types.patch")
-sha256sums=('c253b0c8d002aaf98871c6d0cb76afc4936c301b72358a08d5f3f72ef8bc4529'
+sha256sums=('36c98e0da96bb12a30fe53708097aa9492e7b66d5c3b366e1c8dc251e2856a02'
             '411b0521fcd2864acae0af20ba6334f69f7c605c9e31996529f64aa749d61065'
             '410ddfbb2acb66746771a0e1f3ad81230904f712729af29cd26e8aaaa19dc48e'
             '2d1795111b410e0fbb8e7b08fab2e83e37e74ca0d7fd6685d435d4b27f355b87'
