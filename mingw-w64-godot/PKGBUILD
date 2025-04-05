@@ -6,7 +6,7 @@ _realname=godot
 pkgbase=mingw-w64-${_realname}
 pkgname=${MINGW_PACKAGE_PREFIX}-${_realname}
 pkgver=4.3
-pkgrel=3
+pkgrel=4
 pkgdesc='An advanced, feature packed, multi-platform 2D and 3D game engine (mingw-w64)'
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64')
@@ -45,7 +45,7 @@ source=("https://github.com/godotengine/godot/releases/download/${pkgver}-stable
         "002-enforcing-pkgconfig-for-syslib.patch")
 sha256sums=('751e55bfad8e04b846f9cf7b6eb80e058986a2cb1b103fc0fe6a4d8526a20e56'
             '47fe087a3bf5cf64bbf168c327c48eb947ec623b4476dbad342b756d566b73c3'
-            '65f9750dc991df3d53edba40ea48ab802c5550cc70b9bfcb9274dfd83e7f2906')
+            '89963816504c232be2a39392b9ec4d436ebfe4f4f5c8dd40491847116f83737c')
 
 prepare() {
   cd ${_realname}-${pkgver}-stable
