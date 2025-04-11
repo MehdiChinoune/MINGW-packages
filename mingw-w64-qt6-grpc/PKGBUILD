@@ -6,7 +6,7 @@ pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
          "${MINGW_PACKAGE_PREFIX}-${_realname}-debug")
 _qtver=6.9.0
 pkgver=${_qtver/-/}
-pkgrel=1
+pkgrel=2
 pkgdesc='Qt gRPC and Protobuf generator and bindings. (mingw-w64)'
 arch=(any)
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -26,8 +26,15 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-protobuf"
              "rsync")
 _pkgfn="${_realname/6-/}-everywhere-src-${_qtver}"
-source=("https://download.qt.io/official_releases/qt/${pkgver%.*}/${_qtver}/submodules/${_pkgfn}.tar.xz")
-sha256sums=('3957e076181ac0d9a8f9fca93ec49e1e5e143e39eee1ec3feee10ca13f64b137')
+source=("https://download.qt.io/official_releases/qt/${pkgver%.*}/${_qtver}/submodules/${_pkgfn}.tar.xz"
+        "001-fix-build-with-protobuf-30.patch::https://github.com/qt/qtgrpc/commit/01b1e9df.patch")
+sha256sums=('3957e076181ac0d9a8f9fca93ec49e1e5e143e39eee1ec3feee10ca13f64b137'
+            'fa49c77975e3f68836cb27b005da95db9743f9c9d4d9aa5b759bfd6f322b2b13')
+
+prepare() {
+  cd ${_pkgfn}
+  patch -p1 -i "${srcdir}"/001-fix-build-with-protobuf-30.patch
+}
 
 build() {
   mkdir -p build-${MSYSTEM} && cd build-${MSYSTEM}
