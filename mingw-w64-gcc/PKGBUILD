@@ -54,7 +54,7 @@ fi
 pkgrel=7
 pkgdesc="GCC for the MinGW-w64"
 arch=('any')
-mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64')
 url="https://gcc.gnu.org"
 msys2_references=(
   "cpe: cpe:/a:gnu:gcc"
@@ -186,8 +186,8 @@ prepare() {
   apply_patch_with_msg \
     0001-libstdc-Search-for-tzdata-on-Windows-msys.patch
 
-  # apply_patch_with_msg \
-  #   9002-native-tls.patch
+  apply_patch_with_msg \
+    9002-native-tls.patch
 
   autoreconf -fiv
 
@@ -281,6 +281,7 @@ build() {
     --enable-libatomic \
     --enable-threads=${_threads} \
     --enable-graphite \
+    --enable-tls \
     --enable-fully-dynamic-string \
     --enable-libstdcxx-backtrace=yes \
     --enable-libstdcxx-filesystem-ts \
