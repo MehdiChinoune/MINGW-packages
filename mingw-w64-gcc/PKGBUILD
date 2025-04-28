@@ -54,7 +54,7 @@ fi
 pkgrel=6
 pkgdesc="GCC for the MinGW-w64"
 arch=('any')
-mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64')
 url="https://gcc.gnu.org"
 msys2_references=(
   "cpe: cpe:/a:gnu:gcc"
@@ -180,8 +180,8 @@ prepare() {
   apply_patch_with_msg \
     cf588f1a8e7406ced5b08f32f9d23f015a240a31.patch
 
-  # apply_patch_with_msg \
-  #   9002-native-tls.patch
+  apply_patch_with_msg \
+    9002-native-tls.patch
 
   autoreconf -fiv
 
@@ -275,6 +275,7 @@ build() {
     --enable-libatomic \
     --enable-threads=${_threads} \
     --enable-graphite \
+    --enable-tls \
     --enable-fully-dynamic-string \
     --enable-libstdcxx-backtrace=yes \
     --enable-libstdcxx-filesystem-ts \
