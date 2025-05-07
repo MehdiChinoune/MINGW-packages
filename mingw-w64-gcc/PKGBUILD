@@ -5,7 +5,7 @@
 # Contributor: wirx6 <wirx654@gmail.com>
 # Contributor: Kirill Müller <krlmlr@mailbox.org>
 
-if [[ ${CARCH} != i686 ]]; then
+if [[ ${CARCH} != i686 && ${MINGW_PACKAGE_PREFIX} != *-clang-* ]]; then
   _enable_ada=yes
   _enable_fortran=yes
   _enable_jit=yes
@@ -56,7 +56,7 @@ _libdir=lib/gcc/${CHOST}/${pkgver}
 pkgrel=1
 pkgdesc="GCC for the MinGW-w64"
 arch=('any')
-mingw_arch=('mingw32' 'mingw64' 'ucrt64')
+mingw_arch=('clang64')
 url="https://gcc.gnu.org"
 msys2_repository_url='https://gcc.gnu.org/git/gitweb.cgi?p=gcc.git'
 msys2_references=(
@@ -249,11 +249,17 @@ build() {
   # In addition adaint.c does `#include <accctrl.h>` which pulls in msxml.h, hacky hack:
   CPPFLAGS+=" -DCOM_NO_WINDOWS_H"
 
+  if [[ $MINGW_PACKAGE_PREFIX == *-clang-* ]]; then
+    CFLAGS+=" -Wno-array-bounds -Wno-mismatched-tags -Wno-unknown-warning-option"
+    CXXFLAGS+=" -Wno-array-bounds -Wno-mismatched-tags -Wno-unknown-warning-option"
+    _extra_config+=("--disable-win32-utf8-manifest" "--enable-tls")
+  fi
+
   ../${_sourcedir}/configure \
     --prefix=${MINGW_PREFIX} \
     --with-local-prefix=${MINGW_PREFIX}/local \
     --libexecdir=${MINGW_PREFIX}/lib \
-    --enable-bootstrap \
+    --disable-bootstrap \
     --enable-checking=release \
     --with-arch=${_arch} \
     --with-tune=generic \
@@ -295,8 +301,7 @@ build() {
   fi
 
   # https://gcc.gnu.org/onlinedocs/gccint/Makefile.html
-  make -O STAGE1_CFLAGS="-O2" \
-          profiledbootstrap
+  make -O STAGE1_CFLAGS="-O2"
 }
 
 package_gcc-libs() {
