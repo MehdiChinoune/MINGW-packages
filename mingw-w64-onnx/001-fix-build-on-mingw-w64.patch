@@ -1,6 +1,6 @@
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -582,7 +582,7 @@
+@@ -575,7 +575,7 @@
      # whole-archive linker option not available on AIX
      target_sources(onnx_cpp2py_export
                            PRIVATE $<TARGET_OBJECTS:onnx>)
@@ -9,20 +9,20 @@
      # Assume everything else is like gcc
      target_link_libraries(onnx_cpp2py_export
                            PRIVATE "-Wl,--whole-archive" $<TARGET_FILE:onnx>
-@@ -598,8 +598,11 @@
+@@ -591,8 +591,11 @@
  
    target_link_libraries(onnx_cpp2py_export PRIVATE onnx)
  
 -  if(MSVC)
 +  if(WIN32)
-     target_link_libraries(onnx_cpp2py_export PRIVATE ${PYTHON_LIBRARIES})
+     target_link_libraries(onnx_cpp2py_export PRIVATE ${Python3_LIBRARIES})
 +  endif()
 +
 +  if(MSVC)
      target_compile_options(onnx_cpp2py_export
                             PRIVATE /MP
-                                    /wd4244 # 'argument': conversion from 'google::
-@@ -746,7 +749,10 @@
+                                    /wd4146 # unary minus operator applied to unsigned type,
+@@ -726,7 +729,10 @@
  
  install(TARGETS
    onnx onnx_proto
