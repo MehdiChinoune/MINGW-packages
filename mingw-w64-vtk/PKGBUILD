@@ -6,7 +6,7 @@ pkgbase="mingw-w64-${_realname}"
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
 _pkgver=9.5.0
 pkgver=9.5.0.rc1
-pkgrel=1
+pkgrel=2
 pkgdesc="A software system for 3D computer graphics, image processing and visualization (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -116,10 +116,12 @@ fi
 source=(https://www.vtk.org/files/release/${_pkgver%.*}/VTK-${pkgver}.tar.gz
         "001-no-exact-version-for-fast_float.patch"
         "002-fix-build-with-external-viskores.patch::https://gitlab.kitware.com/vtk/vtk/-/merge_requests/12151.patch"
+        "003-fix-finding-external-viskores.patch"
         "004-accept-future-versions-of-boost-and-occ.patch"
         "007-dll-export-some-functions.patch")
 sha256sums=('9448005d378bd7036b22155d572f08ac6561975060af3df229ada70d71cfbe87'
             'a978ec60b9ef3a9a19265b4e502a602cff016a5cbfc7801398dc1f2f7206a1d9'
+            'SKIP'
             'SKIP'
             'a44b3ba4bdc02be4767ff48b8a7fd4206a53756a881421fca99f538b08a7b48c'
             '61c334b3050f675ee65f92163719da3e75688e490971ffcc9c4cd95eb90d762a')
@@ -139,6 +141,7 @@ prepare() {
   apply_patch_with_msg \
     001-no-exact-version-for-fast_float.patch \
     002-fix-build-with-external-viskores.patch \
+    003-fix-finding-external-viskores.patch \
     004-accept-future-versions-of-boost-and-occ.patch
 
   # Succeeds with Clang but fails with GCC!
