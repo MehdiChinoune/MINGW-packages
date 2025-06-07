@@ -8,8 +8,8 @@ _wx_basever=3.2
 _realname=gnuplot
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=6.0.2
-pkgrel=3
+pkgver=6.0.3
+pkgrel=1
 pkgdesc="Plotting package which outputs to PostScript, PNG, GIF, and others (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -41,14 +41,11 @@ makedepends=(
 source=("https://downloads.sourceforge.net/sourceforge/${_realname}/${_realname}-${pkgver}.tar.gz"
         "01-gnuplot.patch"
         "02-wxwidgets-3.2.patch"
-        "03-fix-build-doc2web.patch"
-        # https://sourceforge.net/p/gnuplot/gnuplot-main/ci/fb8f5c2e0bdd7ffe3e7fdb5c169b965db84643cb
-        "04-fix-build-with-gcc-15.patch")
-sha256sums=('f68a3b0bbb7bbbb437649674106d94522c00bf2f285cce0c19c3180b1ee7e738'
+        "03-fix-build-doc2web.patch")
+sha256sums=('ec52e3af8c4083d4538152b3f13db47f6d29929a3f6ecec5365c834e77f251ab'
             '9b8af2d8eb24f0e8048a388949d8905a79b69208cf7eadd34a763a0c582b8f9e'
             '06f8076446c4174d5972a252ae18a7f672fd25f4131b3dd1d65399c1f3b52697'
-            '427fa4d801d7c9117526790ee082af91c472c551d4cd4b45078efe856f6a92f9'
-            'fcf88de89b6af4ec3635f7c2535a98052f56ad825afc0f81104aebc7dc11f314')
+            '427fa4d801d7c9117526790ee082af91c472c551d4cd4b45078efe856f6a92f9')
 
 apply_patch_with_msg() {
   for _patch in "$@"
@@ -63,8 +60,7 @@ prepare() {
   apply_patch_with_msg \
     01-gnuplot.patch \
     02-wxwidgets-3.2.patch \
-    03-fix-build-doc2web.patch \
-    04-fix-build-with-gcc-15.patch
+    03-fix-build-doc2web.patch
 
   sed -i "s/AC_PATH_PROG(WX_CONFIG, wx-config,/AC_PATH_PROG(WX_CONFIG, wx-config-${_wx_basever},/" configure.ac
 
@@ -77,7 +73,6 @@ build() {
   ../${_realname}-${pkgver}/configure \
       --prefix=${MINGW_PREFIX} \
       --libexecdir=${MINGW_PREFIX}/bin \
-      --build=${MINGW_CHOST} \
       --with-caca \
       --without-lua \
       --without-latex \
