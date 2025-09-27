@@ -7,7 +7,7 @@ pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}-runtime"
          "${MINGW_PACKAGE_PREFIX}-${_realname}-libtextstyle"
          "${MINGW_PACKAGE_PREFIX}-${_realname}-tools")
 pkgver=0.26
-pkgrel=1
+pkgrel=2
 pkgdesc="GNU internationalization library (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -24,7 +24,6 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-libiconv"
              "groff")
 source=(https://ftp.gnu.org/pub/gnu/${_realname}/${_realname}-${pkgver}.tar.lz{,.sig}
-        0001-restore-DllMain-symbol.patch
         0005-Fix-compilation-of-pthread_sigmask.c.patch
         122-Use-LF-as-newline-in-envsubst.patch
         0021-replace-fsync.patch
@@ -33,7 +32,6 @@ source=(https://ftp.gnu.org/pub/gnu/${_realname}/${_realname}-${pkgver}.tar.lz{,
         0030-fix-build-with-mingw-w64-clang.patch)
 sha256sums=('a0151088dad8942374dc038e461b228352581defd7055e79297f156268b8d508'
             'SKIP'
-            'bfd38442d899bee75dc5d919f2bfe4a8fd827eff3fdcf45966f9de5bb5d6f283'
             'cbc2f533012d646521afa20f8b256917fce040741ff42cf53fb6dd7123a6670a'
             'ec39103d851262c02c27b7038f3c538e03afaefc6aa050311d62519d192ff38c'
             '380dbddee2f9e2feee4c1435e8a942b5d11d0125e60c3350ebb10c19b19011aa'
@@ -57,7 +55,6 @@ prepare() {
   cd "${srcdir}/${_realname}-${pkgver}"
 
   apply_patch_with_msg \
-    0001-restore-DllMain-symbol.patch \
     0005-Fix-compilation-of-pthread_sigmask.c.patch \
     122-Use-LF-as-newline-in-envsubst.patch
 
@@ -82,6 +79,7 @@ _build() {
 
   # gl_cv_func_mkdir_trailing_dot_works=yes was added to avoid having two
   # incompatible declarations of mkdir in the same compilation unit.
+  CFLAGS+=" -std=gnu2y" \
   ../${_realname}-${pkgver}/configure \
     --prefix=${MINGW_PREFIX} \
     --libexecdir=${MINGW_PREFIX}/lib \
