@@ -4,8 +4,8 @@ _realname=onnx
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
          "${MINGW_PACKAGE_PREFIX}-python-${_realname}")
-pkgver=1.17.0
-pkgrel=2
+pkgver=1.19.0
+pkgrel=1
 pkgdesc="Open standard for machine learning interoperability. (mingw-w64)"
 arch=('any')
 mingw_arch=('ucrt64' 'clang64' 'clangarm64')
@@ -27,8 +27,8 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-python-protobuf")
 source=("https://github.com/onnx/onnx/archive/v${pkgver}/${_realname}-${pkgver}.tar.gz"
         "001-fix-build-on-mingw-w64.patch")
-sha256sums=('8d5e983c36037003615e5a02d36b18fc286541bf52de1a78f6cf9f32005a820e'
-            '33ae2b4039973e3b736757cd5fa3e683dc76a0b1e76d45817a1b7d1d8e390e62')
+sha256sums=('2c2ac5a078b0350a0723fac606be8cd9e9e8cbd4c99bab1bffe2623b188fd236'
+            '182a452494dec6546e104522bd076930aab96dbe284dfe0a32840648c0665b0e')
 
 prepare() {
   cd ${_realname}-${pkgver}
