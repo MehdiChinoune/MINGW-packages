@@ -72,6 +72,7 @@ prepare() {
   apply_patch_with_msg \
     0030-fix-build-with-mingw-w64-clang.patch
 
+  # https://github.com/coreutils/gnulib/commit/77386040
   apply_patch_with_msg \
     0101-fix-build-with-clang-21.patch
 
