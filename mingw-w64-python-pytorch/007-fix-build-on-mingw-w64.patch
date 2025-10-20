@@ -1,0 +1,308 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -205,7 +205,7 @@
+ option(BUILD_CUSTOM_PROTOBUF
+        "Build and use Caffe2's own protobuf under third_party" ON)
+ option(BUILD_PYTHON "Build Python binaries" ON)
+-option(BUILD_LITE_INTERPRETER "Master flag to build Lite Interpreter" OFF)
++option(BUILD_LITE_INTERPRETER "Master flag to build Lite Interpreter" ON)
+ option(BUILD_SHARED_LIBS "Build libcaffe2.so" ON)
+ cmake_dependent_option(
+   CAFFE2_LINK_LOCAL_PROTOBUF "If set, build protobuf inside libcaffe2.so." ON
+--- a/c10/CMakeLists.txt
++++ b/c10/CMakeLists.txt
+@@ -54,7 +54,7 @@
+   # If building shared library, set dllimport/dllexport proper.
+   target_compile_options(c10 PRIVATE "-DC10_BUILD_MAIN_LIB")
+   # Enable hidden visibility if compiler supports it.
+-  if(${COMPILER_SUPPORTS_HIDDEN_VISIBILITY})
++  if(${COMPILER_SUPPORTS_HIDDEN_VISIBILITY} AND NOT MINGW)
+     target_compile_options(c10 PRIVATE "-fvisibility=hidden")
+   endif()
+ 
+--- a/c10/core/impl/alloc_cpu.cpp
++++ b/c10/core/impl/alloc_cpu.cpp
+@@ -108,7 +108,7 @@
+       "DefaultCPUAllocator: not enough memory: you tried to allocate ",
+       nbytes,
+       " bytes.");
+-#elif defined(_MSC_VER)
++#elif defined(_WIN32)
+ #ifdef USE_MIMALLOC
+   data = mi_malloc_aligned(nbytes, gAlignment);
+ #else
+--- a/c10/core/impl/LocalDispatchKeySet.cpp
++++ b/c10/core/impl/LocalDispatchKeySet.cpp
+@@ -13,7 +13,7 @@
+ // logic is encapsulated in struct PODLocalDispatchKeySet.
+ thread_local PODLocalDispatchKeySet raw_local_dispatch_key_set;
+ 
+-#if defined(_MSC_VER) || defined(C10_ANDROID) || defined(C10_IPHONE)
++#if defined(_WIN32) || defined(C10_ANDROID) || defined(C10_IPHONE)
+ LocalDispatchKeySet tls_local_dispatch_key_set() {
+   return raw_local_dispatch_key_set;
+ }
+--- a/c10/core/impl/LocalDispatchKeySet.h
++++ b/c10/core/impl/LocalDispatchKeySet.h
+@@ -62,7 +62,7 @@
+ 
+ // thread_local variables cannot be C10_API on Windows.
+ // Inlining this seems to break AutoDispatchBelowAutograd on Android.
+-#if defined(_MSC_VER) || defined(C10_ANDROID) || defined(C10_IPHONE)
++#if defined(_WIN32) || defined(C10_ANDROID) || defined(C10_IPHONE)
+ C10_API LocalDispatchKeySet tls_local_dispatch_key_set();
+ #else // defined(_MSC_VER) || defined(C10_ANDROID) || defined(C10_IPHONE)
+ extern C10_API thread_local PODLocalDispatchKeySet raw_local_dispatch_key_set;
+--- a/c10/util/env.cpp
++++ b/c10/util/env.cpp
+@@ -15,7 +15,7 @@
+ // Set an environment variable.
+ void set_env(const char* name, const char* value, bool overwrite) {
+   std::lock_guard lk(get_env_mutex());
+-#ifdef _MSC_VER
++#ifdef _WIN32
+ #pragma warning(push)
+ #pragma warning(disable : 4996)
+   if (!overwrite) {
+--- a/c10/util/tempfile.cpp
++++ b/c10/util/tempfile.cpp
+@@ -12,6 +12,8 @@
+ #include <fcntl.h>
+ #include <fileapi.h>
+ #include <io.h>
++#include <share.h>
++#include <sys/stat.h>
+ #endif // defined(_WIN32)
+ 
+ // Creates the filename pattern passed to and completed by `mkstemp`.
+--- a/c10/util/typeid.h
++++ b/c10/util/typeid.h
+@@ -627,7 +627,7 @@
+ //   http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0537r0.html
+ //   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=51930
+ // and as a result, we define these two macros slightly differently.
+-#if defined(_MSC_VER) || defined(__clang__)
++#if defined(_MSC_VER)
+ #define EXPORT_IF_NOT_GCC C10_EXPORT
+ #else
+ #define EXPORT_IF_NOT_GCC
+--- a/c10/util/win32-headers.h
++++ b/c10/util/win32-headers.h
+@@ -45,7 +45,6 @@
+ #undef IN
+ #undef THIS
+ #undef CONST
+-#undef NAN
+ #undef UNKNOWN
+ #undef NONE
+ #undef ANY
+--- a/caffe2/utils/string_utils.h
++++ b/caffe2/utils/string_utils.h
+@@ -4,6 +4,7 @@
+ #include <memory>
+ #include <string>
+ #include <vector>
++#include <cstdint>
+ 
+ #include <c10/macros/Export.h>
+ 
+--- a/caffe2/utils/threadpool/WorkersPool.h
++++ b/caffe2/utils/threadpool/WorkersPool.h
+@@ -36,7 +36,7 @@
+ 
+ #if defined(__ANDROID__)
+     p = memalign(kGEMMLOWPCacheLineSize, sizeof(T));
+-#elif defined(_MSC_VER)
++#elif defined(_WIN32)
+     p = _aligned_malloc(sizeof(T), kGEMMLOWPCacheLineSize);
+ #else
+     auto res = posix_memalign((void**)&p, kGEMMLOWPCacheLineSize, sizeof(T));
+--- a/cmake/MiscCheck.cmake
++++ b/cmake/MiscCheck.cmake
+@@ -16,7 +16,7 @@
+ # ---[ Checks if compiler supports -fvisibility=hidden
+ check_cxx_compiler_flag("-fvisibility=hidden" COMPILER_SUPPORTS_HIDDEN_VISIBILITY)
+ check_cxx_compiler_flag("-fvisibility-inlines-hidden" COMPILER_SUPPORTS_HIDDEN_INLINE_VISIBILITY)
+-if(${COMPILER_SUPPORTS_HIDDEN_INLINE_VISIBILITY})
++if(${COMPILER_SUPPORTS_HIDDEN_INLINE_VISIBILITY} AND NOT MINGW)
+   set(CAFFE2_VISIBILITY_FLAG "-fvisibility-inlines-hidden")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CAFFE2_VISIBILITY_FLAG}")
+ endif()
+--- a/tools/autograd/gen_autograd_functions.py
++++ b/tools/autograd/gen_autograd_functions.py
+@@ -55,7 +55,7 @@
+     """\
+ #ifdef _WIN32
+ struct ${op} : public ${superclass} {
+-  TORCH_API ${op}() = default;
++  ${op}() = default;
+ #else
+ struct TORCH_API ${op} : public ${superclass} {
+ #endif
+--- a/torch/CMakeLists.txt
++++ b/torch/CMakeLists.txt
+@@ -20,7 +20,7 @@
+   set(TORCH_INSTALL_LIB_DIR lib)
+ endif()
+ 
+-if(MSVC)
++if(WIN32)
+     set(LIBSHM_SUBDIR libshm_windows)
+ else()
+     set(LIBSHM_SUBDIR libshm)
+--- a/torch/csrc/Module.cpp
++++ b/torch/csrc/Module.cpp
+@@ -5,7 +5,7 @@
+ #include <csignal>
+ #include <optional>
+ 
+-#ifndef _MSC_VER
++#ifndef _WIN32
+ #include <sys/socket.h>
+ #endif
+ 
+--- a/torch/csrc/jit/codegen/fuser/cpu/temp_file.h
++++ b/torch/csrc/jit/codegen/fuser/cpu/temp_file.h
+@@ -24,7 +24,7 @@
+
+ namespace torch::jit::fuser::cpu {
+
+-#ifdef _MSC_VER
++#ifdef _WIN32
+ inline int wmkstemps(wchar_t* tmpl, int suffix_len) {
+   int len;
+   wchar_t* name;
+@@ -61,7 +61,7 @@
+   AT_DISALLOW_COPY_AND_ASSIGN(TempFile);
+
+   TempFile(const std::string& t, int suffix) {
+-#ifdef _MSC_VER
++#ifdef _WIN32
+     auto wt = c10::u8u16(t);
+     std::vector<wchar_t> tt(wt.c_str(), wt.c_str() + wt.size() + 1);
+     int fd = wmkstemps(tt.data(), suffix);
+@@ -95,7 +95,7 @@
+     AT_ASSERT(str.size() == result);
+   }
+
+-#ifdef _MSC_VER
++#ifdef _WIN32
+   void close() {
+     if (file_ != nullptr) {
+       fclose(file_);
+@@ -109,7 +109,7 @@
+   }
+
+   ~TempFile() {
+-#ifdef _MSC_VER
++#ifdef _WIN32
+     if (file_ != nullptr) {
+       fclose(file_);
+     }
+--- a/torch/csrc/jit/frontend/strtod.cpp
++++ b/torch/csrc/jit/frontend/strtod.cpp
+@@ -30,7 +30,7 @@
+ 
+ namespace torch::jit {
+ 
+-#ifdef _MSC_VER
++#ifdef _WIN32
+ double strtod_c(const char* nptr, char** endptr) {
+   static _locale_t loc = _create_locale(LC_ALL, "C");
+   return _strtod_l(nptr, endptr, loc);
+--- a/torch/csrc/utils/pybind.h
++++ b/torch/csrc/utils/pybind.h
+@@ -33,7 +33,7 @@
+
+ // torch.Tensor <-> at::Tensor conversions (without unwrapping)
+ template <>
+-struct TORCH_PYTHON_API type_caster<at::Tensor> {
++struct type_caster<at::Tensor> {
+  public:
+   // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
+   PYBIND11_TYPE_CASTER(at::Tensor, _("torch.Tensor"));
+@@ -94,7 +94,7 @@
+ };
+
+ template <>
+-struct TORCH_PYTHON_API type_caster<at::IntArrayRef> {
++struct type_caster<at::IntArrayRef> {
+  public:
+   // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
+   PYBIND11_TYPE_CASTER(at::IntArrayRef, _("Tuple[int, ...]"));
+@@ -110,7 +110,7 @@
+ };
+
+ template <>
+-struct TORCH_PYTHON_API type_caster<at::SymIntArrayRef> {
++struct type_caster<at::SymIntArrayRef> {
+  public:
+   // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
+   PYBIND11_TYPE_CASTER(at::SymIntArrayRef, _("List[int]"));
+@@ -126,7 +126,7 @@
+ };
+
+ template <>
+-struct TORCH_PYTHON_API type_caster<at::ArrayRef<c10::SymNode>> {
++struct type_caster<at::ArrayRef<c10::SymNode>> {
+  public:
+   // NOLINTNEXTLINE(cppcoreguidelines-non-private-member-variables-in-classes)
+   PYBIND11_TYPE_CASTER(at::ArrayRef<c10::SymNode>, _("List[SymNode]"));
+@@ -281,7 +281,7 @@
+ };
+
+ template <>
+-struct TORCH_PYTHON_API type_caster<c10::Scalar> {
++struct type_caster<c10::Scalar> {
+  public:
+   PYBIND11_TYPE_CASTER(
+       c10::Scalar,
+@@ -295,7 +295,7 @@
+ };
+
+ template <>
+-struct TORCH_PYTHON_API type_caster<c10::SymInt> {
++struct type_caster<c10::SymInt> {
+  public:
+   PYBIND11_TYPE_CASTER(c10::SymInt, _("Union[int, torch.SymInt]"));
+   bool load(py::handle src, bool);
+@@ -307,7 +307,7 @@
+ };
+
+ template <>
+-struct TORCH_PYTHON_API type_caster<c10::SymFloat> {
++struct type_caster<c10::SymFloat> {
+  public:
+   PYBIND11_TYPE_CASTER(c10::SymFloat, _("float"));
+   bool load(py::handle src, bool);
+@@ -319,7 +319,7 @@
+ };
+
+ template <>
+-struct TORCH_PYTHON_API type_caster<c10::SymBool> {
++struct type_caster<c10::SymBool> {
+  public:
+   PYBIND11_TYPE_CASTER(c10::SymBool, _("Union[bool, torch.SymBool]"));
+   bool load(py::handle src, bool);
+--- a/torch/nativert/common/FileUtil.h
++++ b/torch/nativert/common/FileUtil.h
+@@ -17,7 +17,9 @@
+ // This is a massive pain to have be an `int` due to the pthread implementation
+ // we support, but it's far more compatible with the rest of the windows world
+ // as an `int` than it would be as a `void*`
++#ifdef _MSC_VER
+ using pid_t = int;
++#endif
+ 
+ using uid_t = int;
+ using gid_t = int;
+@@ -31,7 +33,9 @@
+ #define HAVE_MODE_T 1
+ // The Windows headers don't define this anywhere, nor do any of the libs
+ // that Folly depends on, so define it here.
++#ifdef _MSC_VER
+ using mode_t = unsigned int;
++#endif
+ #endif
+ 
+ // Copied from folly/portability/Fcntl.h

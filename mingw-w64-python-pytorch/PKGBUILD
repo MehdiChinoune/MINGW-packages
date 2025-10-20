@@ -1,0 +1,205 @@
+# Contributor: Mehdi Chinoune <mehdi.chinoune@hotmail.com>
+
+_realname=pytorch
+pkgbase="mingw-w64-python-${_realname}"
+pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
+         #"${MINGW_PACKAGE_PREFIX}-python-${_realname}-opt")
+pkgver=2.9.0
+pkgrel=1
+pkgdesc='Tensors and Dynamic neural networks in Python with strong GPU acceleration'
+arch=('any')
+mingw_arch=(ucrt64)
+url="https://pytorch.org"
+msys2_repository_url="https://github.com/pytorch/pytorch"
+license=('BSD-3-Clause-Modification')
+depends=(
+  ${MINGW_PACKAGE_PREFIX}-abseil-cpp
+  ${MINGW_PACKAGE_PREFIX}-eigen3
+  ${MINGW_PACKAGE_PREFIX}-cc-libs
+  ${MINGW_PACKAGE_PREFIX}-gflags
+  ${MINGW_PACKAGE_PREFIX}-glog
+  ${MINGW_PACKAGE_PREFIX}-libuv
+  ${MINGW_PACKAGE_PREFIX}-omp
+  #${MINGW_PACKAGE_PREFIX}-onnx
+  ${MINGW_PACKAGE_PREFIX}-protobuf
+  ${MINGW_PACKAGE_PREFIX}-pybind11
+  ${MINGW_PACKAGE_PREFIX}-python
+  ${MINGW_PACKAGE_PREFIX}-python-filelock
+  ${MINGW_PACKAGE_PREFIX}-python-jinja
+  ${MINGW_PACKAGE_PREFIX}-python-networkx
+  ${MINGW_PACKAGE_PREFIX}-python-numpy
+  ${MINGW_PACKAGE_PREFIX}-python-sympy
+  ${MINGW_PACKAGE_PREFIX}-python-typing_extensions
+  ${MINGW_PACKAGE_PREFIX}-python-yaml
+  ${MINGW_PACKAGE_PREFIX}-qt6-base
+  $([[ ${CARCH} == aarch64 ]] || echo "${MINGW_PACKAGE_PREFIX}-sleef")
+  ${MINGW_PACKAGE_PREFIX}-vulkan-loader
+)
+makedepends=(
+  ${MINGW_PACKAGE_PREFIX}-cc
+  ${MINGW_PACKAGE_PREFIX}-cmake
+  ${MINGW_PACKAGE_PREFIX}-doxygen
+  ${MINGW_PACKAGE_PREFIX}-ninja
+  ${MINGW_PACKAGE_PREFIX}-onednn
+  ${MINGW_PACKAGE_PREFIX}-pkgconf
+  ${MINGW_PACKAGE_PREFIX}-python-build
+  ${MINGW_PACKAGE_PREFIX}-python-installer
+  ${MINGW_PACKAGE_PREFIX}-python-setuptools
+  ${MINGW_PACKAGE_PREFIX}-python-yaml
+  ${MINGW_PACKAGE_PREFIX}-shaderc
+  ${MINGW_PACKAGE_PREFIX}-vulkan-headers
+  git
+)
+source=("https://github.com/pytorch/pytorch/releases/download/v${pkgver}/pytorch-v${pkgver}.tar.gz"
+        001-no-cmake-or-ninja-from-pip.patch
+        002-add-missing-include.patch
+        003-use-system-libuv.patch
+        004-fix-build-with-glog-0.6.patch
+        005-fix-build-with-glog-0.7.patch
+        006-fix-detect-cpu.patch
+        007-fix-build-on-mingw-w64.patch
+        100-fix-build-fmt-with-clang-21.patch::https://github.com/fmtlib/fmt/commit/f4345467.patch)
+sha256sums=('c6980af3c0ea311f49f90987982be715e4d702539fea41e52f55ad7f0b105dc3'
+            '57bb53e895d2259b1aa76ca97e2f379ec14fa58e482df0ebede2d086ab55473d'
+            'de75b2a23eedabd7f72f2ce828bed9472cd57ba40064225f1cc2e64b321e8abc'
+            '718523154fce24f5f18c32573df1f11b258a03a43cfb0f1e40ee57aa3e96a939'
+            'afb1e374de28f2167290294c8f6200393f95219a21e1791050c5152501b959ca'
+            '1668c1ae81a674bbf655091af34dc26ea2e78cda9581e6e92af408b1db9e16fd'
+            'a91cc1b40ef07014f001a1257ba9513baaedcb40f101e8f118ed7c2c1a6d60d0'
+            'a37a49768686a8c0843fd1aaffe78f7489d609413934f5547fc7d205bc2b784f'
+            '540e23a378682da23ce2c200302cd37ec1e3be92217733d34a877ed9db0efcc9')
+noextract=("pytorch-v${pkgver}.tar.gz")
+
+get_pyver () {
+  ${MINGW_PREFIX}/bin/python -c 'import sys; print(str(sys.version_info[0]) + "." + str(sys.version_info[1]))'
+}
+
+apply_patch_with_msg() {
+  for _patch in "$@"
+  do
+    msg2 "Applying $_patch"
+    patch -Nbp1 -i "${srcdir}/$_patch"
+  done
+}
+
+prepare() {
+  echo "Extracting pytorch-v${pkgver}.tar.gz ..."
+  tar -xzf pytorch-v${pkgver}.tar.gz || true
+
+  cd "${srcdir}/${_realname}-v${pkgver}"
+
+  apply_patch_with_msg \
+    001-no-cmake-or-ninja-from-pip.patch \
+    002-add-missing-include.patch \
+    003-use-system-libuv.patch \
+    004-fix-build-with-glog-0.6.patch \
+    005-fix-build-with-glog-0.7.patch \
+    006-fix-detect-cpu.patch \
+    007-fix-build-on-mingw-w64.patch
+  
+  cd third_party/fmt
+  apply_patch_with_msg \
+    100-fix-build-fmt-with-clang-21.patch
+
+  cd "${srcdir}"
+
+  cp -r "${_realname}-v${pkgver}" "python-build-${MSYSTEM}"
+  #cp -r "${_realname}" "build-${MSYSTEM}-opt"
+}
+
+# Common build configuration, called in all package() functions.
+_prepare() {
+  export VERBOSE=1
+  export PYTORCH_BUILD_VERSION="${pkgver}"
+  export PYTORCH_BUILD_NUMBER=1
+
+  # Check tools/setup_helpers/cmake.py, setup.py and CMakeLists.txt for a list of flags that can be set via env vars.
+  export ATEN_NO_TEST=ON  # do not build ATen tests
+  export BUILD_TEST=OFF
+  export BUILD_CUSTOM_PROTOBUF=OFF
+  export USE_GFLAGS=ON
+  export USE_GLOG=ON
+  export USE_NUMPY=ON
+  export USE_OPENMP=ON
+  export USE_VULKAN=ON
+  export USE_OBSERVERS=ON
+  export USE_SYSTEM_PYBIND11=ON
+  export USE_SYSTEM_EIGEN_INSTALL=ON
+  #export USE_SYSTEM_ONNX=ON
+  if $([[ ${CARCH} != aarch64 ]]); then
+    export USE_SYSTEM_SLEEF=ON
+  fi
+  export USE_CUDA=OFF
+  export USE_CUDNN=OFF
+  export USE_ROCM=OFF
+  export USE_ITT=OFF
+  export USE_MKLDNN=OFF
+  export USE_XPU=OFF
+  export CC=${MINGW_PREFIX}/bin/${CC}.exe
+  export CXX=${MINGW_PREFIX}/bin/${CXX}.exe
+  if [[ ${MSYSTEM} == UCRT64 ]]; then
+    CXXFLAGS+=" -Wno-attributes -Wno-error=maybe-uninitialized"
+  else
+    CXXFLAGS+=" -Wno-ignored-attributes -Wno-c++98-compat-extra-semi"
+  fi
+
+  # Fix build issues for onnx with cmake 4.0
+  export CMAKE_POLICY_VERSION_MINIMUM=3.5
+}
+
+build() {
+  cd "${srcdir}"/python-build-${MSYSTEM}
+  echo "Building without cuda or rocm and without non-x86-64 optimizations"
+  _prepare
+  #echo "add_definitions(-march=x86-64)" >> cmake/MiscCheck.cmake
+  ${MINGW_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
+
+  # cd "${srcdir}/${_realname}-opt"
+  # echo "Building with x86-64 optimizations"
+  # _prepare
+  # echo "add_definitions(-march=x86-64-v3)" >> cmake/MiscCheck.cmake
+  # python -m build --wheel --no-isolation
+}
+
+_package() {
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    ${MINGW_PREFIX}/bin/python -m installer --prefix=${MINGW_PREFIX} \
+    --destdir="${pkgdir}" dist/*.whl
+
+  install -Dm644 LICENSE "${pkgdir}${MINGW_PREFIX}/share/licenses/${pkgname}/LICENSE"
+
+  pytorchpath="${MINGW_PREFIX}/lib/python$(get_pyver)/site-packages/torch"
+  install -d "${pkgdir}${MINGW_PREFIX}/lib"
+
+  # put CMake files in correct place
+  mv "${pkgdir}/${pytorchpath}/share/cmake" "${pkgdir}${MINGW_PREFIX}/lib/cmake"
+
+  # put C++ API in correct place
+  mv "${pkgdir}/${pytorchpath}/include" "${pkgdir}${MINGW_PREFIX}/include"
+  find "${pkgdir}/${pytorchpath}"/lib/ -type f,l \( -iname '*.a' \) -print0 | while read -rd $'\0' _lib; do
+    mv "${_lib}" "${pkgdir}"${MINGW_PREFIX}/lib/
+  done
+  find "${pkgdir}/${pytorchpath}"/lib/ -type f,l \( -iname '*.dll' \) -print0 | while read -rd $'\0' _lib; do
+    mv "${_lib}" "${pkgdir}"${MINGW_PREFIX}/bin/
+  done
+
+  # Clean up duplicates with other packages
+  rm -vrf $(ls -d "${pkgdir}"${MINGW_PREFIX}/include/* | grep -v "/ATen$\|/caffe2$\|/c10$\|/torch$\|/tensorpipe$")
+}
+
+#package_python-pytorch() {
+package() {
+  #pkgdesc="${_pkgdesc}"
+
+  cd "${srcdir}"/python-build-${MSYSTEM}
+  _package
+}
+
+# package_python-pytorch-opt() {
+#   pkgdesc="${_pkgdesc} (with AVX2 CPU optimizations)"
+#   conflicts=(python-pytorch)
+#   provides=(python-pytorch=${pkgver})
+
+#   cd "${srcdir}/${_realname}-opt"
+#   _package
+# }
