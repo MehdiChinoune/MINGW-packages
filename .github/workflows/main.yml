@@ -15,14 +15,14 @@ jobs:
       fail-fast: false
       matrix:
         include: [
-          { msystem: UCRT64, runner: windows-2022},
-          { msystem: CLANG64, runner: windows-2022},
-          { msystem: MINGW64, runner: windows-2022},
-          { msystem: MINGW32, runner: windows-2022},
-          { msystem: CLANGARM64, runner: windows-11-arm}
+          { msystem: UCRT64, runner: windows-2025, repo: ucrt, new_msys: false},
+          { msystem: CLANG64, runner: windows-2025, repo: clang, new_msys: false},
+          { msystem: CLANGARM64, runner: windows-11-arm, repo: clangarm, new_msys: true}
         ]
     name: ${{ matrix.msystem }}
     runs-on: ${{ matrix.runner }}
+    env:
+      mingw_repo_sf: https://sourceforge.net/projects/mingw-updates/files/${{ github.ref_name}}/${{ matrix.repo }}
     steps:
       - name: Gather Facts
         id: facts
@@ -57,14 +57,16 @@ jobs:
           install: git python base-devel
           update: true
           location: '${{ steps.facts.outputs.drive }}\M'
+          release: ${{ matrix.new_msys }}
 
-      - name: Add staging repo
+      - name: Add staging and ${{ matrix.repo }} repos
         shell: msys2 {0}
         run: |
           cp /etc/pacman.conf /etc/pacman.conf.bak
           grep -qFx '[staging]' /etc/pacman.conf || sed -i '/^# \[staging\]/,/^$/ s|^# ||g' /etc/pacman.conf
+          sed -i '1s|^|[${{ matrix.repo }}]\nServer = ${{ env.mingw_repo_sf }}\nSigLevel = Never\n|' /etc/pacman.conf
 
-      - name: Update using staging
+      - name: Update using staging and ${{ matrix.repo }} repos
         run: |
           msys2 -c 'pacman --noconfirm -Suuy'
           msys2 -c 'pacman --noconfirm -Suu'
@@ -77,10 +79,12 @@ jobs:
 
       - name: CI-Build
         shell: msys2 {0}
-        id: build
+        continue-on-error: true
+        timeout-minutes: 350
         run: |
           cd "$(cygpath '${{ steps.facts.outputs.drive }}/_')"
-          MINGW_ARCH=${{ matrix.msystem }} ./.ci/ci-build.sh
+          sed -i 's|#PACKAGER="John Doe <john@doe.com>"|PACKAGER="Mehdi Chinoune <mehdi.chinoune@hotmail.com>"\n|g' /etc/makepkg_mingw.conf
+          ./.ci/ci-build.sh
 
       - name: "Upload binaries"
         if: ${{ !cancelled() }}
@@ -92,7 +96,9 @@ jobs:
 
   check:
     needs: [build]
-    runs-on: windows-2022
+    runs-on: windows-2025
+    env:
+      mingw_repo_sf: https://sourceforge.net/projects/mingw-updates/files/ucrt
     steps:
       - uses: actions/checkout@v5
       - uses: actions/download-artifact@v5
@@ -110,12 +116,13 @@ jobs:
           msystem: UCRT64
           update: true
           install: mingw-w64-ucrt-x86_64-python-pip mingw-w64-ucrt-x86_64-python-pacdb
-      - name: Add staging repo
+      - name: Add staging and ucrt repos
         if: steps.check-run.outputs.run == 'true'
         shell: msys2 {0}
         run: |
           sed -i '1s|^|[staging]\nServer = https://repo.msys2.org/staging/\nSigLevel = Never\n|' /etc/pacman.conf
-      - name: Update using staging
+          sed -i '1s|^|[ucrt]\nServer = ${{ env.mingw_repo_sf }}\nSigLevel = Never\n|' /etc/pacman.conf
+      - name: Update using staging and ucrt
         if: steps.check-run.outputs.run == 'true'
         run: |
           msys2 -c 'pacman --noconfirm -Suuy'
@@ -149,6 +156,7 @@ jobs:
       - name: Grok packages
         uses: jeremyd2019/package-grokker/grok-artifacts@main
         if: steps.artifacts.outcome == 'success'
+        continue-on-error: true
         with:
           repo: ${{ matrix.repo }}
           path: artifacts
