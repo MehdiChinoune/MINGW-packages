@@ -2,11 +2,11 @@
 
 pkgbase=mingw-w64-texlive-bin
 pkgname=("${MINGW_PACKAGE_PREFIX}-texlive-bin" "${MINGW_PACKAGE_PREFIX}-libsynctex")
-pkgver=2023.20230523
+pkgver=2025.2
 pkgdesc="TeX Live binaries (mingw-w64)"
 pkgrel=10
 arch=('any')
-mingw_arch=('mingw64' 'ucrt64' 'clang64')
+mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
 url='https://tug.org/texlive/'
 msys2_repository_url="https://github.com/Tex-Live/texlive-source"
 msys2_references=(
@@ -14,31 +14,32 @@ msys2_references=(
 )
 license=('spdx:GPL-2.0-or-later AND GPL-3.0-or-later AND LGPL-2.1-or-later AND LGPL-2.0-or-later AND LPPL-1.3c')
 makedepends=(
-    "${MINGW_PACKAGE_PREFIX}-perl"
-    "${MINGW_PACKAGE_PREFIX}-cairo"
-    "${MINGW_PACKAGE_PREFIX}-pixman"
-    "${MINGW_PACKAGE_PREFIX}-graphite2"
-    "${MINGW_PACKAGE_PREFIX}-libsigsegv"
-    "${MINGW_PACKAGE_PREFIX}-zziplib"
-    "${MINGW_PACKAGE_PREFIX}-libpng"
-    "${MINGW_PACKAGE_PREFIX}-libjpeg-turbo"
-    "${MINGW_PACKAGE_PREFIX}-freetype"
-    "${MINGW_PACKAGE_PREFIX}-icu"
-    "${MINGW_PACKAGE_PREFIX}-harfbuzz"
-    "${MINGW_PACKAGE_PREFIX}-gmp"
-    "${MINGW_PACKAGE_PREFIX}-mpfr"
-    "${MINGW_PACKAGE_PREFIX}-potrace"
-    "${MINGW_PACKAGE_PREFIX}-libpaper"
-    "${MINGW_PACKAGE_PREFIX}-ffcall"
-    "${MINGW_PACKAGE_PREFIX}-libgd"
-    "${MINGW_PACKAGE_PREFIX}-lua"
-    "${MINGW_PACKAGE_PREFIX}-luajit"
-    "${MINGW_PACKAGE_PREFIX}-ghostscript"
-    "${MINGW_PACKAGE_PREFIX}-autotools"
     "${MINGW_PACKAGE_PREFIX}-cc"
+    "${MINGW_PACKAGE_PREFIX}-autotools"
     "${MINGW_PACKAGE_PREFIX}-pkgconf"
+    "${MINGW_PACKAGE_PREFIX}-cairo"
+    $([[ ${CARCH} == aarch64 ]] || echo "${MINGW_PACKAGE_PREFIX}-ffcall")
+    "${MINGW_PACKAGE_PREFIX}-freetype"
+    "${MINGW_PACKAGE_PREFIX}-ghostscript"
+    "${MINGW_PACKAGE_PREFIX}-gmp"
+    "${MINGW_PACKAGE_PREFIX}-graphite2"
+    "${MINGW_PACKAGE_PREFIX}-harfbuzz"
+    "${MINGW_PACKAGE_PREFIX}-icu"
+    "${MINGW_PACKAGE_PREFIX}-libgd"
+    "${MINGW_PACKAGE_PREFIX}-libjpeg-turbo"
+    "${MINGW_PACKAGE_PREFIX}-libpaper"
+    "${MINGW_PACKAGE_PREFIX}-libpng"
+    $([[ ${CARCH} == aarch64 ]] || echo "${MINGW_PACKAGE_PREFIX}-libsigsegv")
+    #"${MINGW_PACKAGE_PREFIX}-lua"
+    #"${MINGW_PACKAGE_PREFIX}-luajit"
+    "${MINGW_PACKAGE_PREFIX}-mpfi"
+    "${MINGW_PACKAGE_PREFIX}-mpfr"
+    "${MINGW_PACKAGE_PREFIX}-pixman"
+    "${MINGW_PACKAGE_PREFIX}-potrace"
+    "${MINGW_PACKAGE_PREFIX}-zziplib"
     # perl dependencies
-    "${MINGW_PACKAGE_PREFIX}-perl-win32-api"
+    "${MINGW_PACKAGE_PREFIX}-perl"
+    $([[ ${CARCH} == aarch64 ]] || echo "${MINGW_PACKAGE_PREFIX}-perl-win32-api")
     "${MINGW_PACKAGE_PREFIX}-perl-win32-console"
     "${MINGW_PACKAGE_PREFIX}-perl-win32-shortcut"
     "${MINGW_PACKAGE_PREFIX}-perl-win32-tieregistry"
@@ -47,24 +48,20 @@ makedepends=(
     "${MINGW_PACKAGE_PREFIX}-perl-file-which"
     "${MINGW_PACKAGE_PREFIX}-perl-io-string"
 )
-_commit=871c7a2856d70e1a9703d1f72f0587b9995dba5f # svn://tug.org/texlive/branches/branch2023/Build/source@66984
+_commit=562901fe3302de1432fb98adcfd4d10a5e140760 # svn://tug.org/texlive/branches/branch2023/Build/source@74917
 source=(
     "texlive-source-${_commit}.tar.gz::https://github.com/Tex-Live/texlive-source/archive/${_commit}.tar.gz"
     "0001-Remove-DLUASOCKET_INET_PTON-from-Makefile.patch"
     "0002-fix-lauchers-mingw32.patch"
     "0003-runscript-always-quote-args.patch"
     "0004-add-missing-includes-dvisvgm.patch"
-    "0005-untighten_version_check_zlib.patch"
-    "0006-workaround-pathconf.patch"
-    "0007-stat.patch")
-sha256sums=('d3eca31c6a16a168f66471ce3837b7c950826967162eab04d58233f52462527e'
+    "0006-workaround-pathconf.patch")
+sha256sums=('7effaffb8b74dab9e332495a71614303965031e8b14d8d59ea8093bc5dfba0b2'
             '86ef2a99b2f0caed42777419837d9b539af1d1c8a101701e539e5467bb88662e'
             'decff8db61302c2a1760cfd4b42aaf0e25fcb7d2b9621cea3ec3f4c2557976a1'
             'c22ad079777082ebb7fe90e64d3f0d20b75756e50af776f2d4c1b9f9e692dba3'
-            '4d8cf5558e72d47b8d59ece23993b29fa36accf9bd3577cf9b3ea1cb777162a6'
-            'f805930ee0396aea3c6d189c078ad57d4c5c9212f6f3cb7f25e0c74b8151e0b1'
-            'e0fd72b6863156520bc7f30e446a991df6f35ec36de7a5ab2f767a091c2ea451'
-            'e4682accd42f3cde2df65628a13c1ba2b19fb779207dc6dad832d1c7b7cb4ab6')
+            '0ec045e8bcdfb7e696a9dbcbcbbe15d1cf2166e1e59cc119412c14ce9fc24f4a'
+            'e0fd72b6863156520bc7f30e446a991df6f35ec36de7a5ab2f767a091c2ea451')
 
 apply_patch_with_msg() {
   for _patch in "$@"
@@ -81,16 +78,8 @@ prepare() {
   apply_patch_with_msg 0003-runscript-always-quote-args.patch
   apply_patch_with_msg 0004-add-missing-includes-dvisvgm.patch
 
-  # https://github.com/msys2/MINGW-packages/issues/18251
-  # https://github.com/debian-tex/texlive-bin/blob/6dae83df50df3edc/debian/patches/untighten_version_check_zlib.diff
-  apply_patch_with_msg 0005-untighten_version_check_zlib.patch
-
   # Remove when https://github.com/msys2/msys2-runtime/issues/208 is fixed:
   apply_patch_with_msg 0006-workaround-pathconf.patch
-
-  # https://github.com/TeX-Live/texlive-source/commit/1622d0ff6363d5cb2a4a81cdffb72b78fe7c6ef9
-  # https://github.com/TeX-Live/texlive-source/commit/21a44442e9932284f5d7dc724ac35ef01bd683dc
-  apply_patch_with_msg 0007-stat.patch
 
   # from https://github.com/archlinux/svntogit-packages/blob/packages/texlive-bin/trunk/PKGBUILD#L21
   # bibtex-x needs kpathsea flags
@@ -112,8 +101,8 @@ build() {
 
   echo "--> Initial configuration..."
   export lt_cv_deplibs_check_method='pass_all'
-  CXXFLAGS+=" -std=gnu++17"
-  CFLAGS+=" -Wno-error=incompatible-pointer-types -std=gnu17"
+
+  CFLAGS+=" -Wno-error=incompatible-pointer-types -Wno-implicit-function-declaration -std=gnu17"
   # we use temporary prefix to avoid messing the existing
   # $pkgdir/usr/share/texmf tree
   ../configure -C \
@@ -126,21 +115,22 @@ build() {
     --disable-multiplatform \
     --disable-t1utils \
     --disable-bibtexu \
+    --with-system-cairo \
+    --with-system-freetype2 \
+    --with-system-gd \
+    --with-system-gmp \
+    --with-system-graphite2 \
+    --with-system-harfbuzz \
+    --with-system-icu \
+    --with-system-libpaper \
+    --with-system-libpng \
+    --with-system-mpfi \
+    --with-system-mpfr \
+    --with-system-ncurses \
+    --with-system-pixman \
+    --with-system-potrace \
     --with-system-zlib \
     --with-system-zziplib \
-    --with-system-libpng \
-    --with-system-ncurses \
-    --with-system-gd \
-    --with-system-freetype2 \
-    --with-system-pixman \
-    --with-system-cairo \
-    --with-system-harfbuzz \
-    --with-system-graphite2 \
-    --with-system-icu \
-    --with-system-gmp \
-    --with-system-mpfr \
-    --with-system-potrace \
-    --with-system-libpaper \
     --with-xdvi-x-toolkit=xaw \
     --disable-dump-share \
     --enable-aleph \
