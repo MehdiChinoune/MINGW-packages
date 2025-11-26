@@ -1,0 +1,20 @@
+--- a/src/Mod/Cloud/CMakeLists.txt
++++ b/src/Mod/Cloud/CMakeLists.txt
+@@ -10,7 +10,7 @@
+     find_package(PkgConfig REQUIRED)
+     pkg_search_module(OPENSSL REQUIRED openssl)
+     set (OPENSSL_LIBRARIES ${OPENSSL_LINK_LIBRARIES})
+-elseif(WIN32 AND LIBPACK_FOUND)
++elseif(MSVC AND LIBPACK_FOUND)
+     SET( OPENSSL_INCLUDE_DIR ${FREECAD_LIBPACK_DIR}/include)
+     SET( OPENSSL_LIBRARIES
+       optimized ${FREECAD_LIBPACK_DIR}/lib/openssl.lib debug ${FREECAD_LIBPACK_DIR}/lib/openssld.lib
+@@ -41,7 +41,7 @@
+     message( FATAL_ERROR "openssl not found!" )
+ endif(OPENSSL_FOUND)
+ 
+-IF(WIN32)
++IF(MSVC)
+     SET( CURL_FOUND True)
+     SET( CURL_INCLUDE_DIR ${FREECAD_LIBPACK_DIR}/include)
+     SET( CURL_LIBRARIES
