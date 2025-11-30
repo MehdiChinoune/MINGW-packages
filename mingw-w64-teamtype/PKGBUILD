@@ -1,0 +1,49 @@
+# Contributor: Mehdi Chinoune <mehdi.chinoune@hotmail.com>
+
+_realname=teamtype
+pkgbase=mingw-w64-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=0.9.0
+pkgrel=1
+pkgdesc="Peer-to-peer, editor-agnostic collaborative editing of local text files. (mingw-w64)"
+arch=('any')
+mingw_arch=('ucrt64' 'clang64' 'clangarm64')
+url='https://teamtype.github.io/teamtype'
+msys2_repository_url="https://github.com/teamtype/teamtype"
+license=('spdx:AGPL-3.0-or-later')
+makedepends=("${MINGW_PACKAGE_PREFIX}-rust")
+source=("https://github.com/teamtype/teamtype/archive/v${pkgver}/${_realname}-${pkgver}.tar.gz")
+sha256sums=('eabc7a197a6d5f1a06855d168796f5db95e1d61cfe1cb9cb05ce6f4e3cec7cb9')
+
+prepare() {
+  cd "${_realname}-${pkgver}/daemon"
+
+  cargo fetch --locked --target "${RUST_CHOST}"
+}
+
+build() {
+  cd "${_realname}-${pkgver}/daemon"
+
+  cargo build --release --frozen
+}
+
+check() {
+  cd "${_realname}-${pkgver}/daemon"
+
+  cargo test --release --frozen
+}
+
+package() {
+  cd "${_realname}-${pkgver}/daemon"
+
+  cargo install \
+    --offline \
+    --no-track \
+    --frozen \
+    --path . \
+    --root "${pkgdir}${MINGW_PREFIX}"
+
+  cd ..
+
+  install -Dm644 LICENSE.md "${pkgdir}"${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE
+}
