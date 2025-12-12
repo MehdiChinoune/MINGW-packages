@@ -1,0 +1,88 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -339,9 +339,9 @@
+     target_compile_options(amdZenDNN PUBLIC -ggdb)
+ endif()
+ 
+-target_compile_options(amdZenDNN PUBLIC -fopenmp -fconcepts)
++target_compile_options(amdZenDNN PUBLIC -fopenmp)
+ target_compile_options(amdZenDNN PUBLIC -Wno-format-zero-length -Wno-format-truncation)
+-target_compile_options(amdZenDNN PUBLIC -Wno-unused-result -Wno-stringop-overflow)
++target_compile_options(amdZenDNN PUBLIC -Wno-unused-result)
+ target_compile_options(amdZenDNN PUBLIC -Wno-format -Wno-narrowing)
+ target_compile_options(amdZenDNN PUBLIC -mssse3)
+ 
+--- a/cmake2025/FindAMDBLIS.cmake
++++ b/cmake2025/FindAMDBLIS.cmake
+@@ -25,7 +25,7 @@
+ 
+ set(AMDBLIS_LIB_ROOT "${AMDBLIS_ROOT}/lib")
+ find_library(AMDBLIS_LIB
+-  NAMES libblis-mt.so libblis.so
++  NAMES blis-mt blis
+   PATHS ${AMDBLIS_LIB_ROOT}
+   PATH_SUFFIXES LP64 amdzen
+   )
+@@ -35,7 +35,7 @@
+ find_path(AMDBLIS_INCLUDE_DIR
+   NAMES blis.h blis.hh cblas.h cblas.hh
+   PATHS ${AMDBLIS_INCLUDE_ROOT}
+-  PATH_SUFFIXES LP64 amdzen
++  PATH_SUFFIXES blis LP64 amdzen
+     NO_DEFAULT_PATH
+   )
+ message(STATUS "AMDBLIS_INCLUDE_DIR, ${AMDBLIS_INCLUDE_DIR}")
+@@ -47,7 +47,7 @@
+     AMDBLIS_LIB
+     AMDBLIS_INCLUDE_DIR)
+ 
+-  add_library(amdblis::amdblis SHARED IMPORTED GLOBAL)
++  add_library(amdblis::amdblis UNKNOWN IMPORTED GLOBAL)
+   set_target_properties(amdblis::amdblis
+       PROPERTIES
+       IMPORTED_LOCATION ${AMDBLIS_LIB}
+--- a/inc/zendnn_helper.hpp
++++ b/inc/zendnn_helper.hpp
+@@ -27,7 +27,6 @@
+     #include <Windows.h>
+     #include <chrono>
+     #include <sysinfoapi.h>
+-    #include <corecrt_math_defines.h>
+     typedef unsigned int uint;
+     using namespace std::chrono;
+ #else
+--- a/inc/zendnn.hpp
++++ b/inc/zendnn.hpp
+@@ -72,6 +72,10 @@
+         ZENDNN_TRAP(); \
+     } while (0)
+ #endif
++
++#include "zendnn.hpp"
++
++typedef unsigned int uint;
+ 
+ /// @addtogroup zendnn_api ZENDNN API
+ /// @{
+--- a/src/cpu/x64/xbyak/xbyak_util.h
++++ b/src/cpu/x64/xbyak/xbyak_util.h
+@@ -77,8 +77,8 @@
+ #endif
+ 
+ #ifdef XBYAK_INTEL_CPU_SPECIFIC
+-#ifdef _MSC_VER
+-	#if (_MSC_VER < 1400) && defined(XBYAK32)
++#ifdef _WIN32
++	#if (_MSC_VER < 1400) && defined(XBYAK32) && !defined(__MINGW32__)
+ 		static inline __declspec(naked) void __cpuid(int[4], int)
+ 		{
+ 			__asm {
+@@ -368,7 +368,7 @@
+ 	static inline void getCpuid(unsigned int eaxIn, unsigned int data[4])
+ 	{
+ #ifdef XBYAK_INTEL_CPU_SPECIFIC
+-	#ifdef _MSC_VER
++	#ifdef _WIN32
+ 		__cpuid(reinterpret_cast<int*>(data), eaxIn);
+ 	#else
+ 		__cpuid(eaxIn, data[0], data[1], data[2], data[3]);
