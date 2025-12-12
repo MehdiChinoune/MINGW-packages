@@ -1,0 +1,87 @@
+# Contributor: Mehdi Chinoune <mehdi.chinoune@hotmail.com>
+
+_realname=blis
+pkgbase=mingw-w64-aocl-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-aocl-${_realname}")
+pkgver=5.1
+pkgrel=1
+pkgdesc="AMD's optimized version of BLAS targeted for AMD EPYC and Ryzen CPUs. (mingw-w64)"
+arch=('any')
+mingw_arch=('ucrt64' 'clang64')
+url='https://github.com/amd/blis'
+license=('spdx:BSD-3-Clause')
+conflicts=("${MINGW_PACKAGE_PREFIX}-cblas"
+           "${MINGW_PACKAGE_PREFIX}-blis")
+depends=("${MINGW_PACKAGE_PREFIX}-cc-libs"
+         "${MINGW_PACKAGE_PREFIX}-omp"
+         "${MINGW_PACKAGE_PREFIX}-libwinpthread")
+makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-fc"
+             "${MINGW_PACKAGE_PREFIX}-python")
+source=("https://github.com/amd/blis/archive/${pkgver}/${_realname}-${pkgver}.tar.gz"
+        "001-fix-build-on-mingw.patch")
+sha256sums=('4ab210cea8753f4be9646a3ad8e6b42c7d19380084a66312497c97278b8c76a4'
+            '0c900a955f0ea691bcf98cc1cae6f252fde6ef88af6aedc4a50d78122bdfea17')
+
+apply_patch_with_msg() {
+  for _patch in "$@"
+  do
+    msg2 "Applying ${_patch}"
+    patch -Nbp1 --binary -i "${srcdir}/${_patch}"
+  done
+}
+
+prepare() {
+  cd ${_realname}-${pkgver}
+  apply_patch_with_msg \
+    001-fix-build-on-mingw.patch
+}
+
+build() {
+  mkdir -p build-${MSYSTEM} && cd build-${MSYSTEM}
+  rm -f Makefile blis.pc.in common.mk
+  rm -rf config
+
+  if [[ ${MINGW_PACKAGE_PREFIX} == *-clang-* ]]; then
+    _fc=flang
+    CFLAGS+=" -Wno-unknown-attributes"
+  else
+    _fc=gfortran
+    CFLAGS+=" -Wno-attributes"
+  fi
+
+  # Overriding -march with generic causes build issues
+  export CFLAGS="${CFLAGS/-march=x86-64/}"
+  export CXXFLAGS="${CXXFLAGS/-march=x86-64/}"
+
+  ../${_realname}-${pkgver}/configure \
+    --prefix=${MINGW_PREFIX} \
+    --enable-cblas \
+    --enable-threading=openmp \
+    --disable-static \
+    FC=${_fc} \
+    LDFLAGS="${LDFLAGS} -lpthread" \
+    zen
+
+  make libs
+}
+
+check() {
+  cd build-${MSYSTEM}
+
+  PATH="${srcdir}"/build-${MSYSTEM}/lib/amdzen:$PATH \
+  make check || true
+}
+
+package() {
+  cd build-${MSYSTEM}
+
+  cp "${srcdir}"/${_realname}-${pkgver}/blis-mt.pc.in .
+  make DESTDIR="${pkgdir}" install
+
+  mkdir -p "${pkgdir}"${MINGW_PREFIX}/bin
+  mv "${pkgdir}"${MINGW_PREFIX}/lib/*.dll "${pkgdir}"${MINGW_PREFIX}/bin/
+
+  install -Dm644 "${srcdir}"/${_realname}-${pkgver}/LICENSE \
+    "${pkgdir}"${MINGW_PREFIX}/share/licenses/aocl-${_realname}/LICENSE
+}
