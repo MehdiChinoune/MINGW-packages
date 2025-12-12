@@ -1,0 +1,70 @@
+# Contributor: Mehdi Chinoune <mehdi.chinoune@hotmail.com>
+
+_realname=zendnn
+pkgbase=mingw-w64-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=5.1
+pkgrel=1
+pkgdesc="Zen Deep Neural Network Library. (mingw-w64)"
+arch=('any')
+mingw_arch=('ucrt64' 'clang64')
+url='https://github.com/amd/ZenDNN'
+license=('spdx:Apache-2.0')
+depends=("${MINGW_PACKAGE_PREFIX}-cc-libs"
+         "${MINGW_PACKAGE_PREFIX}-aocl-blis"
+         "${MINGW_PACKAGE_PREFIX}-libwinpthread"
+         "${MINGW_PACKAGE_PREFIX}-omp")
+makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-cmake"
+             "${MINGW_PACKAGE_PREFIX}-python"
+             "git")
+source=("https://github.com/amd/ZenDNN/archive/v${pkgver}/${_realname}-${pkgver}.tar.gz"
+        "001-fix-build-on-mingw.patch")
+sha256sums=('d073b716232d0260eb74df60be6430a767c44fec7f0df0891d84670ac1da6dd1'
+            '451dae4579ebe931038058f72310c1c53916a95013f99f525bb92271835433f9')
+
+apply_patch_with_msg() {
+  for _patch in "$@"
+  do
+    msg2 "Applying ${_patch}"
+    patch -Nbp1 --binary -i "${srcdir}/${_patch}"
+  done
+}
+
+prepare() {
+  cd ${_realname}-${pkgver}
+  apply_patch_with_msg \
+    001-fix-build-on-mingw.patch
+}
+
+build() {
+  declare -a extra_config
+  if check_option "debug" "n"; then
+    extra_config+=("-DCMAKE_BUILD_TYPE=Release")
+  else
+    extra_config+=("-DCMAKE_BUILD_TYPE=Debug")
+  fi
+
+  export CFLAGS="${CFLAGS/-march=x86-64/}"
+  export CXXFLAGS="${CXXFLAGS/-march=x86-64/}"
+  export ZENDNN_BLIS_PATH=$(cygpath -m ${MINGW_PREFIX})
+
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+    ${MINGW_PREFIX}/bin/cmake \
+      -GNinja \
+      -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
+      "${extra_config[@]}" \
+      -DBUILD_SHARED_LIBS=ON \
+      -DFBGEMM_ENABLE=OFF \
+      -S "${_realname}-${pkgver}" \
+      -B "build-${MSYSTEM}"
+
+  ${MINGW_PREFIX}/bin/cmake --build "build-${MSYSTEM}"
+}
+
+package() {
+  DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake --install "build-${MSYSTEM}"
+
+  install -Dm644 "${srcdir}"/${_realname}-${pkgver}/LICENSE \
+    "${pkgdir}"${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE
+}
