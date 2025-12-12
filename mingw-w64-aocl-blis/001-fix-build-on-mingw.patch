@@ -1,0 +1,37 @@
+--- a/aocl_dtl/aocltpdef.h
++++ b/aocl_dtl/aocltpdef.h
+@@ -15,7 +15,7 @@
+ #include <memory.h>
+ #include <time.h>
+ #include <math.h>
+-#ifndef _WIN32
++#ifndef _MSC_VER
+ #include <sys/types.h>
+ #else
+ typedef int pid_t;
+--- a/common.mk
++++ b/common.mk
+@@ -473,11 +473,7 @@
+ ifeq ($(OS_NAME),Darwin)
+ SHLIB_EXT          := dylib
+ else ifeq ($(IS_WIN),yes)
+-ifeq ($(CC_VENDOR),gcc)
+ SHLIB_EXT          := dll.a
+-else
+-SHLIB_EXT          := lib
+-endif
+ else
+ SHLIB_EXT          := so
+ endif
+@@ -611,11 +607,7 @@
+ SOFLAGS    := -shared
+ ifeq ($(IS_WIN),yes)
+ # Windows shared library link flags.
+-ifeq ($(CC_VENDOR),clang)
+-SOFLAGS    += -Wl,-soname,$(LIBBLIS_SONAME)
+-else
+ SOFLAGS    += -Wl,--out-implib,$(BASE_LIB_PATH)/$(LIBBLIS).dll.a
+-endif
+ else
+ # Linux shared library link flags.
+ SOFLAGS    += -Wl,-soname,$(LIBBLIS_SONAME)
