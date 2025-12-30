@@ -1,0 +1,57 @@
+# Maintainer: Dirk Stolle
+
+_realname=maxima
+pkgbase=mingw-w64-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=5.49.0
+pkgrel=1
+pkgdesc="A computer algebra system (mingw-w64)"
+arch=('any')
+# clangarm64 is not supported, because we do not have sbcl for it.
+# This may change after we succeed to package ecl(Embeddable Common Lisp)
+# and use that as an alternative backend.
+mingw_arch=('mingw64' 'ucrt64' 'clang64')
+url='https://maxima.sourceforge.io/'
+license=('spdx:GPL-2.0-only')
+depends=("${MINGW_PACKAGE_PREFIX}-sbcl"
+         "${MINGW_PACKAGE_PREFIX}-texinfo")
+makedepends=("${MINGW_PACKAGE_PREFIX}-autotools"
+             "${MINGW_PACKAGE_PREFIX}-cc"
+             'git'
+             'perl')
+optdepends=("${MINGW_PACKAGE_PREFIX}-gnuplot: plotting capabilities")
+options=(!zipman)
+source=("https://downloads.sourceforge.net/project/maxima/Maxima-source/5.49.0-source/maxima-${pkgver}.tar.gz")
+sha256sums=('6d401a4aa307cd3a5a9cadca4fa96c4ef0e24ff95a18bb6a8f803e3d2114adee')
+
+prepare() {
+  cd "${_realname}-${pkgver}"
+
+  autoreconf -fiv
+}
+
+build() {
+  mkdir -p "build-${MSYSTEM}" && cd "build-${MSYSTEM}"
+
+  ../"${_realname}-${pkgver}"/configure \
+    --prefix="${MINGW_PREFIX}" \
+    --enable-sbcl \
+    --with-default-lisp=sbcl
+
+  make
+}
+
+check() {
+  cd "build-${MSYSTEM}"
+
+  make check
+}
+
+package() {
+  cd "build-${MSYSTEM}"
+
+  make install DESTDIR="${pkgdir}"
+
+  install -Dm644 "${srcdir}"/${_realname}-${pkgver}/COPYING \
+    "${pkgdir}"${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE
+}
