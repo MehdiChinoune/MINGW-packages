@@ -15,7 +15,8 @@ msys2_references=(
 )
 license=('spdx:MIT')
 depends=("${MINGW_PACKAGE_PREFIX}-cc-libs"
-         "${MINGW_PACKAGE_PREFIX}-libsystre")
+         "${MINGW_PACKAGE_PREFIX}-libsystre"
+         "${MINGW_PACKAGE_PREFIX}-pcre2")
 makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-autotools")
 source=("https://invisible-mirror.net/archives/ncurses/${_realname}-${pkgver}.tar.gz"{,.asc}
@@ -64,6 +65,7 @@ build() {
     --with-cxx \
     --with-cxx-shared \
     --with-shared \
+    --with-pcre2 \
     --without-ada \
     --without-debug \
     --without-pthread \
