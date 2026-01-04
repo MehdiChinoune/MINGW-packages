@@ -2,10 +2,10 @@
 
 _realname=graphviz
 pkgbase=mingw-w64-${_realname}
-pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
-         "${MINGW_PACKAGE_PREFIX}-${_realname}-docs")
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+         #"${MINGW_PACKAGE_PREFIX}-${_realname}-docs")
 pkgver=14.1.1
-pkgrel=1
+pkgrel=2
 pkgdesc="Graph Visualization Software (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -34,7 +34,7 @@ depends=("${MINGW_PACKAGE_PREFIX}-cc-libs"
          "${MINGW_PACKAGE_PREFIX}-poppler"
          "${MINGW_PACKAGE_PREFIX}-zlib")
 makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
-             "${MINGW_PACKAGE_PREFIX}-autotools"
+             "${MINGW_PACKAGE_PREFIX}-cmake"
              "${MINGW_PACKAGE_PREFIX}-pkgconf"
              "${MINGW_PACKAGE_PREFIX}-python"
              #"${MINGW_PACKAGE_PREFIX}-lua" problem with distinguishing between the two versions we have and links to the wrong version sigh
@@ -46,19 +46,9 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
 optdepends=("${MINGW_PACKAGE_PREFIX}-qt6-base: gvedit"
             "${MINGW_PACKAGE_PREFIX}-python: for python modules")
 install=${_realname}-${MSYSTEM}.install
-source=(https://gitlab.com/graphviz/graphviz/-/archive/${pkgver}/graphviz-${pkgver}.tar.bz2
-        0001-configure-check-freeglut.patch
-        0002-fix-find-qt6.patch
-        0003-gdiplus-fix-library.patch
-        0005-makefile-no-undefined.patch
-        0006-tclpkg-fix-dll-extension.patch)
+source=(https://gitlab.com/graphviz/graphviz/-/archive/${pkgver}/graphviz-${pkgver}.tar.bz2)
 noextract=("graphviz-${pkgver}.tar.bz2")
-sha256sums=('975f4b9a7a7a7b614900ecd12919ccbd36a680818cc6fc527389b93e919410f0'
-            '327e75c8c3a8fef2803ce3301e1a3132c6364d297b50f19bf791dd6f0452a81a'
-            'f8835eb89d59b3a83b8c94aba28272b03693d08505889f3cb36941b266f26830'
-            '82162202b4180cf49c0e40848794cc731a416b077e4955b6c4d02b0180deb7c0'
-            '303fbd53d7502582f36acd384f6b306607ffcd35aab4a94b057307734ece51ae'
-            '7428d8454198f4748e93ca328c53761d4754f9db3def444304caa315f661e390')
+sha256sums=('975f4b9a7a7a7b614900ecd12919ccbd36a680818cc6fc527389b93e919410f0')
 
 _apply_patch_with_msg() {
   for _patch in "$@"
@@ -73,75 +63,66 @@ prepare() {
   tar -xjf graphviz-${pkgver}.tar.bz2 || true
 
   cd "${srcdir}"/${_realname}-${pkgver}
-
-  _apply_patch_with_msg \
-    0001-configure-check-freeglut.patch \
-    0002-fix-find-qt6.patch \
-    0003-gdiplus-fix-library.patch \
-    0005-makefile-no-undefined.patch \
-    0006-tclpkg-fix-dll-extension.patch
-
-  ./autogen.sh
 }
 
 build() {
-  mkdir -p "${srcdir}"/build-${MSYSTEM} && cd "${srcdir}"/build-${MSYSTEM}
+  declare -a _extra_config
+  if check_option "debug" "n"; then
+    _extra_config+=("-DCMAKE_BUILD_TYPE=Release")
+  else
+    _extra_config+=("-DCMAKE_BUILD_TYPE=Debug")
+  fi
 
-  # else the libgdi plugin refuses to link.
-  export lt_cv_deplibs_check_method=${lt_cv_deplibs_check_method='pass_all'}
-  # the -enable-stuff below is for old type linking to graphviz 
-  # and yields some nasty surprises when swig is enabled. 
-  ../${_realname}-${pkgver}/configure \
-    --prefix=${MINGW_PREFIX} \
-    --enable-python3=yes \
-    --enable-swig=yes \
-    --with-expat=yes \
-    --with-freetype2=yes \
-    --with-gdiplus=yes \
-    --with-ghostscript=yes \
-    --with-glut=yes \
-    --with-gts=yes \
-    --with-libgd=yes \
-    --with-gdincludedir=${gd_incdir} \
-    --with-pangocairo=yes \
-    --with-poppler=yes \
-    --with-qt=yes \
-    --with-rsvg=yes \
-    --with-webp=yes \
-    --enable-guile=no \
-    --enable-go=no \
-    --enable-perl=no \
-    --enable-php=no \
-    --enable-tcl=no \
-    --enable-ruby=no \
-    --enable-python=no \
-    --enable-lua=no \
-    --enable-r=no \
-    --enable-sharp=no \
-    --enable-java=no \
-    --with-smyrna=no \
-    --with-gtk=no \
-    --with-gtkglext=no \
-    --with-gdk=no \
-    --with-platformsdkincludedir=${MINGW_PREFIX}/include \
-    --with-platformsdklibdir=${MINGW_PREFIX}/lib \
-    --enable-shared \
-    --disable-static \
-    "${_extra_config[@]}"
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+    ${MINGW_PREFIX}/bin/cmake \
+      -GNinja \
+      -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
+      "${extra_config[@]}" \
+      -DBUILD_SHARED_LIBS=ON \
+      -DENABLE_LTDL=ON \
+      -DENABLE_PYTHON=ON \
+      -DENABLE_SWIG=ON \
+      -DWITH_EXPAT=ON \
+      -DWITH_GHOSTSCRIPT=ON \
+      -DWITH_GVEDIT=ON \
+      -DWITH_POPPLER=ON \
+      -DWITH_RSVG=ON \
+      -DWITH_WEBP=ON \
+      -DWITH_ZLIB=ON \
+      -DENABLE_D=OFF \
+      -DENABLE_GO=OFF \
+      -DENABLE_GUILE=OFF \
+      -DENABLE_JAVA=OFF \
+      -DENABLE_JAVASCRIPT=OFF \
+      -DENABLE_LUA=OFF \
+      -DENABLE_PERL=OFF \
+      -DENABLE_PHP=OFF \
+      -DENABLE_R=OFF \
+      -DENABLE_RUBY=OFF \
+      -DENABLE_SHARP=OFF \
+      -DENABLE_TCL=OFF \
+      -DWITH_GDK=OFF \
+      -DWITH_GTK=OFF \
+      -DWITH_SMYRNA=OFF \
+      -DWITH_X=OFF \
+      -Duse_win_pre_inst_libs=OFF \
+      -Dinstall_win_dependency_dlls=OFF \
+      -S ${_realname}-${pkgver} \
+      -B build-${MSYSTEM}
 
-  make
+  cmake --build build-${MSYSTEM}
 }
 
 package_graphviz() {
-  cd "${srcdir}"/build-${MSYSTEM}
+  DESTDIR="${pkgdir}" cmake --install build-${MSYSTEM}
 
-  local _pythonpath
-  _pythonpath=$(python -c "import sysconfig; print(sysconfig.get_path('platlib'))")
-  make DESTDIR="${pkgdir}" PYTHON3_INSTALL_DIR="$(cygpath ${_pythonpath})" install
+  local _pythonpath=$(python -c "import sysconfig; print(sysconfig.get_path('platlib'))")
+  mkdir -p "${pkgdir}"$(cygpath ${_pythonpath})
+  cp "${pkgdir}"${MINGW_PREFIX}/lib/graphviz/python3/* "${pkgdir}"$(cygpath ${_pythonpath})
 
   # split docs
-  mkdir -p dest${MINGW_PREFIX}/share
-  mv "${pkgdir}${MINGW_PREFIX}"/share/doc dest${MINGW_PREFIX}/share/doc
+  # mkdir -p dest${MINGW_PREFIX}/share
+  # mv "${pkgdir}${MINGW_PREFIX}"/share/doc dest${MINGW_PREFIX}/share/doc
 }
 
 package_graphviz-docs() {
