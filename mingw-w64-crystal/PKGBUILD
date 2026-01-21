@@ -5,7 +5,7 @@ _realname=crystal
 pkgbase="mingw-w64-${_realname}"
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
 pkgver=1.19.0
-pkgrel=1
+pkgrel=2
 pkgdesc="Fast and statically typed, compiled language with Ruby-like syntax (mingw-w64)"
 arch=('any')
 mingw_arch=('ucrt64' 'mingw64' 'clang64' 'clangarm64')
@@ -60,6 +60,8 @@ prepare() {
     git config core.symlinks true &&
     MSYS='winsymlinks:nativestrict' git restore --source=HEAD :/
   fi
+
+  sed -i "s|22.0|22.1|g" src/llvm/ext/llvm-versions.txt
 }
 
 build() {
