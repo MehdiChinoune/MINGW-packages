@@ -4,7 +4,7 @@ _realname=clazy
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
 pkgver=1.16
-pkgrel=2
+pkgrel=3
 pkgdesc="Qt oriented code checker based on clang framework (mingw-w64)"
 arch=('any')
 mingw_arch=('clang64' 'clangarm64')
@@ -21,14 +21,17 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-llvm"
              "git" )
 source=("https://invent.kde.org/sdk/clazy/-/archive/v${pkgver}/clazy-v${pkgver}.tar.bz2"
-        001-fix-linking.patch)
+        001-fix-linking.patch
+        https://invent.kde.org/sdk/clazy/-/commit/81b7cf38.patch)
 sha256sums=('606084713e0dfa7d7047acc46bffd3fab6987b092fdae22c5055849ea7024a66'
-            '5fbde0f37f8d217d1da28d93ef78dd2c297ccc9042e01d0ca8053ac4d8f7b292')
+            '5fbde0f37f8d217d1da28d93ef78dd2c297ccc9042e01d0ca8053ac4d8f7b292'
+            'SKIP')
 validpgpkeys=(949014B23D24354DFD548E5457416A0ADCEF0EFE) # Sergio Martins <sergio.martins@kdab.com>
 
 prepare() {
   cd "${srcdir}/${_realname}-v${pkgver}"
   patch -p1 -i ${srcdir}/001-fix-linking.patch
+  patch -p1 -i ${srcdir}/81b7cf38.patch
 }
 
 build() {
