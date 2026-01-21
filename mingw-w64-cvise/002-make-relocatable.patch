@@ -1,5 +1,5 @@
---- a/cvise.py
-+++ b/cvise.py
+--- a/cvise-cli.py
++++ b/cvise-cli.py
 @@ -15,7 +15,7 @@
  # add the known install location to the path
  destdir = os.getenv('DESTDIR', '')
@@ -18,9 +18,9 @@
          destdir + os.path.join('@CMAKE_INSTALL_FULL_DATADIR@', '@cvise_PACKAGE@'),
          os.path.join(script_path, 'cvise'),
      ]
---- cvise-2.12.0/cvise/utils/externalprograms.py.orig	2025-09-23 22:51:29.000000000 +0200
-+++ cvise-2.12.0/cvise/utils/externalprograms.py	2025-11-23 14:48:15.469213300 +0100
-@@ -29,7 +29,8 @@
+--- a/cvise/utils/externalprograms.py
++++ b/cvise/utils/externalprograms.py
+@@ -31,7 +31,8 @@
              path = shutil.which(prog, path=local_folder)
  
              if not path:
@@ -30,7 +30,7 @@
                  path = shutil.which(prog, path=search)
              if not path:
                  search = DESTDIR + os.path.join('@CMAKE_INSTALL_FULL_LIBEXECDIR@', '@cvise_PACKAGE@')
-@@ -42,6 +43,7 @@
+@@ -44,6 +45,7 @@
              programs[prog] = path
  
      # Special case for clang-format
