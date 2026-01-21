@@ -4,7 +4,7 @@ _realname=c3c
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
 pkgver=0.7.8
-pkgrel=3
+pkgrel=4
 pkgdesc="Compiler for the C3 language (mingw-w64)"
 arch=('any')
 mingw_arch=('ucrt64' 'clang64' 'clangarm64')
@@ -28,8 +28,10 @@ sha256sums=('85a318a7506609413ea1ce1723a04b24bf6595a0553896fbf906a4ef03d07d97'
 
 prepare() {
   git -C c3c apply ../install-man.patch
-  sed -i "s|libLLVM.so|libLLVM-21|g" c3c/CMakeLists.txt
+  sed -i "s|22|23|g" c3c/CMakeLists.txt
+  sed -i "s|libLLVM.so|libLLVM-22-rc1|g" c3c/CMakeLists.txt
   sed -i "s|\.so||g" c3c/CMakeLists.txt
+  sed -i "s|-Werror||g" c3c/CMakeLists.txt
 }
 
 build() {
