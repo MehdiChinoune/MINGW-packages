@@ -4,10 +4,10 @@ _realname=fortran-stdlib
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
 pkgver=0.8.1
-pkgrel=1
+pkgrel=2
 pkgdesc="Fortran Standard Library (mingw-w64)"
 arch=('any')
-mingw_arch=('mingw64' 'ucrt64')
+mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
 url="https://github.com/fortran-lang/stdlib"
 msys2_references=(
   'aur: fortran_stdlib'
@@ -21,15 +21,23 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-fc"
              "${MINGW_PACKAGE_PREFIX}-cmake"
              "${MINGW_PACKAGE_PREFIX}-ninja"
              "${MINGW_PACKAGE_PREFIX}-python-fypp")
-source=("https://github.com/fortran-lang/stdlib/archive/v${pkgver}/${_realname}-${pkgver}.tar.gz")
-sha256sums=('6d20b120a4b17fb23ee5353408f6826b521bd006cd42eb412b01984eb9c31ded')
+source=("https://github.com/fortran-lang/stdlib/archive/v${pkgver}/${_realname}-${pkgver}.tar.gz"
+        "001-no-xdp-with-flang.patch")
+sha256sums=('6d20b120a4b17fb23ee5353408f6826b521bd006cd42eb412b01984eb9c31ded'
+            '41eb2781dcd5dc3105640259a722a6a47675f652f73748a3a481f768948a9f60')
 
 prepare() {
   cd "${srcdir}/stdlib-${pkgver}"
+  patch -p1 -i "${srcdir}"/001-no-xdp-with-flang.patch
 }
 
 build() {
-  mkdir -p build-${MSYSTEM} && cd build-${MSYSTEM}
+  declare -a _extra_config
+  if check_option "debug" "n"; then
+    _extra_config+=("-DCMAKE_BUILD_TYPE=Release")
+  else
+    _extra_config+=("-DCMAKE_BUILD_TYPE=Debug")
+  fi
 
   MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
     "${MINGW_PREFIX}"/bin/cmake.exe \
@@ -39,12 +47,17 @@ build() {
       -DCMAKE_MAXIMUM_RANK=4 \
       -DBUILD_SHARED_LIBS=ON \
       -DFIND_BLAS=ON \
-      ../stdlib-${pkgver}
+      "${_extra_config[@]}" \
+      -S stdlib-${pkgver} \
+      -B build-${MSYSTEM}
 
-  ${MINGW_PREFIX}/bin/cmake --build .
+  ${MINGW_PREFIX}/bin/cmake --build build-${MSYSTEM} || \
+  ${MINGW_PREFIX}/bin/cmake --build build-${MSYSTEM} || \
+  ${MINGW_PREFIX}/bin/cmake --build build-${MSYSTEM}
 }
 
 package() {
-  cd "${srcdir}/build-${MSYSTEM}"
-  DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake --install .
+  DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake --install build-${MSYSTEM}
+  install -Dm644 "${srcdir}"/stdlib-${pkgver}/LICENSE \
+     "${pkgdir}"${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE
 }

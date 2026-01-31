@@ -1,0 +1,15 @@
+--- a/config/CMakeLists.txt
++++ b/config/CMakeLists.txt
+@@ -37,7 +37,11 @@
+     "if (any(selected_real_kind(18) == [-1, selected_real_kind(33)])) stop 1; end"
+     WITH_XDP
+   )
+-  set(WITH_XDP ${WITH_XDP} PARENT_SCOPE)
++  if(NOT (CMAKE_Fortran_COMPILER_ID STREQUAL LLVMFlang AND MINGW))
++    set(WITH_XDP ${WITH_XDP} PARENT_SCOPE)
++  else()
++    set(WITH_XDP OFF PARENT_SCOPE)
++  endif()
+ endif()
+ # Check if WITH_ILP64 is defined; if not, set it to FALSE
+ if (NOT DEFINED WITH_ILP64)
