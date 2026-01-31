@@ -7,7 +7,10 @@ pkgver=0.8.1
 pkgrel=1
 pkgdesc="Fortran Standard Library (mingw-w64)"
 arch=('any')
-mingw_arch=('mingw64' 'ucrt64')
+mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
+#  error: Semantic errors in src\CMakeFiles\fortran_stdlib.dir\stdlib_specialfunctions_legendre.f90-pp.f90
+#  C:\\_\\B\\src\\stdlib-0.7.0\\src\\stdlib_specialfunctions_legendre.f90:1:17: error: Cannot read module file for module 'stdlib_specialfunctions': Source file 'stdlib_specialfunctions.mod' was not found
+#          submodule(stdlib_specialfunctions) stdlib_specialfunctions_legendr&
 url="https://github.com/fortran-lang/stdlib"
 msys2_references=(
   'aur: fortran_stdlib'
