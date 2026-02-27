@@ -88,7 +88,7 @@ jobs:
 
       - name: "Upload binaries"
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.msystem }}-packages
           path: ${{ steps.facts.outputs.drive }}/_/artifacts/*.pkg.tar.*
@@ -118,7 +118,7 @@ jobs:
           sudo pacman -Syuu --noconfirm
           sudo pacman -S --noconfirm --needed openssh rsync git
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: ${{ matrix.msystem }}-packages
           path: artifacts
@@ -147,7 +147,7 @@ jobs:
       mingw_repo_sf: https://sourceforge.net/projects/mingw-updates/files/ucrt
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         continue-on-error: true
         with:
           name: UCRT64-packages
@@ -193,7 +193,7 @@ jobs:
             repo: clang64
 
     steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         id: artifacts
         continue-on-error: true
         with:
