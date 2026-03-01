@@ -86,7 +86,7 @@ build() {
       -GNinja \
       -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
       -DCMAKE_SYSTEM_IGNORE_PATH=/usr/lib \
-      -DLIBOMP_FORTRAN_MODULES="$( [[ ${MSYSTEM} == MINGW64 ]] && echo OFF || echo ON )" \
+      -DLIBOMP_FORTRAN_MODULES=OFF \
       -DLIBOMP_ENABLE_SHARED=ON \
       -DLIBOMP_INSTALL_ALIASES=OFF \
       "${_extra_config[@]}" \
