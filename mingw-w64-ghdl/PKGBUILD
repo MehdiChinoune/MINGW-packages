@@ -5,7 +5,7 @@ pkgname=(
   "${MINGW_PACKAGE_PREFIX}-${_realname}-mcode"
 )
 pkgver=5.1.1
-pkgrel=3
+pkgrel=4
 pkgdesc='GHDL: the open-source analyzer, compiler, simulator and (experimental) synthesizer for VHDL'
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64')
@@ -27,12 +27,13 @@ checkdepends=("${MINGW_PACKAGE_PREFIX}-python-pytest")
 options=(!emptydirs)
 source=("https://github.com/ghdl/ghdl/archive/v${pkgver}/${_realname}-${pkgver}.tar.gz"
         001-support-llvm-21.patch::https://github.com/ghdl/ghdl/commit/560a822c.patch)
-sha256sums=('00cd58ec8f25e2532465aabc8705f43071f20dc1d13e03fd9dc235523186fca9'
+sha256sums=('aca5d20522ef9b8e273e95c9157d2d3f77f6e40a4fdeee431fa330885bd78f7f'
             '0228cc3694dc6438419073e94bdca7f4dc0334d23f2428e3aeb1171db1763ef5')
 
 prepare() {
   cd ${_realname}-${pkgver}
   patch -p1 -i "${srcdir}"/001-support-llvm-21.patch
+  sed -i "s|21|22|g" configure
 }
 
 build() {
