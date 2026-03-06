@@ -9,7 +9,7 @@ pkgbase=mingw-w64-llvm-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-llvm-${_realname}")
 _pkgver=22.1.0
 pkgver=${_pkgver/-/}
-pkgrel=2
+pkgrel=3
 pkgdesc="LLVM OpenMP Library (mingw-w64)"
 arch=(any)
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -86,7 +86,7 @@ build() {
       -GNinja \
       -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
       -DCMAKE_SYSTEM_IGNORE_PATH=/usr/lib \
-      -DLIBOMP_FORTRAN_MODULES=OFF \
+      -DLIBOMP_FORTRAN_MODULES="$( [[ ${MSYSTEM} == MINGW64 ]] && echo OFF || echo ON )" \
       -DLIBOMP_ENABLE_SHARED=ON \
       -DLIBOMP_INSTALL_ALIASES=OFF \
       "${_extra_config[@]}" \
