@@ -4,7 +4,7 @@ pkgbase=mingw-w64-texlive-bin
 pkgname=("${MINGW_PACKAGE_PREFIX}-texlive-bin" "${MINGW_PACKAGE_PREFIX}-libsynctex")
 pkgver=20260301
 pkgdesc="TeX Live binaries (mingw-w64)"
-pkgrel=1
+pkgrel=2
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
 url='https://tug.org/texlive/'
@@ -325,6 +325,7 @@ package_texlive-bin() {
   rm -f "${pkgdir}${MINGW_PREFIX}/bin/epspdftk.exe"
   rm -f "${pkgdir}${MINGW_PREFIX}/bin/epstopdf.exe"
   rm -f "${pkgdir}${MINGW_PREFIX}/bin/exceltex.exe"
+  rm -f "${pkgdir}${MINGW_PREFIX}/bin/extractbb.exe"
   rm -f "${pkgdir}${MINGW_PREFIX}/bin/fig4latex.exe"
   rm -f "${pkgdir}${MINGW_PREFIX}/bin/findhyph.exe"
   rm -f "${pkgdir}${MINGW_PREFIX}/bin/fmtutil-sys.exe"
