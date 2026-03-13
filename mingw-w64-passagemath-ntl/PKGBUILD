@@ -5,12 +5,12 @@ pkgbase=mingw-w64-python-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
 provides=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 pkgver=10.8.2
-pkgrel=1
+pkgrel=2
 pkgdesc="passagemath: Computational Number Theory with NTL (mingw-w64)"
 arch=('any')
 # Builds for clang64 and clangarm64 currently have problems with ntl, so it's
 # only mingw64 and ucrt64 for now.
-mingw_arch=('mingw64' 'ucrt64')
+mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
 url='https://github.com/passagemath/passagemath'
 msys2_repository_url='https://github.com/passagemath/passagemath'
 msys2_references=(
