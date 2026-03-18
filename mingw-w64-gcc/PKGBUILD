@@ -7,16 +7,18 @@
 
 if [[ ${CARCH} != i686 ]]; then
   _enable_fortran=yes
-  _enable_ada=yes
+  _enable_ada=no
   _enable_objc=yes
   _enable_rust=no
   _enable_jit=yes
+  _enable_lto=yes
 else
-  _enable_fortran=yes # Change it to no after dropping gimp
+  _enable_fortran=no
   _enable_ada=no
   _enable_objc=no
   _enable_rust=no
   _enable_jit=no
+  _enable_lto=no
 fi
 
 _threads="posix"
@@ -25,7 +27,7 @@ _realname=gcc
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
          "${MINGW_PACKAGE_PREFIX}-${_realname}-libs"
-         "${MINGW_PACKAGE_PREFIX}-${_realname}-lto-dump"
+         $([[ "$_enable_lto" == "yes" ]] && echo "${MINGW_PACKAGE_PREFIX}-${_realname}-lto-dump")
          $([[ "$_enable_fortran" == "yes" ]] && echo \
            "${MINGW_PACKAGE_PREFIX}-${_realname}-libgfortran" \
            "${MINGW_PACKAGE_PREFIX}-${_realname}-fortran")
@@ -34,24 +36,28 @@ pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
          $([[ "$_enable_rust" == "yes" ]] && echo "${MINGW_PACKAGE_PREFIX}-${_realname}-rust")
          $([[ "$_enable_jit" == "yes" ]] && echo "${MINGW_PACKAGE_PREFIX}-libgccjit")
         )
-pkgver=15.2.0
+pkgver=16
 _rc=""
-_snapshot=
+_snapshot=20260322
 if [[ -z ${_rc} ]]; then
   _version=${pkgver%%.*}
-  _libdir=lib/gcc/${CHOST}/${pkgver%%+*}
 else
   _version=${pkgver}-${_rc}
-  _libdir=lib/gcc/${CHOST}/${pkgver%%.*}.0.1
+fi
+if [[ -z ${_rc} && -z ${_snapshot} ]]; then
+  _pkgver=${pkgver%%+*}
+else
+  _pkgver=${pkgver%%+*}.0.1
 fi
 if [[ -z ${_snapshot} ]]; then
   _sourcedir=${_realname}-${pkgver}
-  _url=https://ftp.gnu.org/gnu/gcc/${_realname}-${pkgver%%+*}
+  _url=https://ftp.gnu.org/gnu/gcc/${_realname}-${_pkgver}
 else
   _sourcedir=${_realname}-${_version}-${_snapshot}
   _url=https://gcc.gnu.org/pub/gcc/snapshots/${_version}-${_snapshot}
 fi
-pkgrel=13
+_libdir=lib/gcc/${CHOST}/${_pkgver}
+pkgrel=1
 pkgdesc="GCC for the MinGW-w64"
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64')
@@ -80,7 +86,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-${_realname}"
              "${MINGW_PACKAGE_PREFIX}-zlib"
              "${MINGW_PACKAGE_PREFIX}-zstd")
 options=('!emptydirs') # '!strip' 'debug')
-source=(${_url}/${_sourcedir}.tar.xz{,.sig}
+source=(${_url}/${_sourcedir}.tar.xz #{,.sig}
         "gdbinit"
         0003-Windows-Follow-Posix-dir-exists-semantics-more-close.patch
         0007-Build-EXTRA_GNATTOOLS-for-Ada.patch
@@ -89,36 +95,27 @@ source=(${_url}/${_sourcedir}.tar.xz{,.sig}
         0012-Handle-spaces-in-path-for-default-manifest.patch
         0014-gcc-9-branch-clone_function_name_1-Retain-any-stdcall-suffix.patch
         0020-libgomp-Don-t-hard-code-MS-printf-attributes.patch
-        0021-PR14940-Allow-a-PCH-to-be-mapped-to-a-different-addr.patch
         0022-unset-native-system-header-dir.patch
         0140-gcc-diagnostic-color.patch
         0200-add-m-no-align-vector-insn-option-for-i386.patch
         2001-fix-building-rust-on-mingw-w64.patch
         3001-fix-codeview-crashes.patch
-        9002-native-tls.patch
-        724f36504aa8573883e1919c6968665f8af28aef.patch::https://gcc.gnu.org/cgit/gcc/patch/?id=724f36504aa8573883e1919c6968665f8af28aef
-        e28494e08092c4096a015563c0ba0494ce1edf81.patch::https://gcc.gnu.org/cgit/gcc/patch/?id=e28494e08092c4096a015563c0ba0494ce1edf81
-        9e2c62a7d397b050427568c83ff5a4c21eb49365.patch::https://gcc.gnu.org/cgit/gcc/patch/?id=9e2c62a7d397b050427568c83ff5a4c21eb49365)
-sha256sums=('438fd996826b0c82485a29da03a72d71d6e3541a83ec702df4271f6fe025d24e'
-            'SKIP'
+        9002-native-tls.patch)
+sha256sums=('SKIP'
             'bce81824fc89e5e62cca350de4c17a27e27a18a1a1ad5ca3492aec1fc5af3234'
             '3fc35067823f87e48dd3bfd265e7593000dc110fa9ad5f16c81b896765fc897a'
             '90d5cb570083f9dea4ac0f0f87e3e8d2230f5052e6f9b946061a20a224a9d195'
-            '8a40ea004a803b7e6aabd6c58d859502a57c87755dbcfedbdfed161f2fb7eb62'
+            'SKIP'
             '5ef4148acc4a2b7ed648d4fe75fab5545e84b4b93a12d6ba4e4ea6061dd635fa'
             'e98805ead7d78ee2a92f237894c4b2b7ddc1688e1b517d8c04f28d440202e40f'
             'fd9bdecb2bbc4796bbc9f00b708dac42ef9e3464a06d6d27e5475cee117de5be'
             'ad1f7b5e7afaaec008b7cbd14feea13a10989fa91bda7003af72d457619bb199'
-            'a2abb2c2d793b42c457275e5f5c406d21a61ef07441f696d91a775d01072e17c'
             'd8b9b979dc1742f63d23dfca92bc05944612bd196a31fb882b8a616baba84383'
-            'ba3649f29049f6d4eea4a481975d9f6851c0c2604d847881b46084a943c4c8f2'
+            'SKIP'
             '1484911163634f30324827619c873a6267b377abba0df8bbedfd128163c53ea4'
             'a411f59953553a3d01dd64c79b1acbb91eca092c4cb01bfd26b1c51c3eb798e8'
             'f21f9ab731e9cab8fd4ca8c289497f859ef7004e6fa0507877dc2559ac2071c3'
-            'd977683efc6f6b4dd675a8f1978416d22d5b5d1fa53614b9a18bc18efa231391'
-            '8624143d339cfff0be7d8795737b0fb00ca41f2a19915bbf6705a5d7bf9c99a1'
-            'f4e7f8f5a67fd571453e4d41575455f7e4b5cd7288b5e2d7d3a26a3506bae949'
-            '14f5821186c52cf93806ecc1ac87e3280794a8f8b53b7c85570c753ef2fffba8')
+            'd977683efc6f6b4dd675a8f1978416d22d5b5d1fa53614b9a18bc18efa231391')
 validpgpkeys=(F3691687D867B81B51CE07D9BBE43771487328A9  # bpiotrowski@archlinux.org
               86CFFCA918CF3AF47147588051E8B148A9999C34  # evangelos@foutrelis.com
               13975A70E63C361C73AE69EF6EEB81F8981C74C7  # richard.guenther@gmail.com
@@ -154,7 +151,6 @@ prepare() {
     0012-Handle-spaces-in-path-for-default-manifest.patch \
     0014-gcc-9-branch-clone_function_name_1-Retain-any-stdcall-suffix.patch \
     0020-libgomp-Don-t-hard-code-MS-printf-attributes.patch \
-    0021-PR14940-Allow-a-PCH-to-be-mapped-to-a-different-addr.patch \
     0022-unset-native-system-header-dir.patch
 
   # Enable diagnostic color under mintty
@@ -177,15 +173,6 @@ prepare() {
   # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=120051
   apply_patch_with_msg \
     3001-fix-codeview-crashes.patch
-
-  # Use MSYS zoneinfo - contained in GCC 16
-  apply_patch_with_msg \
-    724f36504aa8573883e1919c6968665f8af28aef.patch \
-    e28494e08092c4096a015563c0ba0494ce1edf81.patch
-
-  # Fix libstdc++ std::system_category
-  apply_patch_with_msg \
-    9e2c62a7d397b050427568c83ff5a4c21eb49365.patch
 
   # apply_patch_with_msg \
   #   9002-native-tls.patch
@@ -224,7 +211,13 @@ build() {
     local _arch=nocona
   fi
 
-  local _languages="c,lto,c++"
+  local _languages="c,c++"
+  if [ "$_enable_lto" == "yes" ]; then
+    _languages+=",lto"
+    _extra_config+=("--enable-lto")
+  else
+    _extra_config+=("--disable-lto")
+  fi
   if [ "$_enable_fortran" == "yes" ]; then
     _languages+=",fortran"
   fi
@@ -284,7 +277,6 @@ build() {
     --enable-libstdcxx-filesystem-ts \
     --enable-libstdcxx-time \
     --disable-libstdcxx-pch \
-    --enable-lto \
     --enable-libgomp \
     --disable-libssp \
     --disable-multilib \
@@ -371,10 +363,8 @@ package_gcc() {
            "${MINGW_PACKAGE_PREFIX}-winpthreads"
            "${MINGW_PACKAGE_PREFIX}-zlib"
            "${MINGW_PACKAGE_PREFIX}-zstd")
-  provides=("${MINGW_PACKAGE_PREFIX}-${_realname}-base"
-            "${MINGW_PACKAGE_PREFIX}-cc")
-  conflicts=("${MINGW_PACKAGE_PREFIX}-${_realname}-base"
-             $([[ "$_enable_objc" == "yes" ]] || echo "${MINGW_PACKAGE_PREFIX}-${_realname}-objc")
+  provides=("${MINGW_PACKAGE_PREFIX}-cc")
+  conflicts=($([[ "$_enable_objc" == "yes" ]] || echo "${MINGW_PACKAGE_PREFIX}-${_realname}-objc")
              $([[ "$_enable_ada" == "yes" ]] || echo "${MINGW_PACKAGE_PREFIX}-${_realname}-ada")
              $([[ "$_enable_rust" == "yes" ]] || echo "${MINGW_PACKAGE_PREFIX}-${_realname}-rust")
              $([[ "$_enable_jit" == "yes" ]] || echo "${MINGW_PACKAGE_PREFIX}-libgccjit")
@@ -393,7 +383,11 @@ package_gcc() {
 
   install -m755 -t "${pkgdir}"${MINGW_PREFIX}/bin/ gcc/gcov{,-tool}.exe
   install -m755 -t "${pkgdir}"${MINGW_PREFIX}/${_libdir}/ \
-    gcc/{cc1,cc1plus,collect2,lto1}.exe
+    gcc/{cc1,cc1plus,collect2}.exe
+  if [[ "$_enable_lto" == "yes" ]]; then
+    install -m755 -t "${pkgdir}"${MINGW_PREFIX}/${_libdir}/ \
+    gcc/lto1.exe
+  fi
 
   make -C $CHOST/libgcc DESTDIR="${pkgdir}" install
   rm "${pkgdir}"/libgcc_*.dll
@@ -421,9 +415,11 @@ package_gcc() {
   make DESTDIR="${pkgdir}" install-fixincludes
   make -C gcc DESTDIR="${pkgdir}" install-mkheaders
 
-  make -C lto-plugin DESTDIR="${pkgdir}" install
-  install -dm755 "${pkgdir}"${MINGW_PREFIX}/lib/bfd-plugins/
-  cp "${pkgdir}"${MINGW_PREFIX}/${_libdir}/liblto_plugin.dll "${pkgdir}"${MINGW_PREFIX}/lib/bfd-plugins/
+  if [[ "$_enable_lto" == "yes" ]]; then
+    make -C lto-plugin DESTDIR="${pkgdir}" install
+    install -dm755 "${pkgdir}"${MINGW_PREFIX}/lib/bfd-plugins/
+    cp "${pkgdir}"${MINGW_PREFIX}/${_libdir}/liblto_plugin.dll "${pkgdir}"${MINGW_PREFIX}/lib/bfd-plugins/
+  fi
 
   make -C $CHOST/libgomp DESTDIR="${pkgdir}" install-nodist_{libsubinclude,toolexeclib}HEADERS
   make -C $CHOST/libquadmath DESTDIR="${pkgdir}" install-nodist_libsubincludeHEADERS
@@ -450,10 +446,10 @@ package_gcc() {
 
   # install "custom" system gdbinit
   install -D -m644 "${srcdir}"/gdbinit "${pkgdir}"${MINGW_PREFIX}/etc/gdbinit
-  sed -i 's|%GCC_NAME%|gcc-'${pkgver%%+*}'|g' "${pkgdir}"${MINGW_PREFIX}/etc/gdbinit
+  sed -i 's|%GCC_NAME%|gcc-'${_pkgver}'|g' "${pkgdir}"${MINGW_PREFIX}/etc/gdbinit
 
   # byte-compile python libraries
-  ${MINGW_PREFIX}/bin/python -m compileall -o 0 -o 1 "${pkgdir}"${MINGW_PREFIX}/share/gcc-${pkgver%%+*}/
+  ${MINGW_PREFIX}/bin/python -m compileall -o 0 -o 1 "${pkgdir}"${MINGW_PREFIX}/share/gcc-${_pkgver}/
 }
 
 package_gcc-libgfortran() {
