@@ -1,0 +1,11 @@
+--- a/src/Base/UnitsSchemas.h
++++ b/src/Base/UnitsSchemas.h
+@@ -38,7 +38,7 @@
+  * The interface to schema specifications
+  * Has pointer to current schema
+  */
+-class UnitsSchemas
++class BaseExport UnitsSchemas
+ {
+ public:
+     explicit UnitsSchemas(const UnitsSchemasDataPack& pack);
