@@ -1,0 +1,18 @@
+--- a/src/Mod/Sketcher/App/GeoEnum.h
++++ b/src/Mod/Sketcher/App/GeoEnum.h
+@@ -163,7 +163,7 @@
+ #endif
+ 
+ }  // namespace Sketcher
+-
++/*
+ namespace std
+ {
+ template<>
+@@ -176,5 +176,5 @@
+     }
+ };
+ }  // namespace std
+-
++*/
+ #endif  // SKETCHER_GeoEnum_H

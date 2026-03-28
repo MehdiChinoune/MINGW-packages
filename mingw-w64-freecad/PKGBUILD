@@ -60,14 +60,16 @@ source=("https://github.com/FreeCAD/FreeCAD/archive/${pkgver}/${_realname}-${pkg
         "001-fix-find-openssl-and-curl.patch"
         "002-export-class.patch"
         "003-include-missing-header.patch"
-        "004-replace-std-abs-with-std-fabs.patch")
+        "004-replace-std-abs-with-std-fabs.patch"
+        "005-fix-build-with-libcxx-22.patch")
 sha256sums=('b99b932037eb801a66b5f66ac46968a0da3654a1774ee12f28781b43de34daf6'
             '70b2fa7f3c58c0ea5be830de90d33369670ee6658f13aeb7684f1ea478528178'
             '77646ca7d8cbc6dc4e8304439be2ff2b9aecf397e6349e63b3b06e65dfed79c3'
             'f8f6b05131ef83830a6628b2c085d34b1ca32641379a494bf2909ffc6223b9cf'
             '9716b280a608ac389a0008676ce1253c472eac8b3de46162aa7d57972101066e'
             'c3347bba6071a9db22d0e9e1df4064b31fc03e62024bce0e50f260ce484285e9'
-            'fe2b42d9c95fd6a956a0526eea0260fe1bae00a5d5531df3ce608781144dddaa')
+            'fe2b42d9c95fd6a956a0526eea0260fe1bae00a5d5531df3ce608781144dddaa'
+            '82e53493e8c777b4be9972750b3c3e661a879a7186e0c5930d62ceb18ce4b58d')
 
 apply_patch_with_msg() {
   for _patch in "$@"
@@ -87,7 +89,8 @@ prepare() {
     001-fix-find-openssl-and-curl.patch \
     002-export-class.patch \
     003-include-missing-header.patch \
-    004-replace-std-abs-with-std-fabs.patch
+    004-replace-std-abs-with-std-fabs.patch \
+    005-fix-build-with-libcxx-22.patch
 
   # opencascade defines HAVE_TBB which makes FreeCAD uses TBB without linking to it.
   sed -i "s|HAVE_TBB|HAVE_NOT_TBB|g" src/Mod/Import/App/ImportOCAF.cpp
