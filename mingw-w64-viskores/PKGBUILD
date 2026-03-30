@@ -3,8 +3,8 @@
 _realname=viskores
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=1.0.0
-pkgrel=4
+pkgver=1.1.0
+pkgrel=1
 pkgdesc="A visualization library for many-threaded devices. (mingw-w64)"
 arch=('any')
 mingw_arch=('ucrt64' 'clang64' 'clangarm64')
@@ -21,8 +21,17 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              #"${MINGW_PACKAGE_PREFIX}-anari-sdk"
              "${MINGW_PACKAGE_PREFIX}-glew")
 #optdepends=("${MINGW_PACKAGE_PREFIX}-anari-sdk")
-source=("https://github.com/Viskores/viskores/archive/v${pkgver}/${_realname}-${pkgver}.tar.gz")
-sha256sums=('5bff5bbd747b7662bb4630889960371d06fcc5e5a962d974a898d1883f196eba')
+source=("https://github.com/Viskores/viskores/archive/v${pkgver}/${_realname}-${pkgver}.tar.gz"
+        "001-fix-shared-library.patch")
+sha256sums=('24eb77decff0370789594a8064060d64b51ba0b9ae9d78c882daada4d8f19a20'
+            'bafe3441d8173913c22be1e81f33d135b38406b773c399363681b1aafb521609')
+
+prepare() {
+  cd ${_realname}-${pkgver}
+  if [[ ${CC} == gcc ]]; then
+    patch -p1 -i "${srcdir}"/001-fix-shared-library.patch
+  fi
+}
 
 build() {
   declare -a extra_config
@@ -32,13 +41,20 @@ build() {
     extra_config+=("-DCMAKE_BUILD_TYPE=Debug")
   fi
 
+  if [[ ${CC} == gcc ]]; then
+    CXXFLAGS+=" -w"
+    #LDFLAGS+=" -Wl,--export-all-symbols"
+    extra_config+=("-DBUILD_SHARED_LIBS=ON")
+  else
+    extra_config+=("-DBUILD_SHARED_LIBS=ON")
+  fi
+
   MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
     cmake \
       -GNinja \
       -DCMAKE_INSTALL_PREFIX="${MINGW_PREFIX}" \
       -DCMAKE_DLL_NAME_WITH_SOVERSION=ON \
       "${extra_config[@]}" \
-      -DBUILD_SHARED_LIBS=ON \
       -DViskores_INSTALL_CMAKE_MODULE_DIR=lib/cmake \
       -DViskores_CUSTOM_LIBRARY_SUFFIX="" \
       -DViskores_ENABLE_DEVELOPER_FLAGS=OFF \

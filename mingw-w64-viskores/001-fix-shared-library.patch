@@ -1,0 +1,48 @@
+diff -Naur viskores-1.1.0-orig/CMake/ViskoresExportHeaderTemplate.h.in viskores-1.1.0/CMake/ViskoresExportHeaderTemplate.h.in
+--- viskores-1.1.0-orig/CMake/ViskoresExportHeaderTemplate.h.in	2026-03-31 07:17:59.219573800 +0100
++++ viskores-1.1.0/CMake/ViskoresExportHeaderTemplate.h.in	2026-03-31 07:36:05.142265900 +0100
+@@ -22,7 +22,7 @@
+ #   define @EXPORT_MACRO_NAME@_EXPORT_DEFINE
+ #   define @EXPORT_MACRO_NAME@_IMPORT_DEFINE
+ #   define @EXPORT_MACRO_NAME@_NO_EXPORT_DEFINE
+-#elif defined(_MSC_VER)
++#elif defined(_WIN32)
+ # if @EXPORT_IS_BUILT_STATIC@
+     /* This is a static component and has no need for exports
+        elf based static libraries are able to have hidden/default visibility
+diff -Naur viskores-1.1.0-orig/CMake/ViskoresWrappers.cmake viskores-1.1.0/CMake/ViskoresWrappers.cmake
+--- viskores-1.1.0-orig/CMake/ViskoresWrappers.cmake	2026-03-31 07:17:59.222426600 +0100
++++ viskores-1.1.0/CMake/ViskoresWrappers.cmake	2026-03-31 07:37:48.357292400 +0100
+@@ -511,7 +511,7 @@
+                               )
+   if(Viskores_HIDE_PRIVATE_SYMBOLS)
+     set_property(TARGET ${lib_name} PROPERTY CUDA_VISIBILITY_PRESET "hidden")
+-    set_property(TARGET ${lib_name} PROPERTY CXX_VISIBILITY_PRESET "hidden")
++    #set_property(TARGET ${lib_name} PROPERTY CXX_VISIBILITY_PRESET "hidden")
+   endif()
+   #specify where to place the built library
+   set_property(TARGET ${lib_name} PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${Viskores_LIBRARY_OUTPUT_PATH})
+diff -Naur viskores-1.1.0-orig/viskores/internal/ExportMacros.h viskores-1.1.0/viskores/internal/ExportMacros.h
+--- viskores-1.1.0-orig/viskores/internal/ExportMacros.h	2026-03-31 07:18:00.125346400 +0100
++++ viskores-1.1.0/viskores/internal/ExportMacros.h	2026-03-31 07:18:17.450386900 +0100
+@@ -93,7 +93,7 @@
+ //    resolve to a single type instance
+ //  - Be a type ( or component of a types signature ) that can be passed between
+ //    dynamic libraries and requires RTTI support ( dynamic_cast ).
+-#if defined(VISKORES_MSVC) || defined(VISKORES_CUDA) || defined(VISKORES_DOXYGEN_ONLY)
++#if defined(VISKORES_MSVC) || defined(VISKORES_MINGW) || defined(VISKORES_CUDA) || defined(VISKORES_DOXYGEN_ONLY)
+ #define VISKORES_ALWAYS_EXPORT
+ #define VISKORES_NEVER_EXPORT
+ #else
+diff -Naur viskores-1.1.0-orig/viskores/thirdparty/diy/viskoresdiy/include/viskoresdiy/mpi/diy-mpi-export.h viskores-1.1.0/viskores/thirdparty/diy/viskoresdiy/include/viskoresdiy/mpi/diy-mpi-export.h
+--- viskores-1.1.0-orig/viskores/thirdparty/diy/viskoresdiy/include/viskoresdiy/mpi/diy-mpi-export.h	2026-03-31 07:18:00.342048900 +0100
++++ viskores-1.1.0/viskores/thirdparty/diy/viskoresdiy/include/viskoresdiy/mpi/diy-mpi-export.h	2026-03-31 07:36:46.190300300 +0100
+@@ -1,7 +1,7 @@
+ #ifndef VISKORESDIY_MPI_EXPORT_H
+ #define VISKORESDIY_MPI_EXPORT_H
+ 
+-#if defined(_MSC_VER)
++#if defined(_WIN32)
+ #  ifdef VISKORESDIY_MPI_STATIC_BUILD
+      /* This is a static component and has no need for exports
+         elf based static libraries are able to have hidden/default visibility
