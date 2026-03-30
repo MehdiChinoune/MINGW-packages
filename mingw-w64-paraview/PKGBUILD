@@ -3,11 +3,11 @@
 _realname=paraview
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=6.0.1
-pkgrel=6
+pkgver=6.1.0
+pkgrel=1
 pkgdesc="Parallel Data Analysis and Visualization Application based on VTK. (mingw-w64)"
 arch=('any')
-mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
+mingw_arch=('ucrt64' 'clang64' 'clangarm64')
 url='https://www.paraview.org/'
 msys2_repository_url="https://gitlab.kitware.com/paraview/paraview"
 msys2_references=(
@@ -45,11 +45,9 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
 optdepends=("${MINGW_PACKAGE_PREFIX}-python-numpy"
             "${MINGW_PACKAGE_PREFIX}-python-matplotlib")
 source=("https://www.paraview.org/files/v${pkgver%.*}/ParaView-v${pkgver}.tar.xz"
-        "001-fix-build-with-protobuf-33.patch"
-        "002-fix-build-with-qt-6.10.1.patch")
-sha256sums=('5e56ac7af5e925b3cfd3fab82470933cbabc7e8fda87e14af64f995d6064eb06'
-            '8ea48d63fc20b1cc42c7ea360f85992b926ab5bcb91346b32b19c885a24727af'
-            'f7f43d5e1e311c4394fdb6aa53b85fefc3571789c95f6b394ec1e32360c70843')
+        "001-fix-build-with-protobuf-33.patch")
+sha256sums=('107b642e4c976c71a93f6cc062faac8655eb0896fa36fc5fedeb36093e601c20'
+            '8ea48d63fc20b1cc42c7ea360f85992b926ab5bcb91346b32b19c885a24727af')
 
 apply_patch_with_msg() {
   for _patch in "$@"
@@ -62,13 +60,10 @@ apply_patch_with_msg() {
 prepare() {
   cd "${srcdir}"/ParaView-v${pkgver}
   apply_patch_with_msg \
-    001-fix-build-with-protobuf-33.patch \
-    002-fix-build-with-qt-6.10.1.patch
+    001-fix-build-with-protobuf-33.patch
 }
 
 build() {
-  mkdir -p "${srcdir}/build-${MSYSTEM}" && cd "${srcdir}/build-${MSYSTEM}"
-
   declare -a _extra_config
   if check_option "debug" "n"; then
     _extra_config+=("-DCMAKE_BUILD_TYPE=Release")
@@ -97,15 +92,14 @@ build() {
       -DPARAVIEW_PYTHON_SITE_PACKAGES_SUFFIX="lib/python${_pyver}/site-packages/pv/" \
       -DPARAVIEW_USE_EXTERNAL_VTK=ON \
       -DPython3_EXECUTABLE=${MINGW_PREFIX}/bin/python.exe \
-      ../ParaView-v${pkgver}
+      -S ParaView-v${pkgver} \
+      -B build-${MSYSTEM}
 
-  "${MINGW_PREFIX}"/bin/cmake.exe --build .
+  "${MINGW_PREFIX}"/bin/cmake.exe --build build-${MSYSTEM}
 }
 
 package() {
-  cd "${srcdir}/build-${MSYSTEM}"
-
-  DESTDIR="${pkgdir}" "${MINGW_PREFIX}"/bin/cmake.exe --install .
+  DESTDIR="${pkgdir}" "${MINGW_PREFIX}"/bin/cmake.exe --install build-${MSYSTEM}
 
   MSYS2_ARG_CONV_EXCL="-p" python -m compileall \
     -o 0 -o 1 -q -s"${pkgdir}" -p"/" "${pkgdir}${MINGW_PREFIX}/lib/python"*
