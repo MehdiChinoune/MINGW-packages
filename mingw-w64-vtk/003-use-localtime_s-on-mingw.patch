@@ -1,0 +1,33 @@
+--- a/IO/Image/vtkMedicalImageProperties.cxx
++++ b/IO/Image/vtkMedicalImageProperties.cxx
+@@ -790,7 +790,7 @@
+       {
+         // convert to std::tm back using localtime to ensure the date is correct
+         tm local;
+-#ifdef VTK_COMPILER_MSVC
++#ifdef _WIN32
+         localtime_s(&local, &t);
+ #else
+         localtime_r(&t, &local);
+--- a/IO/MINC/vtkMINCImageWriter.cxx
++++ b/IO/MINC/vtkMINCImageWriter.cxx
+@@ -375,7 +375,7 @@
+   // Get the local time
+   std::time_t t = std::time(nullptr);
+   tm local;
+-#ifdef VTK_COMPILER_MSVC
++#ifdef _WIN32
+   localtime_s(&local, &t);
+ #else
+   localtime_r(&t, &local);
+--- a/IO/MINC/vtkMNITransformWriter.cxx
++++ b/IO/MINC/vtkMNITransformWriter.cxx
+@@ -372,7 +372,7 @@
+   // Get the local time and write as first comment line
+   std::time_t t = std::time(nullptr);
+   tm local;
+-#ifdef VTK_COMPILER_MSVC
++#ifdef _WIN32
+   localtime_s(&local, &t);
+ #else
+   localtime_r(&t, &local);

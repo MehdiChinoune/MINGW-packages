@@ -4,8 +4,8 @@
 _realname=vtk
 pkgbase="mingw-w64-${_realname}"
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=9.5.2
-pkgrel=8
+pkgver=9.6.1
+pkgrel=1
 pkgdesc="A software system for 3D computer graphics, image processing and visualization (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -18,7 +18,7 @@ msys2_references=(
 license=("spdx:BSD-3-Clause")
 depends=("${MINGW_PACKAGE_PREFIX}-cc-libs"
          "${MINGW_PACKAGE_PREFIX}-double-conversion"
-         "${MINGW_PACKAGE_PREFIX}-expat"
+         #"${MINGW_PACKAGE_PREFIX}-expat"
          "${MINGW_PACKAGE_PREFIX}-fmt"
          "${MINGW_PACKAGE_PREFIX}-freetype"
          "${MINGW_PACKAGE_PREFIX}-glew"
@@ -114,14 +114,16 @@ if [[ ${MSYSTEM} != MINGW64 ]]; then
 fi
 source=(https://www.vtk.org/files/release/${pkgver%.*}/VTK-${pkgver}.tar.gz
         "001-no-exact-version-for-fast_float.patch"
-        "002-fix-build-with-fmt-12.patch"
+        "002-include-missing-header-on-windows.patch"
+        "003-use-localtime_s-on-mingw.patch"
         "004-accept-future-versions-of-boost-and-occ.patch"
         "007-dll-export-some-functions.patch")
-sha256sums=('cee64b98d270ff7302daf1ef13458dff5d5ac1ecb45d47723835f7f7d562c989'
-            'a978ec60b9ef3a9a19265b4e502a602cff016a5cbfc7801398dc1f2f7206a1d9'
-            '91d2219d329879a79c9a139fcaab83667d1469098cd307529ac2809e4a30725d'
+sha256sums=('47ca9af899165a33b935533046acce7c0aa3c007f0b57880665bb89d9986543f'
+            '0446fc4fb7f8d23e81d9a65dab8711c7c590a7fd07cbebea8910eb34d66548ab'
+            '83f4423b47582ec33137982c10b62c33d723e7e100711be5442420a0dba8aa5e'
+            '8106d288bb8e0006f8198d700928da15a3069ffa2c8f90ba9fd492f4ec78cb28'
             'a44b3ba4bdc02be4767ff48b8a7fd4206a53756a881421fca99f538b08a7b48c'
-            '61c334b3050f675ee65f92163719da3e75688e490971ffcc9c4cd95eb90d762a')
+            'SKIP')
 
 # Helper macros to help make tasks easier #
 apply_patch_with_msg() {
@@ -137,19 +139,18 @@ prepare() {
 
   apply_patch_with_msg \
     001-no-exact-version-for-fast_float.patch \
-    002-fix-build-with-fmt-12.patch \
+    002-include-missing-header-on-windows.patch \
+    003-use-localtime_s-on-mingw.patch \
     004-accept-future-versions-of-boost-and-occ.patch
 
   # Succeeds with Clang but fails with GCC!
-  if [[ ${MINGW_PACKAGE_PREFIX} == *-clang-* ]]; then
+  if [[ ${CC} == clang ]]; then
     apply_patch_with_msg \
       007-dll-export-some-functions.patch
   fi
 }
 
 build() {
-  mkdir -p "${srcdir}"/build-${MSYSTEM} && cd "${srcdir}"/build-${MSYSTEM}
-
   declare -a _extra_config
   if check_option "debug" "n"; then
     _extra_config+=("-DCMAKE_BUILD_TYPE=Release")
@@ -160,8 +161,7 @@ build() {
   if [[ ${MSYSTEM} == MINGW64 ]]; then
     _extra_config+=("-DVTK_MODULE_ENABLE_VTK_RenderingAnari=NO"
                     "-DVTK_MODULE_USE_EXTERNAL_VTK_scn=OFF"
-                    "-DVTK_MODULE_USE_EXTERNAL_VTK_verdict=OFF"
-                    "-DVTK_MODULE_USE_EXTERNAL_VTK_vtkviskores=OFF")
+                    "-DVTK_MODULE_USE_EXTERNAL_VTK_verdict=OFF")
   fi
 
   CFLAGS+=" ${CPPFLAGS}"
@@ -180,17 +180,21 @@ build() {
     -DVTK_BUILD_ALL_MODULES=ON \
     -DVTK_GROUP_ENABLE_MPI=NO \
     -DVTK_GROUP_ENABLE_Web=NO \
+    -DVTK_MODULE_ENABLE_VTK_FiltersONNX=NO \
     -DVTK_MODULE_ENABLE_VTK_FiltersParallelVerdict=WANT \
     -DVTK_MODULE_ENABLE_VTK_FiltersTemporal=WANT \
     -DVTK_MODULE_ENABLE_VTK_IOERF=WANT \
     -DVTK_MODULE_ENABLE_VTK_IOFDS=WANT \
+    -DVTK_MODULE_ENABLE_VTK_IOUSD=NO \
     -DVTK_MODULE_ENABLE_VTK_RenderingOpenXRRemoting=NO \
     -DVTK_MODULE_ENABLE_VTK_RenderingZSpace=NO \
     -DVTK_USE_EXTERNAL=ON \
+    -DVTK_MODULE_USE_EXTERNAL_VTK_expat=OFF \
     -DVTK_MODULE_USE_EXTERNAL_VTK_exprtk=OFF \
     -DVTK_MODULE_USE_EXTERNAL_VTK_ioss=OFF \
     -DVTK_MODULE_USE_EXTERNAL_VTK_pegtl=OFF \
     -DVTK_MODULE_USE_EXTERNAL_VTK_token=OFF \
+    -DVTK_MODULE_USE_EXTERNAL_VTK_vtkviskores=OFF \
     -DVTK_WRAP_JAVA=OFF \
     -DVTK_WRAP_PYTHON=ON \
     -DVTK_SMP_IMPLEMENTATION_TYPE=TBB \
@@ -200,19 +204,20 @@ build() {
     -DVTK_USE_VIDEO_FOR_WINDOWS=ON \
     -DVTK_ENABLE_OSPRAY=OFF \
     -DVTK_ENABLE_REMOTE_MODULES=OFF \
+    -DHDF5_IS_PARALLEL=OFF \
     "${_extra_config[@]}" \
-    ../${_realname}-${pkgver}
+    -S ${_realname}-${pkgver} \
+    -B build-${MSYSTEM}
 
-  ${MINGW_PREFIX}/bin/cmake --build .
+  ${MINGW_PREFIX}/bin/cmake --build build-${MSYSTEM}
 }
 
 package() {
-  cd "${srcdir}/build-${MSYSTEM}"
-  DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake --install .
+  DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake --install build-${MSYSTEM}
 
   install -Dm644 "${srcdir}"/${_realname}-${pkgver}/Copyright.txt \
     "${pkgdir}"${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE
 
   # Remove third party CMake patching for older versions than ours
-  rm -rv "${pkgdir}"${MINGW_PREFIX}/lib/cmake/vtk/patches/3.{1{3,6,9},2{0,2,3}}
+  rm -rv "${pkgdir}"${MINGW_PREFIX}/lib/cmake/vtk/patches/{3.{1{3,6,9},2{0,2,3,5}},4.3}
 }
