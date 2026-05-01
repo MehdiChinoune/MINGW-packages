@@ -3,8 +3,8 @@
 _realname=gnumeric
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=1.12.59
-pkgrel=5
+pkgver=1.12.61
+pkgrel=1
 pkgdesc="The GNOME spreadsheet. (mingw-w64)"
 arch=('any')
 mingw_arch=('ucrt64' 'clang64' 'clangarm64')
@@ -21,6 +21,7 @@ depends=("${MINGW_PACKAGE_PREFIX}-glib2"
          "${MINGW_PACKAGE_PREFIX}-gettext-runtime"
          "${MINGW_PACKAGE_PREFIX}-goffice"
          "${MINGW_PACKAGE_PREFIX}-gtk3"
+         "${MINGW_PACKAGE_PREFIX}-libgda"
          "${MINGW_PACKAGE_PREFIX}-libgsf"
          "${MINGW_PACKAGE_PREFIX}-libxml2"
          "${MINGW_PACKAGE_PREFIX}-pango")
@@ -30,9 +31,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-gtk-doc"
              "${MINGW_PACKAGE_PREFIX}-python"
              "${MINGW_PACKAGE_PREFIX}-python-gobject"
-             "${MINGW_PACKAGE_PREFIX}-libgda"
              "${MINGW_PACKAGE_PREFIX}-yelp-tools")
-optdepends=("${MINGW_PACKAGE_PREFIX}-libgda")
 source=("https://download.gnome.org/sources/gnumeric/${pkgver%.*}/gnumeric-$pkgver.tar.xz"
         "001-fix-clash-between-intltool-and-gettext.patch"
         "002-no-more-warnings.patch"
@@ -42,11 +41,11 @@ source=("https://download.gnome.org/sources/gnumeric/${pkgver%.*}/gnumeric-$pkgv
         "006-no-fake-index-theme-on-mingw.patch"
         "007-disable-doc.patch"
         "008-fix-find-python-h.patch")
-sha256sums=('cb3750b176d641f9423df721b831658c829557552f8887fedf8a53d907eceb51'
+sha256sums=('2ac135d856572713c1a408b76b50a59f2a9769ed21f1213446b5af255df20a12'
             'a7b6299ac7df75f7d5c080014dbba0240f7cb2ec3d02db9f0b4cea33c725e05a'
             '44493d65d9d28070300fd626a0965288c9d8c38cce38808cc9bc43278a4b3e1b'
             '447942a91e4def819ee9cd234893def2a8281846e11a5091efcc57065f88f3ba'
-            '5838fb65109d33a6d280de9c747a0b101f30d1cd40316c83ecc46b8d28353ff3'
+            'b11a865b8a8d78c5aec2b58ef9d5f802242aaa0b08aeb9f73687bed7603278b4'
             '2460b0b7010eea94c8ce8f9da12e4d1d3267bcdcef81a5a14bf2a036a1dd766a'
             'a01489960b06312d76e54eb9bb2500856d4aa4e910f9754a96487c129e0c2f40'
             'bca988670b6fd30f57577cb2942131029860493cf50a45245b9ddf17d8f9b612'
@@ -82,7 +81,7 @@ build() {
 
   export lt_cv_deplibs_check_method='pass_all'
 
-  CFLAGS+=" -Wno-implicit-function-declaration -DGNM_VAR_DECL=extern" \
+  CFLAGS+=" -DGNM_VAR_DECL=extern" \
   ./configure \
     --prefix="${MINGW_PREFIX}" \
     --enable-shared \
