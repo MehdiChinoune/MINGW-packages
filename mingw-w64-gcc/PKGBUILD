@@ -67,7 +67,9 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-${_realname}"
              $([[ "$_enable_ada" == "yes" ]] && echo "${MINGW_PACKAGE_PREFIX}-${_realname}-ada")
              $([[ "$_enable_rust" == "yes" ]] && echo "${MINGW_PACKAGE_PREFIX}-rust")
              "${MINGW_PACKAGE_PREFIX}-autotools"
-             "${MINGW_PACKAGE_PREFIX}-binutils"
+             $([[ ${MINGW_PACKAGE_PREFIX} != *-clang-* ]] && echo \
+               "${MINGW_PACKAGE_PREFIX}-binutils" || echo \
+               "${MINGW_PACKAGE_PREFIX}-binutils-gnu")
              "${MINGW_PACKAGE_PREFIX}-crt"
              "${MINGW_PACKAGE_PREFIX}-headers"
              "${MINGW_PACKAGE_PREFIX}-gmp"
