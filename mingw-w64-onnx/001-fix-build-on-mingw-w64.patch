@@ -1,15 +1,15 @@
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -457,7 +457,7 @@
+@@ -563,7 +563,7 @@
    # Configure nanobind: https://nanobind.readthedocs.io/en/latest/api_cmake.html
    nanobind_add_module(
      onnx_cpp2py_export
 -    NB_STATIC NB_DOMAIN onnx STABLE_ABI FREE_THREADED LTO
 +    NB_STATIC NB_DOMAIN onnx STABLE_ABI
-     "${ONNX_ROOT}/onnx/cpp2py_export.cc" ${ONNX_SRCS} ${ONNX_PROTO_SRCS})
-   add_dependencies(onnx_cpp2py_export onnx)
- endif()
-@@ -543,7 +543,10 @@
+     "${ONNX_ROOT}/onnx/cpp2py_export.cc")
+   # Force-load the whole (static) archive so the operator schemas' static
+   # initializers are not dropped as apparently-unused. $<LINK_LIBRARY:WHOLE_ARCHIVE,...>
+@@ -643,7 +643,10 @@
  if(ONNX_INSTALL)
    install(TARGETS
      onnx onnx_proto
@@ -32,14 +32,3 @@
  #if defined(ONNX_BUILD_SHARED_LIBS) || defined(ONNX_BUILD_MAIN_LIB)
  #define ONNX_EXPORT __declspec(dllexport)
  #define ONNX_IMPORT __declspec(dllimport)
---- a/setup.py
-+++ b/setup.py
-@@ -29,7 +29,7 @@
- TOP_DIR = os.path.realpath(os.path.dirname(__file__))
- CMAKE_BUILD_DIR = os.path.join(TOP_DIR, ".setuptools-cmake-build")
- 
--WINDOWS = os.name == "nt"
-+WINDOWS = os.name == "nt" and 'MSC' in sys.version
- 
- CMAKE = shutil.which("cmake3") or shutil.which("cmake")
- 
