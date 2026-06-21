@@ -22,8 +22,8 @@ depends=("${MINGW_PACKAGE_PREFIX}-cc-libs"
          "${MINGW_PACKAGE_PREFIX}-tbb"
          "${MINGW_PACKAGE_PREFIX}-openvr"
          "${MINGW_PACKAGE_PREFIX}-tcl"
-         "${MINGW_PACKAGE_PREFIX}-tk"
-         "${MINGW_PACKAGE_PREFIX}-vtk")
+         "${MINGW_PACKAGE_PREFIX}-tk")
+         #"${MINGW_PACKAGE_PREFIX}-vtk")
 makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-cmake"
              "${MINGW_PACKAGE_PREFIX}-ninja"
@@ -142,7 +142,7 @@ build() {
     -D3RDPARTY_TBB_LIBRARY="${MINGW_PREFIX}/lib/libtbb12.dll.a"
     -D3RDPARTY_TBBMALLOC_LIBRARY_DIR="${MINGW_PREFIX}/lib/"
     -D3RDPARTY_TBBMALLOC_LIBRARY="${MINGW_PREFIX}/lib/libtbbmalloc.dll.a"
-    -DUSE_VTK=ON
+    -DUSE_VTK=OFF
     -D3RDPARTY_VTK_DLL_DIR="${MINGW_PREFIX}/bin/"
     -D3RDPARTY_VTK_LIBRARY_DIR="${MINGW_PREFIX}/lib/"
     -D3RDPARTY_VTK_INCLUDE_DIR="${MINGW_PREFIX}/include/vtk"
