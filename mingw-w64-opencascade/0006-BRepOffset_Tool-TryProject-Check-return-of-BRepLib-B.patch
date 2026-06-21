@@ -5,13 +5,13 @@ Date: Mon, 18 Jan 2021 22:26:33 -0500
 
 
 ---
- src/BRepOffset/BRepOffset_Tool.cxx | 3 ++-
+ src/ModelingAlgorithms/TKOffset/BRepOffset/BRepOffset_Tool.cxx | 3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/src/BRepOffset/BRepOffset_Tool.cxx
-+++ b/src/BRepOffset/BRepOffset_Tool.cxx
-@@ -1897,7 +1897,8 @@
-     Handle(Geom_Curve) C    = BRep_Tool::Curve(CurE, L, f, l);
+--- a/src/ModelingAlgorithms/TKOffset/BRepOffset/BRepOffset_Tool.cxx
++++ b/src/ModelingAlgorithms/TKOffset/BRepOffset/BRepOffset_Tool.cxx
+@@ -1969,7 +1969,8 @@
+     occ::handle<Geom_Curve> C    = BRep_Tool::Curve(CurE, L, f, l);
      if (C.IsNull())
      {
 -      BRepLib::BuildCurve3d(CurE, BRep_Tool::Tolerance(CurE));

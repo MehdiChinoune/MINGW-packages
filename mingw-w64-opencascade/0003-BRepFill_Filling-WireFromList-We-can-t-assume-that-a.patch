@@ -5,20 +5,20 @@ Date: Tue, 29 Sep 2020 06:41:32 -0400
 
 
 ---
- src/BRepFill/BRepFill_Filling.cxx | 11 +++++++++--
+ src/ModelingAlgorithms/TKBool/BRepFill/BRepFill_Filling.cxx | 11 +++++++++--
  1 file changed, 9 insertions(+), 2 deletions(-)
 
---- a/src/BRepFill/BRepFill_Filling.cxx
-+++ b/src/BRepFill/BRepFill_Filling.cxx
-@@ -95,6 +95,7 @@
+--- a/src/ModelingAlgorithms/TKBool/BRepFill/BRepFill_Filling.cxx
++++ b/src/ModelingAlgorithms/TKBool/BRepFill/BRepFill_Filling.cxx
+@@ -97,6 +97,7 @@
    while (!Edges.IsEmpty())
    {
-     TopTools_ListIteratorOfListOfShape itl(Edges);
+     NCollection_List<TopoDS_Shape>::Iterator itl(Edges);
 +    bool found = false;
      for (; itl.More(); itl.Next())
      {
        anEdge = TopoDS::Edge(itl.Value());
-@@ -116,6 +117,7 @@
+@@ -122,6 +123,7 @@
            anEdge.Reverse();
            V2 = V3;
          }
@@ -26,7 +26,7 @@ Date: Tue, 29 Sep 2020 06:41:32 -0400
          break;
        }
      }
-@@ -127,6 +129,13 @@
+@@ -133,6 +135,13 @@
      }
      BB.Add(aWire, anEdge);
      Edges.Remove(itl);
@@ -39,4 +39,4 @@ Date: Tue, 29 Sep 2020 06:41:32 -0400
 +      break;
    }
  
-   aWire.Closed(Standard_True);
+   aWire.Closed(true);

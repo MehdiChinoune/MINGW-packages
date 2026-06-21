@@ -5,12 +5,12 @@ Date: Tue, 29 Sep 2020 07:47:55 -0400
 
 
 ---
- src/BRepFill/BRepFill_Filling.cxx | 15 ++++++++++++---
+ src/ModelingAlgorithms/TKBool/BRepFill/BRepFill_Filling.cxx | 15 ++++++++++++---
  1 file changed, 12 insertions(+), 3 deletions(-)
 
---- a/src/BRepFill/BRepFill_Filling.cxx
-+++ b/src/BRepFill/BRepFill_Filling.cxx
-@@ -323,6 +323,15 @@
+--- a/src/ModelingAlgorithms/TKBool/BRepFill/BRepFill_Filling.cxx
++++ b/src/ModelingAlgorithms/TKBool/BRepFill/BRepFill_Filling.cxx
+@@ -324,6 +324,15 @@
      CurFace  = SeqOfConstraints(i).myFace;
      CurOrder = SeqOfConstraints(i).myOrder;
  
@@ -26,17 +26,17 @@ Date: Tue, 29 Sep 2020 07:47:55 -0400
      if (CurFace.IsNull())
      {
        if (CurOrder == GeomAbs_C0)
-@@ -330,7 +339,7 @@
-         Handle(BRepAdaptor_Curve) HCurve = new BRepAdaptor_Curve();
+@@ -331,7 +340,7 @@
+         occ::handle<BRepAdaptor_Curve> HCurve = new BRepAdaptor_Curve();
          HCurve->Initialize(CurEdge);
-         const Handle(Adaptor3d_Curve)& aHCurve = HCurve; // to avoid ambiguity
+         const occ::handle<Adaptor3d_Curve>& aHCurve = HCurve; // to avoid ambiguity
 -        Constr = new BRepFill_CurveConstraint(aHCurve, CurOrder, myNbPtsOnCur, myTol3d);
 +        Constr = new BRepFill_CurveConstraint(aHCurve, orderAdapt, myNbPtsOnCur, myTol3d);
        }
        else
        { // Pas de representation Topologique
-@@ -354,7 +363,7 @@
-         Handle(Adaptor3d_CurveOnSurface) HCurvOnSurf = new Adaptor3d_CurveOnSurface(CurvOnSurf);
+@@ -356,7 +365,7 @@
+           new Adaptor3d_CurveOnSurface(CurvOnSurf);
  
          Constr = new GeomPlate_CurveConstraint(HCurvOnSurf,
 -                                               CurOrder,
@@ -44,8 +44,8 @@ Date: Tue, 29 Sep 2020 07:47:55 -0400
                                                 myNbPtsOnCur,
                                                 myTol3d,
                                                 myTolAng,
-@@ -374,7 +383,7 @@
-       Handle(Adaptor3d_CurveOnSurface) HCurvOnSurf = new Adaptor3d_CurveOnSurface(CurvOnSurf);
+@@ -376,7 +385,7 @@
+       occ::handle<Adaptor3d_CurveOnSurface> HCurvOnSurf = new Adaptor3d_CurveOnSurface(CurvOnSurf);
  
        Constr = new BRepFill_CurveConstraint(HCurvOnSurf,
 -                                            CurOrder,

@@ -1,0 +1,47 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -987,16 +987,6 @@
+   set (CSF_TclTkLibs "")
+ endif()
+ 
+-# Installing the overview documentation
+-if (INSTALL_DOC_Overview)
+-  install (DIRECTORY "${CMAKE_BINARY_DIR}/doc/overview" DESTINATION  "${INSTALL_DIR_DOC}")
+-
+-  # create overview.html only for windows
+-  if (WIN32 AND "${INSTALL_DIR_LAYOUT}" STREQUAL "Windows")
+-    OCCT_INSTALL_FILE_OR_DIR ("dox/resources/overview.html" "${INSTALL_DIR_DOC}/..")
+-  endif()
+-endif()
+-
+ # check all 3rdparty include paths
+ string (REGEX REPLACE ";" " " 3RDPARTY_NOT_INCLUDED "${3RDPARTY_NOT_INCLUDED}")
+ if (3RDPARTY_NOT_INCLUDED)
+--- a/adm/cmake/occt_doc.cmake
++++ b/adm/cmake/occt_doc.cmake
+@@ -618,6 +618,8 @@
+     if(INSTALL_DOC_RefMan)
+       install(DIRECTORY "${REFMAN_OUTPUT_DIR}/html/"
+               DESTINATION "${INSTALL_DIR_DOC}/refman/html"
++              COMPONENT RefMan
++              EXCLUDE_FROM_ALL
+               OPTIONAL)
+     endif()
+   endif()
+@@ -648,12 +650,16 @@
+     if(INSTALL_DOC_Overview)
+       install(DIRECTORY "${OVERVIEW_OUTPUT_DIR}/html/"
+               DESTINATION "${INSTALL_DIR_DOC}/overview/html"
++              COMPONENT Overview
++              EXCLUDE_FROM_ALL
+               OPTIONAL)
+ 
+       # Create overview.html only for windows
+       if(WIN32)
+         install(FILES "${OCCT_ROOT_DIR}/dox/resources/overview.html"
++                COMPONENT Overview
++                EXCLUDE_FROM_ALL
+                 DESTINATION "${INSTALL_DIR_DOC}")
+       endif()
+     endif()
+   endif()
