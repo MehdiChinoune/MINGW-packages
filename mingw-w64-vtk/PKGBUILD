@@ -67,7 +67,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-libxml2"
              "${MINGW_PACKAGE_PREFIX}-netcdf"
              "${MINGW_PACKAGE_PREFIX}-openslide"
-             "${MINGW_PACKAGE_PREFIX}-opencascade"
+             #"${MINGW_PACKAGE_PREFIX}-opencascade"
              "${MINGW_PACKAGE_PREFIX}-openturns"
              "${MINGW_PACKAGE_PREFIX}-openvdb"
              "${MINGW_PACKAGE_PREFIX}-openvr"
@@ -100,7 +100,7 @@ optdepends=("${MINGW_PACKAGE_PREFIX}-adios2: I/O ADIOS2"
             "${MINGW_PACKAGE_PREFIX}-libxml2: I/O Infovis"
             "${MINGW_PACKAGE_PREFIX}-netcdf: I/O netCDF"
             # "${MINGW_PACKAGE_PREFIX}-onnxruntime"
-            "${MINGW_PACKAGE_PREFIX}-opencascade: I/O OCCT"
+            # "${MINGW_PACKAGE_PREFIX}-opencascade: I/O OCCT"
             "${MINGW_PACKAGE_PREFIX}-openslide: DomainsMicroscopy"
             "${MINGW_PACKAGE_PREFIX}-openturns: OpenTURNS Filter"
             "${MINGW_PACKAGE_PREFIX}-openvdb: I/O OpenVDB"
@@ -216,6 +216,7 @@ build() {
     -DVTK_MODULE_ENABLE_VTK_IOERF=WANT \
     -DVTK_MODULE_ENABLE_VTK_IOFDS=WANT \
     -DVTK_MODULE_ENABLE_VTK_IOUSD=NO \
+    -DVTK_MODULE_ENABLE_VTK_IOOCCT=NO \
     -DVTK_MODULE_ENABLE_VTK_RenderingOpenXRRemoting=NO \
     -DVTK_MODULE_ENABLE_VTK_RenderingZSpace=NO \
     -DVTK_USE_EXTERNAL=ON \
