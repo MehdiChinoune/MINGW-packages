@@ -13,12 +13,16 @@ msys2_repository_url="https://gitlab.onelab.info/gmsh/gmsh/"
 license=("spdx:GPL-2.0-or-later")
 depends=("${MINGW_PACKAGE_PREFIX}-cc-libs"
          "${MINGW_PACKAGE_PREFIX}-cairo"
+         "${MINGW_PACKAGE_PREFIX}-cgns"
          "${MINGW_PACKAGE_PREFIX}-fltk"
          "${MINGW_PACKAGE_PREFIX}-gmp"
          "${MINGW_PACKAGE_PREFIX}-libjpeg"
          "${MINGW_PACKAGE_PREFIX}-libpng"
          "${MINGW_PACKAGE_PREFIX}-med"
+         "${MINGW_PACKAGE_PREFIX}-metis"
+         #"${MINGW_PACKAGE_PREFIX}-mumps"
          "${MINGW_PACKAGE_PREFIX}-opencascade"
+         "${MINGW_PACKAGE_PREFIX}-tinyxml2"
          "${MINGW_PACKAGE_PREFIX}-zlib")
 makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-cmake"
@@ -30,12 +34,25 @@ source=(https://gmsh.info/src/gmsh-${pkgver}-source.tgz
         0001-fix-link-lib-name.patch
         0002-fix-dynamic-linking.patch
         0003-fix-cmake-config-install-dir.patch
-        0005-aarch64-image-base.patch)
+        0004-requires-std-cxx-17.patch::https://gitlab.onelab.info/gmsh/gmsh/-/commit/df452c16.patch
+        0005-aarch64-image-base.patch
+        # https://gitlab.onelab.info/gmsh/gmsh/-/commit/dcae93a0.patch
+        dcae93a0.patch
+        0006-fix-build-with-OCCT-8.0.patch::https://gitlab.onelab.info/gmsh/gmsh/-/commit/a5a944a9.patch
+        0007-fix-build-with-OCCT-8.0_2.patch::https://gitlab.onelab.info/gmsh/gmsh/-/commit/86596d79.patch
+        0008-fix-build-with-OCCT-8.0_3.patch::https://gitlab.onelab.info/gmsh/gmsh/-/commit/03ceaf7e.patch
+        0009-fix-build-with-gcc-16.patch::https://gitlab.onelab.info/gmsh/gmsh/-/commit/1f581d13.patch)
 sha256sums=('be3f66f225d27ba9fa014f07e83169285da8a051b0e8ab7103d88066b39bdd3e'
             '064a191695c960abc7f6b0960a10a5ceb30188800a6bdacfea901227f6fb2db2'
             '4d3f5c4190529e3d45b786adab83f0d65e726357d7367f682ff95b733a88a8c3'
             'b7b0ce5ea5bcf593f1217f4e15d38cdf39ae5762602b16ddd620ef0fb68c234a'
-            '67a06fe851d807d5ba73cfaa32e323ff7fadb4334d19b81d1933e7e8bf21ed22')
+            'eb4853d0a958fb528c2100336222e653e32fa3221eaaa00b9c0d30ae0c34ed4d'
+            '67a06fe851d807d5ba73cfaa32e323ff7fadb4334d19b81d1933e7e8bf21ed22'
+            '576bda1ead0fae4eb0395bf67f5b7773facbebd4fae96070faae8fc20ee499be'
+            '27f0541f908719dd063d1709644097325d8995133df7d6b6146e6410ba306004'
+            '1ab79a203dd57ccaae3a544a9437c67eeb7325247e3352c00a8ba2f95fc54809'
+            '57854d11f4a8d47b1bbfdbd95f4febdd51cb0a61499b12686149a338285f0481'
+            'f153e8c3ab568c9475d816962884c9435823dd209b49661950ba637f3215fa99')
 
 apply_patch_with_msg() {
   for _patch in "$@"
@@ -51,7 +68,13 @@ prepare() {
   apply_patch_with_msg \
     0001-fix-link-lib-name.patch \
     0002-fix-dynamic-linking.patch \
-    0003-fix-cmake-config-install-dir.patch
+    0003-fix-cmake-config-install-dir.patch \
+    0004-requires-std-cxx-17.patch \
+    dcae93a0.patch \
+    0006-fix-build-with-OCCT-8.0.patch \
+    0007-fix-build-with-OCCT-8.0_2.patch \
+    0008-fix-build-with-OCCT-8.0_3.patch \
+    0009-fix-build-with-gcc-16.patch
 
   if [[ ${CARCH} == aarch64 ]]; then
     apply_patch_with_msg \
@@ -83,16 +106,20 @@ build() {
     "${MINGW_PREFIX}"/bin/cmake \
       -GNinja \
       -DCMAKE_INSTALL_PREFIX="${MINGW_PREFIX}" \
+      -DCMAKE_CXX_STANDARD=17 \
       "${_extra_config[@]}" \
       -DENABLE_BUILD_DYNAMIC=ON \
       -DENABLE_BUILD_SHARED=ON \
       -DENABLE_CAIRO=ON \
+      -DENABLE_CGNS=ON \
       -DENABLE_OCC=ON \
       -DENABLE_OPENMP=ON \
-      -DENABLE_OPENACC=ON \
       -DENABLE_PETSC=ON \
       -DENABLE_SLEPC=ON \
+      -DENABLE_TINYXML2=ON \
       -DGMSH_RELEASE=ON \
+      -DENABLE_SYSTEM_CONTRIB=ON \
+      -DENABLE_TESTS=OFF \
       -S gmsh-${pkgver}-source \
       -B build-${MSYSTEM}
 
