@@ -54,6 +54,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
 source=("https://github.com/FreeCAD/FreeCAD/archive/${pkgver}/${_realname}-${pkgver}.tar.gz"
         "git+https://github.com/FreeCAD/OndselSolver.git#commit=${_OS_commit}"
         "001-missing-export.patch"
+        "002-fix-build-with-OCCT-8.0.patch::https://github.com/FreeCAD/FreeCAD/pull/25502.patch"
         "003-cstdint.patch"
         "004-std-less.patch"
         "005-std-abs.patch"
@@ -61,6 +62,7 @@ source=("https://github.com/FreeCAD/FreeCAD/archive/${pkgver}/${_realname}-${pkg
 sha256sums=('873702bb6564e0d393fe1a0db1ee38e11a14e54780237f9ba6041fe9cd5d1170'
             'ebd6ffd5a186516cd76ecdb8e492c62ec305aa5c50de42046d6bde7fd1bf6cfb'
             'd9a27b4771e6d7302686ef0525ec706ca558761017047e0b571ffe08d769bdc9'
+            'fd6f01e8355c53718fa9e561d953d89b8d1fcff206633e5004c72ba92f178358'
             '6ea4f31739cd14924db67e0ce6d856bd1a68beb574bb2dd7278f04f1b16e4f95'
             '67b4aaa38bd18a623ade93e39a284a50f332eaa9704cbacef55721763fcfe5cd'
             '5b75aa4ab35ca73d1dd5546f3ab131865596d5b94c70fdb01193b2956e499e37'
@@ -85,6 +87,7 @@ prepare() {
 
   apply_patch_with_msg \
     001-missing-export.patch \
+    002-fix-build-with-OCCT-8.0.patch \
     003-cstdint.patch \
     004-std-less.patch \
     005-std-abs.patch \
