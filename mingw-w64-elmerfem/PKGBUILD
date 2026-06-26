@@ -5,7 +5,7 @@ pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
          $([[ "${CARCH}" == "aarch64" ]] || echo "${MINGW_PACKAGE_PREFIX}-${_realname}-mpi"))
 pkgver=26.2.1
-pkgrel=1
+pkgrel=2
 pkgdesc="Finite element software for multiphysical problems (mingw-w64)"
 arch=('any')
 mingw_arch=('ucrt64')
@@ -51,9 +51,11 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-seacas"
              "${MINGW_PACKAGE_PREFIX}-utf8cpp")
 source=("https://github.com/ElmerCSC/elmerfem/archive/release-${pkgver}/${_realname}-${pkgver}.tar.gz"
-        "001-use-system-metis.patch")
+        "001-use-system-metis.patch"
+        "002-fix-build-with-OCCT-8.0.patch::https://github.com/ElmerCSC/elmerfem/commit/32d70ea1.patch")
 sha256sums=('2271444cabdc9ae6185df961d939359062d43b1940ac9a7463a2b8adf7e0009b'
-            '4dbcdf142f368b2d45d9caa11ab2d899dc9625e876cb95ab47b7100ba734fabe')
+            '4dbcdf142f368b2d45d9caa11ab2d899dc9625e876cb95ab47b7100ba734fabe'
+            '2663e0b9916176de3ea99ef43ff8ecaac81c6c7806ce512384154efeea43f98e')
 
 _apply_patch_with_msg() {
   for _patch in "$@"
@@ -66,7 +68,8 @@ _apply_patch_with_msg() {
 prepare() {
   cd ${_realname}-release-${pkgver}
   _apply_patch_with_msg \
-    001-use-system-metis.patch
+    001-use-system-metis.patch \
+    002-fix-build-with-OCCT-8.0.patch
 }
 
 build() {

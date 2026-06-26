@@ -7,7 +7,7 @@ pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 _pkgver=3.6.5
 pkgver=${_pkgver//-/}
-pkgrel=49
+pkgrel=50
 pkgdesc="Open source high performance 3D graphics toolkit (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -35,7 +35,7 @@ depends=("${MINGW_PACKAGE_PREFIX}-boost-libs"
          "${MINGW_PACKAGE_PREFIX}-libvncserver"
          "${MINGW_PACKAGE_PREFIX}-libxml2"
          "${MINGW_PACKAGE_PREFIX}-lua"
-         "${MINGW_PACKAGE_PREFIX}-opencascade"
+         #"${MINGW_PACKAGE_PREFIX}-opencascade"
          "${MINGW_PACKAGE_PREFIX}-openexr"
          "${MINGW_PACKAGE_PREFIX}-SDL"
          "${MINGW_PACKAGE_PREFIX}-SDL2"
@@ -128,6 +128,7 @@ build() {
     -DBUILD_OSG_EXAMPLES=OFF \
     -DOSG_USE_LOCAL_LUA_SOURCE=OFF \
     -DOSG_AGGRESSIVE_WARNINGS=OFF \
+    -DBUILD_OSG_PLUGIN_OPENCASCADE=OFF \
     -S ${_realname}-${_realname}-${_pkgver} \
     -B build-${MSYSTEM}
 
