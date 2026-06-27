@@ -1,0 +1,49 @@
+--- a/packages/teuchos/comm/src/Teuchos_EReductionType.cpp
++++ b/packages/teuchos/comm/src/Teuchos_EReductionType.cpp
+@@ -33,7 +33,7 @@
+ } // namespace Details
+ #endif // HAVE_TEUCHOS_MPI
+ 
+-const char*
++TEUCHOSCORE_LIB_DLL_EXPORT const char*
+ toString (const EReductionType reductType)
+ {
+   switch (reductType) {
+--- a/packages/teuchos/core/src/Teuchos_Behavior.cpp
++++ b/packages/teuchos/core/src/Teuchos_Behavior.cpp
+@@ -13,6 +13,7 @@
+ #include "Teuchos_Behavior.hpp"
+ #include "Teuchos_EnvVariables.hpp"
+ #include "Teuchos_TestForException.hpp"
++#include "Teuchos_DLLExportMacro.h"
+ 
+ namespace Teuchos {
+ 
+@@ -27,7 +28,7 @@
+ }
+ 
+ 
+-bool Behavior::fenceTimers() {
++TEUCHOSCORE_LIB_DLL_EXPORT bool Behavior::fenceTimers() {
+   constexpr bool defaultValue = Teuchos::fenceTimersDefault();
+ 
+   static bool value_ = defaultValue;
+--- a/packages/teuchos/core/src/Teuchos_SystemInformation.cpp
++++ b/packages/teuchos/core/src/Teuchos_SystemInformation.cpp
+@@ -11,6 +11,7 @@
+ #include "Teuchos_EnvVariables.hpp"
+ #include "Teuchos_StrUtils.hpp"
+ #include "Teuchos_TestForException.hpp"
++#include "Teuchos_DLLExportMacro.h"
+ 
+ #include <filesystem>
+ #include <iostream>
+@@ -265,7 +266,7 @@
+     registerEnvironmentVariablePrefix(prefix);
+ }
+ 
+-std::map<std::string, std::string> collectSystemInformation() {
++TEUCHOSCORE_LIB_DLL_EXPORT std::map<std::string, std::string> collectSystemInformation() {
+ 
+   std::map<std::string, std::string> data;
+ 
