@@ -7,7 +7,7 @@ pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
          $([[ ${CARCH} == aarch64 ]] || echo "${MINGW_PACKAGE_PREFIX}-${_realname}-docs"))
 pkgver=10.0.0
 _mjver=2.7.9
-pkgrel=4
+pkgrel=5
 pkgdesc='High-performance C++ library for multiphysics and multibody dynamics simulations (mingw-w64)'
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -20,7 +20,7 @@ depends=("${MINGW_PACKAGE_PREFIX}-cc-libs"
          "${MINGW_PACKAGE_PREFIX}-glfw"
          "${MINGW_PACKAGE_PREFIX}-irrlicht"
          "${MINGW_PACKAGE_PREFIX}-omp"
-         "${MINGW_PACKAGE_PREFIX}-opencascade"
+         #"${MINGW_PACKAGE_PREFIX}-opencascade"
          "${MINGW_PACKAGE_PREFIX}-python"
          "${MINGW_PACKAGE_PREFIX}-python-numpy"
          "${MINGW_PACKAGE_PREFIX}-vsgimgui"
@@ -77,8 +77,7 @@ build() {
       -GNinja \
       -DCMAKE_INSTALL_PREFIX="${MINGW_PREFIX}" \
       "${extra_config[@]}" \
-      -DBUILD_{SHARED,STATIC}_LIBS=ON \
-      -DCH_ENABLE_MODULE_CASCADE=ON \
+      -DBUILD_SHARED_LIBS=ON \
       -DCH_ENABLE_MODULE_IRRLICHT=ON \
       -DCH_ENABLE_MODULE_VSG=ON \
       -DCH_ENABLE_MODULE_PYTHON=ON \
