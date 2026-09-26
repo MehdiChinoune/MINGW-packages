@@ -4,12 +4,13 @@
 
 _realname=grpc
 pkgbase=mingw-w64-${_realname}
-pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
-         "${MINGW_PACKAGE_PREFIX}-python-grpcio"
-         "${MINGW_PACKAGE_PREFIX}-python-grpcio-tools")
-pkgver=1.82.0
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+        #  "${MINGW_PACKAGE_PREFIX}-python-grpcio"
+        #  "${MINGW_PACKAGE_PREFIX}-python-grpcio-tools")
+pkgver=1.84.0
 pkgrel=1
-_proto_ver=35.0
+_proto_ver=36.2
+_grpc_proto_commit=ec30f589e2519d595688b9a42f88a91bdd6b733f
 pkgdesc="Google's high performance, open source, general RPC framework (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -35,22 +36,24 @@ makedepends=(
   "${MINGW_PACKAGE_PREFIX}-pkgconf"
   "${MINGW_PACKAGE_PREFIX}-c-ares"
   "${MINGW_PACKAGE_PREFIX}-protobuf"
-  "${MINGW_PACKAGE_PREFIX}-cython"
-  "${MINGW_PACKAGE_PREFIX}-python-build"
-  "${MINGW_PACKAGE_PREFIX}-python-installer"
-  "${MINGW_PACKAGE_PREFIX}-python-setuptools"
+  # "${MINGW_PACKAGE_PREFIX}-cython"
+  # "${MINGW_PACKAGE_PREFIX}-python-build"
+  # "${MINGW_PACKAGE_PREFIX}-python-installer"
+  # "${MINGW_PACKAGE_PREFIX}-python-setuptools"
 )
 source=("${msys2_repository_url}/archive/v${pkgver}/${_realname}-${pkgver}.tar.gz"
         https://github.com/protocolbuffers/protobuf/releases/download/v${_proto_ver}/protobuf-${_proto_ver}.tar.gz
+        grpc-proto-${_grpc_proto_commit}.tar.gz::https://github.com/grpc/grpc-proto/archive/${_grpc_proto_commit}.tar.gz
         "001-fix-thread_local.patch"
         "002-fix-building-python-module.patch"
         "003-fix-build-shared-libs-on-mingw.patch"
         "004-use-system-abseil-cpp.patch")
-sha256sums=('d6851f59b9c4edb3218d2659a3abf1138e5bb4d2871c9e89c9330ed71756ed0b'
-            '8f907baca4b34a3b4854103ba5811e418fb6e2ff11fe0d8df9e8280b11d79926'
+sha256sums=('17a4d25717f4871eb71cfdf191f7491f66a59c8ebc782ab53d52fcbfc478959f'
+            '3d9642a662d10e68ebae5e53f14dcce5105684212d5078f8e0d47d1ab3ae6b64'
+            '5e9b520b22afbd53a662cc29017064be253c1dfa6df8958738594e7fec6ade33'
             '6695fd531478be73e9555c28d4a1242eb47b9e8c24ccf8df1b8243d81e11c8b1'
             'c08e9a6a4dd569155452660825c8b42a06bbc6eb1e924af98796b138e6698e93'
-            'd1b8334fbd97c833f37f03f222bd443a77772409586c1324cb5bb1b5d85037b3'
+            '3b0de744d3ff858e0a62795f7d6b05b0058cd9ff9c55b34713fa42184dccc6ce'
             '7cd8492d190aeeeaf0647f628527eb642ca6d99db87ce491f26f57f734ee02a1')
 noextract=(${_realname}-${pkgver}.tar.gz)
 
@@ -65,6 +68,8 @@ apply_patch_with_msg() {
 prepare() {
   echo "Extracting ${_realname}-${pkgver}.tar.gz ..."
   tar -xzf "${srcdir}"/${_realname}-${pkgver}.tar.gz -C "${srcdir}" || true
+
+  mv grpc-proto-${_grpc_proto_commit}/* ${_realname}-${pkgver}/third_party/grpc-proto
 
   cd "${srcdir}"/${_realname}-${pkgver}
   # Suggested by @mstorsjo in https://github.com/msys2/MINGW-packages/pull/16378#issuecomment-1481002915
@@ -114,39 +119,39 @@ build() {
 
   cmake --build "build-${MSYSTEM}"
 
-  rm -rf "${srcdir}"/python-build-${MSYSTEM}
-  cp -r "${srcdir}/${_realname}-${pkgver}" "${srcdir}"/python-build-${MSYSTEM} || true
-  cd "${srcdir}"/python-build-${MSYSTEM}
+  # rm -rf "${srcdir}"/py-${MSYSTEM}
+  # cp -r "${srcdir}/${_realname}-${pkgver}" "${srcdir}"/py-${MSYSTEM} || true
+  # cd "${srcdir}"/py-${MSYSTEM}
 
-  export GRPC_PYTHON_BUILD_WITH_CYTHON=1
+  # export GRPC_PYTHON_BUILD_WITH_CYTHON=1
 
-  GRPC_PYTHON_BUILD_SYSTEM_OPENSSL=1 \
-  GRPC_PYTHON_BUILD_SYSTEM_ZLIB=1 \
-  GRPC_PYTHON_BUILD_SYSTEM_CARES=1 \
-  GRPC_PYTHON_BUILD_SYSTEM_RE2=1 \
-  GRPC_PYTHON_BUILD_SYSTEM_ABSL=1 \
-  GRPC_BUILD_WITH_BORING_SSL_ASM=0 \
-  GRPC_PYTHON_CFLAGS="-DGPR_MSVC_EMPTY_BASE_CLASS_WORKAROUND=''" \
-  LDFLAGS="${LDFLAGS} -L../build-${MSYSTEM}" \
-  CXXFLAGS+=" -Wno-deprecated-declarations" \
-    python -m build --wheel --skip-dependency-check --no-isolation
+  # GRPC_PYTHON_BUILD_SYSTEM_OPENSSL=1 \
+  # GRPC_PYTHON_BUILD_SYSTEM_ZLIB=1 \
+  # GRPC_PYTHON_BUILD_SYSTEM_CARES=1 \
+  # GRPC_PYTHON_BUILD_SYSTEM_RE2=1 \
+  # GRPC_PYTHON_BUILD_SYSTEM_ABSL=1 \
+  # GRPC_BUILD_WITH_BORING_SSL_ASM=0 \
+  # GRPC_PYTHON_CFLAGS="-DGPR_MSVC_EMPTY_BASE_CLASS_WORKAROUND=''" \
+  # LDFLAGS="${LDFLAGS} -L../build-${MSYSTEM}" \
+  # CXXFLAGS+=" -Wno-deprecated-declarations" \
+  #   python -m build --wheel --skip-dependency-check --no-isolation
 
-  cd tools/distrib/python/grpcio_tools
+  # cd tools/distrib/python/grpcio_tools
 
-  # use system protobuf for grpcio_tools
-  WIN_PREFIX=$(cygpath -m ${MINGW_PREFIX})
-  sed -r -i \
-      -e '/^CC_FILES=\[/,/\]/{/^CC_FILES=\[/n;/\]/!d;}' \
-      -e '/^CC_INCLUDES=\[/,/\]/{/^CC_INCLUDES=\[/n;/\]/!d;}' \
-      -e "s@^(PROTO_INCLUDE=')[^']+'@\1${WIN_PREFIX}/include'@" \
-      -e '/^PROTOBUF_SUBMODULE_VERSION=/d' \
-      -e "s@'.*(google/.*\.proto)@'\1@" \
-      protoc_lib_deps.py
-  cp -r "${srcdir}"/${_realname}-${pkgver} grpc_root || true
+  # # use system protobuf for grpcio_tools
+  # WIN_PREFIX=$(cygpath -m ${MINGW_PREFIX})
+  # sed -r -i \
+  #     -e '/^CC_FILES=\[/,/\]/{/^CC_FILES=\[/n;/\]/!d;}' \
+  #     -e '/^CC_INCLUDES=\[/,/\]/{/^CC_INCLUDES=\[/n;/\]/!d;}' \
+  #     -e "s@^(PROTO_INCLUDE=')[^']+'@\1${WIN_PREFIX}/include'@" \
+  #     -e '/^PROTOBUF_SUBMODULE_VERSION=/d' \
+  #     -e "s@'.*(google/.*\.proto)@'\1@" \
+  #     protoc_lib_deps.py
+  # cp -r "${srcdir}"/${_realname}-${pkgver} grpc_root || true
 
-  GRPC_PYTHON_CFLAGS="${CFLAGS} -fno-wrapv -frtti -std=c++17 -DPROTOBUF_USE_DLLS -Wno-deprecated-declarations -I$(cygpath -m ${srcdir}/protobuf-${_proto_ver}/src)" \
-  GRPC_PYTHON_LDFLAGS="${LDFLAGS} $(pkgconf --libs protobuf) -lprotoc" \
-    python -m build --wheel --skip-dependency-check --no-isolation
+  # GRPC_PYTHON_CFLAGS="${CFLAGS} -fno-wrapv -frtti -std=c++17 -DPROTOBUF_USE_DLLS -Wno-deprecated-declarations -isystem$(cygpath -m ${srcdir}/protobuf-${_proto_ver}/src)" \
+  # GRPC_PYTHON_LDFLAGS="${LDFLAGS} $(pkgconf --libs protobuf) -lprotoc" \
+  #   python -m build --wheel --skip-dependency-check --no-isolation
 }
 
 package_grpc() {
@@ -171,7 +176,7 @@ package_python-grpcio() {
   optdepends=("${MINGW_PACKAGE_PREFIX}-python-grpcio-tools")
   options=('!strip')
 
-  cd "${srcdir}"/python-build-${MSYSTEM}
+  cd "${srcdir}"/py-${MSYSTEM}
 
   MSYS2_ARG_CONV_EXCL="--prefix=" \
     python -m installer --prefix=${MINGW_PREFIX} --destdir="${pkgdir}" dist/*.whl
@@ -190,7 +195,7 @@ package_python-grpcio-tools() {
   )
   options=('!strip')
 
-  cd "${srcdir}"/python-build-${MSYSTEM}/tools/distrib/python/grpcio_tools
+  cd "${srcdir}"/py-${MSYSTEM}/tools/distrib/python/grpcio_tools
 
   MSYS2_ARG_CONV_EXCL="--prefix=" \
     python -m installer --prefix=${MINGW_PREFIX} --destdir="${pkgdir}" dist/*.whl
