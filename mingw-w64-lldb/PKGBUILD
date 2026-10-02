@@ -7,7 +7,7 @@ fi
 _realname=lldb
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-_pkgver=22.1.8
+_pkgver=23.1.2
 pkgver=${_pkgver/-/}
 pkgrel=1
 pkgdesc="Next generation, high-performance debugger (mingw-w64)"
@@ -38,7 +38,7 @@ _pkgfn=llvm-project-${_pkgver}.src
 source=($_url/${_pkgfn}.tar.xz{,.sig}
         0001-revert-SBValueList-interface.patch::https://github.com/llvm/llvm-project/commit/8122d0e4bc8b536e0bb6bb5fae97e8216986ee28.patch
         0002-revert-ValueObjectListSP-interface.patch)
-sha256sums=('922f1817a0df7b1489272d18134ee0087a8b068828f87ac63b9861b1a9965888'
+sha256sums=('c98bbef08a2b4c2613cd50e9aa9ae7b69b1fe6c16b2c40373bc0ab6116fdf78a'
             'SKIP'
             '3b390c45e9cfc5893e227d4593205b7ad15dddecf8e6fc33e69bb780f32de7a0'
             '7ef53de514769ec421f6b0ec1c27de159c61efe88b1f2f89dda51d21595d13e7')
@@ -64,10 +64,10 @@ prepare() {
   cd "${srcdir}"/${_pkgfn}
 
   # revert changes that cause issues with dllimported symbols
-  patch -RNbp1 -i "${srcdir}/0001-revert-SBValueList-interface.patch"
+  # patch -RNbp1 -i "${srcdir}/0001-revert-SBValueList-interface.patch"
   # The following is https://github.com/llvm/llvm-project/commit/10f2611c2173783efae8aebc32d1515013271b64
   # without the changes to the tests that no longer revert cleanly.
-  patch -RNbp1 -i "${srcdir}/0002-revert-ValueObjectListSP-interface.patch"
+  # patch -RNbp1 -i "${srcdir}/0002-revert-ValueObjectListSP-interface.patch"
 }
 
 build() {
@@ -87,7 +87,8 @@ build() {
     -DLLVM_LINK_LLVM_DYLIB=ON \
     -DCLANG_LINK_CLANG_DYLIB=ON \
     -DLLDB_ENABLE_LIBEDIT=OFF \
-    -DLLDB_ENABLE_SWIG=ON \
+    -DLLDB_ENABLE_PYTHON=OFF \
+    -DLLDB_ENABLE_SWIG=OFF \
     -DLLDB_EMBED_PYTHON_HOME=OFF \
     -DLLDB_INCLUDE_TESTS=OFF \
     -DPython3_EXECUTABLE=${MINGW_PREFIX}/bin/python.exe \
