@@ -7,12 +7,12 @@ fi
 _realname=openmp
 pkgbase=mingw-w64-llvm-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-llvm-${_realname}")
-_pkgver=22.1.8
+_pkgver=23.1.2
 pkgver=${_pkgver/-/}
 pkgrel=1
 pkgdesc="LLVM OpenMP Library (mingw-w64)"
 arch=(any)
-mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
+mingw_arch=('ucrt64' 'clang64' 'clangarm64')
 url="https://openmp.llvm.org/"
 msys2_references=(
   "cpe: cpe:/a:llvm:llvm"
@@ -24,19 +24,20 @@ depends=($( (( _clangprefix )) || echo "${MINGW_PACKAGE_PREFIX}-cc-libs"))
 makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-cmake"
              "${MINGW_PACKAGE_PREFIX}-ninja"
+             "${MINGW_PACKAGE_PREFIX}-llvm"
+             "${MINGW_PACKAGE_PREFIX}-clang"
+             "${MINGW_PACKAGE_PREFIX}-clang-tools-extra"
              "${MINGW_PACKAGE_PREFIX}-python"
-             $( [[ ${MSYSTEM} == MINGW64 ]] || echo "${MINGW_PACKAGE_PREFIX}-flang")
+             "${MINGW_PACKAGE_PREFIX}-flang"
              $( [[ $CARCH == aarch64 ]] || echo "${MINGW_PACKAGE_PREFIX}-uasm" ))
 _url=https://github.com/llvm/llvm-project/releases/download/llvmorg-${_pkgver}
 _pkgfn=llvm-project-${_pkgver}.src
 source=($_url/${_pkgfn}.tar.xz{,.sig}
         "001-cast-to-make-gcc-happy.patch"
-        "002-hacks-for-static-linking.patch"
         "003-export-symbols-with-name-mangling-for-flang.patch")
-sha256sums=('922f1817a0df7b1489272d18134ee0087a8b068828f87ac63b9861b1a9965888'
+sha256sums=('c98bbef08a2b4c2613cd50e9aa9ae7b69b1fe6c16b2c40373bc0ab6116fdf78a'
             'SKIP'
             '11352ffbe7559a7170f2abd52b3552c877fbcf8fc82cff77b421e8b130a4dd66'
-            '08e39ea52a99204528740196a13cc29daf1b65a6e230fbd7bdd745dde5d11ef3'
             'fa81c3b1c937f090129f74a7553b4c2cbcf0e1fb223cff020cf1a7357441d147')
 validpgpkeys=('B6C8F98282B944E3B0D5C2530FC3042E345AD05D'  # Hans Wennborg, Google.
               '474E22316ABF4785A88C6E8EA2C794A986419D8A'  # Tom Stellard
@@ -79,22 +80,21 @@ build() {
     _extra_config+=("-DLIBOMP_ASMFLAGS=-win64" "-DCMAKE_ASM_MASM_COMPILER=${MINGW_PREFIX}/bin/uasm.exe")
   fi
 
-  if [[ ${MSYSTEM} != MINGW64 ]]; then
-    _extra_config+=("-DLIBOMP_FORTRAN_MODULES_COMPILER=${MINGW_PREFIX}/bin/flang.exe")
-  else
-    _extra_config+=("-DLIBOMP_FORTRAN_MODULES=OFF")
-  fi
-
   MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
     ${MINGW_PREFIX}/bin/cmake \
       -GNinja \
       -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
       -DCMAKE_SYSTEM_IGNORE_PATH=/usr/lib \
+      -DLIBOMP_FORTRAN_MODULES=ON \
+      -DLIBOMP_FORTRAN_MODULES_COMPILER=${MINGW_PREFIX}/bin/flang.exe \
+      -DLLVM_ENABLE_RUNTIMES=openmp \
       -DLIBOMP_ENABLE_SHARED=ON \
+      -DClang_DIR=${MINGW_PREFIX}/lib/cmake/clang \
+      -DLLVM_DIR=${MINGW_PREFIX}/lib/cmake/llvm \
       -DPython3_EXECUTABLE=${MINGW_PREFIX}/bin/python.exe \
       "${_extra_config[@]}" \
       -Wno-author \
-      -S ${_pkgfn}/${_realname} \
+      -S ${_pkgfn}/runtimes \
       -B build-${MSYSTEM}
 
   ${MINGW_PREFIX}/bin/cmake --build build-${MSYSTEM}
