@@ -177,7 +177,7 @@ build() {
     )
   fi
 
-  platform_config+=(-DLLVM_TARGETS_TO_BUILD="AArch64;ARM;RISCV;X86")
+  platform_config+=(-DLLVM_TARGETS_TO_BUILD="all")
 
   MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
   cmake \
