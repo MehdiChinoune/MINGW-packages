@@ -7,10 +7,10 @@ pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
          $([[ ${MINGW_PACKAGE_PREFIX} != *-clang-* ]] || echo "${MINGW_PACKAGE_PREFIX}-fc-libs"))
 _pkgver=23.1.3
 pkgver=${_pkgver/-/}
-pkgrel=1
+pkgrel=2
 pkgdesc="Fortran frontend for LLVM (mingw-w64)"
 arch=('any')
-mingw_arch=('clang64' 'clangarm64')
+mingw_arch=('ucrt64' 'clang64' 'clangarm64')
 url="https://flang.llvm.org/"
 msys2_repository_url='https://github.com/llvm/llvm-project'
 msys2_references=(
@@ -87,7 +87,7 @@ prepare() {
 build() {
   declare -a _extra_config
   if check_option "debug" "n"; then
-    _extra_config+=("-DCMAKE_BUILD_TYPE=Release")
+    _extra_config+=("-DCMAKE_BUILD_TYPE=None")
   else
     _extra_config+=("-DCMAKE_BUILD_TYPE=Debug")
   fi
