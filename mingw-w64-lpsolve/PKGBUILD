@@ -4,11 +4,12 @@ _realname=lpsolve
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
 pkgver=5.5.2.11
-pkgrel=1
+pkgrel=2
 pkgdesc="Mixed Integer Linear Programming (MILP) solver (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
-url="https://sourceforge.net/projects/lpsolve/"
+url="https://lp-solve.github.io"
+msys2_repository_url="https://github.com/lp-solve/lp_solve/"
 license=('spdx:LGPL-2.1-or-later')
 depends=("${MINGW_PACKAGE_PREFIX}-cc-libs")
 makedepends=("${MINGW_PACKAGE_PREFIX}-cmake" "${MINGW_PACKAGE_PREFIX}-cc")
@@ -36,38 +37,33 @@ build() {
   fi
 
   # shared build
-  mkdir -p "${srcdir}"/build-${MSYSTEM}-shared && cd "${srcdir}"/build-${MSYSTEM}-shared
   MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
   ${MINGW_PREFIX}/bin/cmake.exe \
-    -G"MSYS Makefiles" \
+    -G"Ninja" \
     -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
+    -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
     ${extra_config} \
     -DLIB_TYPE=SHARED \
-    ../lp_solve_5.5
-  make
+    -S lp_solve_5.5 \
+    -B build-${MSYSTEM}-shared
+  cmake --build build-${MSYSTEM}-shared
 
   # static build
-  mkdir -p "${srcdir}"/build-${MSYSTEM}-static && cd "${srcdir}"/build-${MSYSTEM}-static
   MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
   ${MINGW_PREFIX}/bin/cmake.exe \
-    -G"MSYS Makefiles" \
+    -G"Ninja" \
     -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
+    -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
     ${extra_config} \
     -DLIB_TYPE=STATIC \
-    ../lp_solve_5.5
-  make
+    -S lp_solve_5.5 \
+    -B build-${MSYSTEM}-static
+  cmake --build build-${MSYSTEM}-static
 }
 
 package() {
-  # Shared Install
-  cd "${srcdir}/build-${MSYSTEM}-shared"
-  make DESTDIR="${pkgdir}" install
-
   # Static Install
-  cd "${srcdir}/build-${MSYSTEM}-static"
-  make DESTDIR="${pkgdir}" install
-}
-
-warn_build_references() {
-  : # I like __FILE__ and don't consider build references to be a problem
+  DESTDIR="${pkgdir}" cmake --install build-${MSYSTEM}-static
+  # Shared Install
+  DESTDIR="${pkgdir}" cmake --install build-${MSYSTEM}-shared
 }

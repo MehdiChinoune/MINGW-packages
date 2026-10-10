@@ -4,14 +4,13 @@ _realname=pystring
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
 pkgver=1.1.4
-pkgrel=1
+pkgrel=2
 pkgdesc="A collection of C++ functions which match the interface and behavior of python's string class methods using std::string (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
 url="https://github.com/imageworks/pystring"
 msys2_repository_url='https://github.com/imageworks/pystring'
 license=('spdx:BSD-3-Clause')
-depends=("${MINGW_PACKAGE_PREFIX}-cc-libs")
 makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-autotools")
 source=(https://github.com/imageworks/pystring/archive/v${pkgver}/${_realname}-${pkgver}.tar.gz
