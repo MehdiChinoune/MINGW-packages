@@ -1,0 +1,52 @@
+From 26e908779f448574c6b8918aff21a40565a89a57 Mon Sep 17 00:00:00 2001
+From: albert-github <albert.tests@gmail.com>
+Date: Sat, 29 Aug 2026 14:35:51 +0200
+Subject: [PATCH] Potential problems with `size_t` and `find` / `rfind`
+
+- commentscan.l usage of `idx` has to be protected against `npos`
+- scanner.l it is, according to the used rule (`{B}+`) possible that there are no spaces but just tabs
+---
+ src/commentscan.l | 10 ++++++----
+ src/scanner.l     |  1 +
+ 2 files changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/src/commentscan.l b/src/commentscan.l
+index 9dbb4d89e4..598dd5f458 100644
+--- a/src/commentscan.l
++++ b/src/commentscan.l
+@@ -994,8 +994,9 @@ STopt  [^\n@\\]*
+                                           DString fullMatch = yytext;
+                                           size_t idx = fullMatch.find('{');
+                                           /* handle `f{` command as special case */
+-                                          if ((idx > 1) && (yytext[idx-1] == 'f') && (yytext[idx-2] == '\\' || yytext[idx-2] =='@')) REJECT;
+-                                          size_t idxEnd = fullMatch.find('}',idx+1);
++                                          if ((idx != DString::npos) && (idx > 1) && (yytext[idx-1] == 'f') && (yytext[idx-2] == '\\' || yytext[idx-2] =='@')) REJECT;
++                                          size_t idxEnd = DString::npos;
++                                          if (idx != DString::npos) idxEnd = fullMatch.find('}',idx+1);
+                                           DString cmdName;
+                                           StringVector optList;
+                                           if (idx == DString::npos) // no options
+@@ -2086,8 +2087,9 @@ STopt  [^\n@\\]*
+                                           DString fullMatch = yytext;
+                                           size_t idx = fullMatch.find('{');
+                                           /* handle `f{` command as special case */
+-                                          if ((idx > 1) && (yytext[idx-1] == 'f') && (yytext[idx-2] == '\\' || yytext[idx-2] =='@')) REJECT;
+-                                          size_t idxEnd = fullMatch.find("}",idx+1);
++                                          if ((idx != DString::npos) && (idx > 1) && (yytext[idx-1] == 'f') && (yytext[idx-2] == '\\' || yytext[idx-2] =='@')) REJECT;
++                                          size_t idxEnd = DString::npos;
++                                          if (idx != DString::npos) idxEnd = fullMatch.find("}",idx+1);
+                                           DString cmdName;
+                                           StringVector optList;
+                                           if (idx == DString::npos) // no options
+diff --git a/src/scanner.l b/src/scanner.l
+index 8f0e755b6a..c42ce16830 100644
+--- a/src/scanner.l
++++ b/src/scanner.l
+@@ -3974,6 +3974,7 @@ NONLopt [^\n]*
+ <GCopyCurly>^"#"{B}+[0-9]+{B}+"\""[^\"\n]+"\""{B}+"2"{B}*\n? { // end of included file marker
+                                           DString line = yytext;
+                                           size_t s = line.find(' ');
++                                          if (s == DString::npos) s = line.find('\t');
+                                           size_t e = line.find('"',s);
+                                           yyextra->yyLineNr = line.mid(s,e-s).toInt();
+                                           if (yytext[yyleng-1]=='\n')

@@ -17,26 +17,26 @@ msys2_references=(
 license=('spdx:GPL-2.0-only')
 depends=(
   "${MINGW_PACKAGE_PREFIX}-cc-libs"
-  "${MINGW_PACKAGE_PREFIX}-clang-libs"
+  #"${MINGW_PACKAGE_PREFIX}-clang-libs"
   "${MINGW_PACKAGE_PREFIX}-libiconv"
   "${MINGW_PACKAGE_PREFIX}-sqlite3"
-  "${MINGW_PACKAGE_PREFIX}-spdlog"
+  #"${MINGW_PACKAGE_PREFIX}-spdlog"
   "${MINGW_PACKAGE_PREFIX}-xapian-core"
 )
 makedepends=(
   "${MINGW_PACKAGE_PREFIX}-cc"
   "${MINGW_PACKAGE_PREFIX}-cmake"
-  "${MINGW_PACKAGE_PREFIX}-fmt"
+  #"${MINGW_PACKAGE_PREFIX}-fmt"
   "${MINGW_PACKAGE_PREFIX}-ninja"
   "${MINGW_PACKAGE_PREFIX}-pkgconf"
   "${MINGW_PACKAGE_PREFIX}-python"
-  "${MINGW_PACKAGE_PREFIX}-clang-tools-extra"
-  "${MINGW_PACKAGE_PREFIX}-llvm"
-  "${MINGW_PACKAGE_PREFIX}-qt6-svg"
+  #"${MINGW_PACKAGE_PREFIX}-clang-tools-extra"
+  #"${MINGW_PACKAGE_PREFIX}-llvm"
+  #"${MINGW_PACKAGE_PREFIX}-qt6-svg"
 )
 optdepends=("${MINGW_PACKAGE_PREFIX}-qt6-base: for doxywizard")
-checkdepends=("${MINGW_PACKAGE_PREFIX}-texlive-bin")
-options=(debug)
+#checkdepends=("${MINGW_PACKAGE_PREFIX}-texlive-bin")
+options=(debug !strip)
 source=("${msys2_repository_url}/archive/Release_${pkgver//./_}/${_realname}-${pkgver}.tar.gz"
         'cmake-mingw.patch'
         '0002-clang-19-fix.patch'
@@ -89,15 +89,16 @@ build() {
       -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
       -DCMAKE_INSTALL_LIBDIR=lib \
       -DCMAKE_INSTALL_BINDIR=bin \
-      -Dbuild_parse=ON \
-      -Dbuild_search=ON \
-      -Dbuild_wizard=ON \
-      -Duse_libclang=ON \
-      -Duse_sys_fmt=ON \
-      -Duse_sys_spdlog=ON \
+      -Dbuild_parse=OFF \
+      -Dbuild_search=OFF \
+      -Dbuild_wizard=OFF \
+      -Duse_libclang=OFF \
+      -Duse_sys_fmt=OFF \
+      -Duse_sys_spdlog=OFF \
       -Duse_sys_sqlite3=ON \
       -Dforce_qt="Qt6" \
       -DPython_EXECUTABLE=${MINGW_PREFIX}/bin/python \
+      -DSPDLOG_NO_TLS=ON \
       -S ${_realname}-${pkgver} \
       -B build-${MSYSTEM}
 
